@@ -3,6 +3,18 @@ if exists('g:autoloaded_phx') || &cp
 endif
 let g:autoloaded_phx = 1
 
+" Utility {{{1
+
+function! s:sub(s, p, r)
+  return substitute(a:s, a:p, a:r, '')
+endfunction
+
+function! s:command_exists(cmd)
+  return exists(':'.a:cmd) == 2
+endfunction
+
+" Project {{{1
+
 function! s:get_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
 
@@ -65,16 +77,16 @@ function! phx#related() abort
     endif
   else
     if &ft ==# 'elixir'
-      let basename = substitute(expand("%:p"), '\.ex$', '.html.heex', '')
+      let basename = s:sub(expand("%:p"), '\.ex$', '.html.heex')
     else
-      let basename = substitute(expand("%:p"), '\.html.heex$', '.ex', '')
+      let basename = s:sub(expand("%:p"), '\.html.heex$', '.ex')
     endif
     exec "e ".basename
   endif
 endfunction
 
 function! phx#define_command()
-  if exists(":R") != 2
+  if !s:command_exists("R")
     command! -buffer -nargs=0 R call phx#related()
   endif
 endfunction
