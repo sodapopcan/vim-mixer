@@ -13,6 +13,25 @@ function! s:command_exists(cmd) abort
   return exists(':'.a:cmd) == 2
 endfunction
 
+function! s:matches(string, pattern)
+  return match(a:string, a:pattern) != -1
+endfunction
+
+" Elixir Utility
+
+function! phx#unpipe() abort
+  let line = getline(".")
+  echom "line=".line
+  if s:matches(trim(line), '^|>')
+    let value_lnr = line('.') - 1
+    let value = trim(getline(value_lnr))
+    exec value_lnr."d_"
+    let line = s:sub(line, '|> ', '')
+    let line = s:sub(line, '(', "(".value.", ")
+    call setline(value_lnr, line)
+  endif
+endfunction
+
 " Project {{{1
 
 function! s:get_mix_project() abort
@@ -88,5 +107,9 @@ endfunction
 function! phx#define_command() abort
   if !s:command_exists("R")
     command! -buffer -nargs=0 R call phx#related()
+  endif
+
+  if !s:command_exists("Unpipe")
+    command! -buffer -nargs=0 Unpipe call phx#unpipe()
   endif
 endfunction
