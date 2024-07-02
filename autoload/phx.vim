@@ -19,17 +19,34 @@ endfunction
 
 " Elixir Utility
 
+function! s:starts_with_pipe(line)
+  return s:matches(trim(a:line), '^|>')
+endfunction
+
 function! phx#unpipe() abort
-  let line = getline(".")
-  echom "line=".line
-  if s:matches(trim(line), '^|>')
+  let curr_line = getline(".")
+  let prev_line = getline(line('.') - 1)
+  let next_line = getline(line('.') + 1)
+
+  if s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
     let value_lnr = line('.') - 1
-    let value = trim(getline(value_lnr))
-    exec value_lnr."d_"
-    let line = s:sub(line, '|> ', '')
-    let line = s:sub(line, '(', "(".value.", ")
-    call setline(value_lnr, line)
-  endif
+    let value = trim(prev_line)
+    let pipe_lnr = line('.')
+    let pipe_line = curr_line
+  elseif !s:starts_with_pipe(curr_line) && s:starts_with_pipe(next_line)
+    let value_lnr = line('.')
+    let value = trim(curr_line)
+    let pipe_lnr = line('.') + 1
+    let pipe_line = next_line
+  else
+    echom "Cannot unpipe"
+    return 0
+  end
+
+  exec value_lnr."d_"
+  let line = s:sub(pipe_line, '|> ', '')
+  let line = s:sub(line, '(', "(".value.", ")
+  call setline(value_lnr, line)
 endfunction
 
 " Project {{{1
