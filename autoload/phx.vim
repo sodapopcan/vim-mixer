@@ -43,7 +43,7 @@ if b:project.root ==# ""
 endif
 
 function! s:in_live_view() abort
-  return search('^\s\+use \%([A-Z][A-Za-z\.]\+[^\.], .*live_view\|Phoenix.LiveView\)', 'wn')
+  return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
 endfunction
 
 let s:render_regex = '^\s\+def render('
