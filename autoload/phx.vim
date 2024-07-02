@@ -5,11 +5,11 @@ let g:autoloaded_phx = 1
 
 " Utility {{{1
 
-function! s:sub(s, p, r)
+function! s:sub(s, p, r) abort
   return substitute(a:s, a:p, a:r, '')
 endfunction
 
-function! s:command_exists(cmd)
+function! s:command_exists(cmd) abort
   return exists(':'.a:cmd) == 2
 endfunction
 
@@ -85,7 +85,7 @@ function! phx#related() abort
   endif
 endfunction
 
-function! phx#define_command()
+function! phx#define_command() abort
   if !s:command_exists("R")
     command! -buffer -nargs=0 R call phx#related()
   endif
