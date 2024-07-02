@@ -1,0 +1,402 @@
+*mixer.txt*  Plugin for working with Mix projects and Elixir files.
+
+Author:  Andrew Haust <https://andrew.hau.st>
+License: Same terms as Vim itself (see |license|)
+
+
+Dependencies~
+
+  * Vim 9
+  * |elixir.vim| <https://github.com/elixir-lang/vim-elixir>
+
+
+TABLE OF CONTENTS                           *mixer*
+
+INTRODUCTION                                |mixer-introduction|
+  Passive settings                            |mixer-passive-settings|
+    Commenting                                  |mixer-commenting|
+    matchit.vim in embedded templates           |mixer-matchit|
+    Compiler                                    |mixer-compiler|
+    Syntax Hilighting                           |mixer-syntax-highlighting|
+COMMANDS                                    |mixer-mix-commands|
+  :Mix                                        |mixer-:Mix|
+  :Deps                                       |mixer-:Deps|
+  :Gen                                        |mixer-:Gen|
+MAPPINGS                                    |mixer-mappings|
+NAVIGATION                                  |mixer-navigation|
+TEXT OBJECTS                                |mixer-text-objects|
+  Do/end block                                |mixer-text-object-do-end|
+  Function                                    |mixer-function|
+  Map or struct                               |mixer-map|
+  Sigil                                       |mixer-sigil|
+  Comment                                     |mixer-comment|
+
+
+INTRODUCTION                                *mixer-introduction*
+
+Provides utilities for working with the Elixir programming language
+<https://elixir-lang.org>.  For Vim users, this compliments elixir.vim
+<https://github.com/elixir-lang/vim-elixir>.  This plugin is designed to work
+with nvim as well, though nvim users may also want to evaluate
+elixir-tools.nvim <https://github.com/elixir-tools/elixir-tools.nvim>.  This
+plugin can be used along-side it.
+
+
+    PLEASE NOTE                                                        ~
+  +--------------------------------------------------------------------+~
+  | Almost all commands and mappings are BUFFER LOCAL and only defined |~
+  | if they are available.  This means you must edit an elixir, heex,  |~
+  | or surface file OR be inside a mix project to get the appropriate  |~
+  | functionality.                                                     |~
+  +--------------------------------------------------------------------+~
+
+
+Passive Settings~
+                                            *mixer-passive-settings*
+
+                                            *mixer-commenting*
+When working in files with embedded templates, 'commentstring' will be
+adjusted appropriately based on where you cursor is.
+
+Caveats:
+
+  * This is set on |CursorHold|, so if you happen to have set a very slow
+    |uptimedate|, then it's possible you could be too quick for it.
+  * When commenting out both Elixir and HEEx/Surface in visual mode,
+    'commentstring' will be whatever it was when you entered visual mode.
+
+                                            *mixer-matchit*
+Similar to above, if you have |matchit| enabled, `b:match_words` will be
+automatically set based where your cursor position in the file, allowing you
+to use |%| in embedded HEEs/Surface.
+
+                                            *mixer-compiler*
+If available, `:compiler mix` will be called for Elixir files and
+`:compiler exunit` will be called for any Elixir file ending in `_test.exs`.
+These are available if you have |elixir.vim| installed.  See the `complier/`
+directory in that plugin if yout don't use it and wish to copy them over.
+
+                                            *mixer-syntax-highliting*
+Mixer will highlight common library macros like `using`, `plug`, `scope`, etc.
+To turn off this behaviour, set:
+>
+  let g:mixer_syntax_highlighting = 0
+<
+
+
+COMMANDS                                    *mixer-commands*
+
+                                            *mixer-commands-mix*
+                                            *mixer-:Mix*
+:Mix [args]         Run a mix command with autocomplete.
+
+                    It will use an async library if available.  Currently,
+                    it's aware of |dispatch|, |neomake|, |asyncrun|, and the
+                    lesser known |asyncdo|.  The latter is by Elixir community
+                    member @hauleth so I figured I'd include it :) You may
+                    also configure it to use any command you want:
+>
+                      let g:mixer_async_command = 'Make'
+<
+                    If you wish to run a command synchronously using `:Mix`
+                    (ie, get the output in the terminal session), you may do
+                    so like this:
+>
+                      :Mix ! deps.get
+<
+                    Due to how Vim commands are parsed, you can also call it
+                    as:
+>
+                      :Mix!! deps.get
+<
+                    This command is always available, even when not editing an
+                    Elixir file.
+
+                    A note on autocomplete: When editing a file in a Mix
+                    project, its tasks will be populated and cached in the
+                    background so that autocomplete is instant from first use.
+                    When used outside of a mix project, there will be a slight
+                    delay the first time you hit `<tab>` while it populates
+                    the tasks.
+
+                                            *mixer-:Mix!*
+:Mix!               If using an async runner, it will do whatever it is your
+                    chosen library's command does when called with a [!].
+
+                                            *mixer-:Mix-env*
+:Mix[!] ={env} [args]
+                    Specify the environment.  For example:
+>
+                      :Mix =test compile
+<
+                    This works for any custom environment you have outside of
+                    the standard "dev", "test", and "prod".  The `=` here
+                    simply means "environment name."
+
+                                            *mixer-:Mix-add-env*
+:Mix[!] +{env} [args] 
+                    Run task in {env} as well as the default.  For example:
+>
+                      :Mix +test mix compile
+<
+                    This will run:
+>
+                      $ mix compile && MIX_ENV=test mix compile
+<
+
+                                            *mixer-:Deps*
+                                            *mixer-:Deps!*
+:Deps               Navigate to `mix.exs` and jump to your `deps` function.
+                    This works regardless of what you have called it.
+
+:{range}Deps[!] {task} [args]
+                    A wrapper around `:Mix deps`
+
+                    When the current buffer is `mix.exs` it will first write
+                    the buffer if it is modified.
+
+                    In any other buffer it will take you to `mix.exs` and
+                    jump to your `deps` function.  This works regardless of
+                    what you have named it.
+
+                    Given a {range}, it will operate on those lines.  This is
+                    probably most useful with the current line for example,
+                    with your cursor on this line:
+>
+                      {:live_view, "~> 0.20"},
+<
+                    You can update LiveView by calling:
+>
+                      :.Deps update
+<
+                    With the following lines visually selected:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_test, "~> 1.7"},
+                      {:pathex, "~> 2.5"},
+                      {:image, "~> 0.5"}
+<
+                    Running
+>
+                      :'<,'>Deps update
+<
+                    will result in:
+>
+                      mix deps update floki phoenix_test pathex image
+<
+                    This is really more of a party trick as it's probably
+                    pretty rare that the deps you want to update will be right
+                    next to each other but hey, there it is!
+
+                    This command's bang [!] behaviour works the same as it
+                    does for |:Mix|.  Environment flags via `^` and `+` are
+                    also available.
+
+                                            *mixer-:Deps_add*
+:Deps add {dep}     Insert {dep} below the cursor.
+
+                    For example, with \%# being your cursor:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_\%#test, "~> 1.7"},
+                      {:image, "~> 0.5"}
+<
+                    Typing `:Deps add pathex` will result in:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_test, "~> 1.7"},
+                      {:pathex, "~> 2.5"},
+                      {:image, "~> 0.5"}
+<
+
+                                            *mixer-:Gen*
+:Gen                Unified generator command with autocomplete.
+
+                    Run any `*.gen*` task in your project without having to
+                    provide its namespace.
+
+                    For example:
+>
+                      :Gen live Accounts User users name:string age:integer
+                      :Gen migration add_name_to_users
+<
+
+                    Name collisions are resolved by appending the package
+                    prefix separated by a dot (`.`).  For example, if you have
+                    a Phoenix project that is using Guardian and you type
+                    `:Gen sec<tab>` you will see:
+>
+                      :Gen secret.
+                      secret.guardian secret.phx
+<
+                    Tasks are sorted by their non-namespaced names.
+
+                    Since many generators prompt for input, this task is
+                    always run via |:!|.
+
+
+                                            *mixer-:Iex*
+:Iex[!]             Start `iex` in a `:terminal` session.  The exact command
+                    used is:
+>
+                      term ++close iex -S mix
+<
+                    When called with a bang [!] it will start a plain iex
+                    session without Mix.  Outside of a mix project both
+                    versions of the command start a plain `iex` session.
+
+                    Accepts |:command-modifiers|.
+
+
+MAPPINGS                                    *mixer-mappings*
+
+                                            *mixer-CTRL-]*
+CTRL-]              Remapped to be context aware in Phoenix files. Will
+                    jump from `phx-click="some-event"` to
+                    `handle_event("some-event"...`.  It will also attempt to
+                    find JS hook definitions from `phx-hook="MyHook"`.  If it
+                    cannot find `MyHook =` in your js/ directory, it looks for
+                    a .js or .ts file that resembles the name of your hook.
+                    It otherwise works as normal.
+
+                    This command's implementation requires your project to be
+                    tracked by `git`.  I would like to change this sooner or
+                    later.
+
+
+TEXT OBJECTS                                *mixer-text-objects*
+                                            *mixer-text-object*
+                                            *mixer-textobj*
+
+Text objects are defined for general Elixir blocks (do/end, fn/end), as well
+as maps, sigils, and comments/docstrings.  There are some specialized objects
+for the def* family of macros where the 'aF' version includes specs,
+docstrings, LiveView's `attr` and `slot`, as well as other meta.
+
+Here is an overview:
+
+
+    Elixir construct    | Text Object  (mneumonic/notes)
+    --------------------+------------------------------------------------
+    blocks              | d  (do, but also fb)
+    blocks              | D  (includes assignment comments)
+    def[p]/defmarco[p]  | f
+    def[p]/defmacro[p]  | F  (includes annotations and all function heads)
+    defmodule           | M
+    %{}/%Fooi.Bar{}     | m  (maps and structs)
+    Sigils              | S 
+    #/@doc """/etc      | c  (comment)
+
+
+                    Do/end block~
+id                                          *mixer-ie* *mixer-ae*
+ad                  A do/end block including function call.
+iD
+aD                  Currently brings `else` along with it.
+
+                    A reasonable effort is made for these to be as general as
+                    possible and work with custom macros, not just the
+                    builtins.  They work with both `do`/`end` syntax as
+                    well as keyword syntax (`do: ...`).
+
+                    "aD" will include assignment (pattern matching) and
+                    any comments.  For example, in the following code with the
+                    cursor represented by `\%#`, typing `daD` will delete all
+                    of the following:
+>
+                      # Set foo to bar()
+                      # if `condition?` is `true`
+                      let foo =
+                        if condition? do
+                          bar\%#()
+                        end
+<
+                    Note that for comments to be included, they must be
+                    touching the code block.  If separated by a blank line
+                    they will be left alone.
+
+                    options~
+>
+                        let g:mixer_textobj_block = 'd'
+                        let g:mixer_textobj_block_with_meta = 'D'
+<
+
+
+                    Function and macro definition~
+if                                          *mixer-if* *mixer-af*
+af                                          *mixer-iF* *mixer-aF*
+iF                  A function definition including `def`, `defp`, `defmacro`, and
+                    `defmacrop` as well as `defn` for Nx'ers.
+
+                    "aF" will include any function annotations as well
+                    surrounding functions with the same name, including
+                    private functions prefixed with `do_`.  A small list
+                    of well-known annotations are considered (definitively:
+                    `@doc`, `@spec`, `@tag`, and `@requirements`) as well as
+                    LiveView's `attr` and `slot` macros.  Otherwise, anything
+                    between these and the function head and anything touching
+                    the function head (no blank lines) will be included.
+
+                    If necessary, it is possible to add your own by setting
+                    `g:mixer_known_annotations` to a regex.  For example:
+>
+                      let g:mixer_known_annotations =
+                        \ '\<my_macro\>\|@my_attribute\>'
+<
+
+                    NOTE When including surrounding function heads, artity is
+                    NOT taken into account.
+
+                    options~
+>
+                        let g:mixer_textobj_def = 'd'
+                        let g:mixer_textobj_def_with_meta = 'D'
+<
+
+                    Module definition~
+iM                                          *mixer-iM* *mixer-aM*
+aM                  A module definition.
+
+                    options~
+>
+                      let g:mixer_textobj_module = 'M'
+<
+
+                    Map or struct~
+im                                          *mixer-im* *mixer-am*
+am                  A map or struct.
+
+                    options~
+>
+                      let g:mixer_textobj_map = 'M'
+<
+
+                    Sigil~
+iS                                          *mixer-iS* *mixer-aS*
+aS                  A sigil.  Works regardless of the delimiter.
+
+                    options~
+>
+                      let g:mixer_textobj_sigil = 'M'
+<
+
+                    Comment~
+ic                                          *mixer-ic* *mixer-ac*
+ac                  A comment.  Mostly just useful for formatting when
+                    a comment is touching some code.
+
+                    options~
+>
+                      let g:mixer_textobj_comment = 'M'
+<
+
+                    Function argument~
+ia                                          *mixer-text-objects-argument*
+aa                  A function argument.
+
+                    These are only available if the plugin sideways.vim is
+                    installed.  You can find this on www.vim.org or on github
+                    at <https://github.com/AndrewRadev/sideways.vim>.
+
+
+  vim:tw=78:et:ft=help:norl:
