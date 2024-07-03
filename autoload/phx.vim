@@ -69,6 +69,7 @@ function! phx#to_pipe() abort
     let cursor_origin = getcurpos('.')
 
     normal! ^
+
     if search('(', '', line('.'), 0, "SkipIt()") != 0
       let closing_paren_lnr = searchpair('(', '', ')', 'Wn', 'SkipIt()') != 0
 
@@ -81,6 +82,8 @@ function! phx#to_pipe() abort
         " if closing_paren_lnr != line('.')
         "   normal! J
         " endif
+        call setpos('.', cursor_origin)
+        normal! ^
       endif
     else
       call setpos('.', cursor_origin)
