@@ -23,7 +23,7 @@ function! s:starts_with_pipe(line)
   return s:matches(trim(a:line), '^|>')
 endfunction
 
-function! phx#unpipe() abort
+function! phx#from_pipe() abort
   let curr_line = getline(".")
   let prev_line = getline(line('.') - 1)
   let next_line = getline(line('.') + 1)
@@ -45,8 +45,50 @@ function! phx#unpipe() abort
 
   exec value_lnr."d_"
   let line = s:sub(pipe_line, '|> ', '')
-  let line = s:sub(line, '(', "(".value.", ")
+  normal! f(
+
+  if searchpair('(', '', ',', 'Wn', 'SkipIt()')
+    let addon = ', '
+  else
+    let addon = ''
+  endif
+
+  let line = s:sub(line, '(', "(".value.addon)
   call setline(value_lnr, line)
+endfunction
+
+function! SkipIt()
+  return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%(String\|Comment\|CharList\|Map\|Tuple\)'
+endfunction
+
+function! phx#to_pipe() abort
+  let line = getline('.')
+  let msg = "Nothing to pipe"
+
+  if !s:starts_with_pipe(line)
+    let cursor_origin = getcurpos('.')
+
+    normal! ^
+    if search('(', '', line('.'), 0, "SkipIt()") != 0
+      let closing_paren_lnr = searchpair('(', '', ')', 'Wn', 'SkipIt()') != 0
+
+      if closing_paren_lnr != 0
+        let save = @a
+        normal! "adibk
+        call append(line('.'), @a)
+        exec "normal! j==jI|>\<space>\<esc>"
+        let @a = save
+        " if closing_paren_lnr != line('.')
+        "   normal! J
+        " endif
+      endif
+    else
+      call setpos('.', cursor_origin)
+      echom msg
+    endif
+  else
+    echom msg
+  endif
 endfunction
 
 " Project {{{1
@@ -126,7 +168,11 @@ function! phx#define_command() abort
     command! -buffer -nargs=0 R call phx#related()
   endif
 
-  if !s:command_exists("Unpipe")
-    command! -buffer -nargs=0 Unpipe call phx#unpipe()
+  if !s:command_exists("FromPipe")
+    command! -buffer -nargs=0 FromPipe call phx#from_pipe()
+  endif
+
+  if !s:command_exists("ToPipe")
+    command! -buffer -nargs=0 ToPipe call phx#to_pipe()
   endif
 endfunction
