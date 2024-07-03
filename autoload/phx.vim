@@ -74,8 +74,21 @@ function! phx#to_pipe() abort
       let closing_paren_lnr = searchpair('(', '', ')', 'Wn', 'SkipIt()') != 0
 
       if closing_paren_lnr != 0
+        let first_arg_end = searchpairpos('(', '', ',', 'Wn', 'SkipIt()')
         let save = @a
-        normal! "adibk
+
+        if first_arg_end != [0, 0]
+          " Multiple arguments
+          normal! lma
+          call cursor(first_arg_end)
+          normal! "ad`a
+          normal! "_dw
+        else
+          " Single argument
+          normal! "adib
+        endif
+
+        normal! k
         call append(line('.'), @a)
         exec "normal! j==jI|>\<space>\<esc>"
         let @a = save
