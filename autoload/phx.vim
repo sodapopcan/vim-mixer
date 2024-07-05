@@ -142,8 +142,8 @@ function! phx#to_pipe() abort
 
       let save_register = @p
 
-      " Has one argument
       if comma_pos !=# [0, 0]
+        " Has one argument
         let save_mark = getpos("'a")
         normal! ma
         call cursor(open_pos)
@@ -157,6 +157,11 @@ function! phx#to_pipe() abort
         normal! ==
       else
         normal! "pdib
+      endif
+
+      if @p == ""
+        let @p = save_register
+        return s:reset(cursor_origin)
       endif
 
       call setpos('.', cursor_origin)
