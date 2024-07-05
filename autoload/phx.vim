@@ -136,56 +136,41 @@ function! phx#to_pipe() abort
         call cursor(open_pos)
       endif
 
-      let to_pipe = ""
-
       " Check if there is one argument
       let F = {-> SkipIt() || (nested_open_pos !=# [0, 0] && InRange(nested_open_pos, nested_close_pos)) }
       let comma_pos = searchpos(',', 'W', close_pos[0], 500, F)
 
+      let save_register = @p
+
+      " Has one argument
       if comma_pos !=# [0, 0]
         let save_mark = getpos("'a")
-        let save_register = @a
         normal! ma
         call cursor(open_pos)
         exec "normal! 1\<space>"
-        normal! "ad`a
-        let to_pipe = @a
+        normal! "pd`a
         call setpos("'a", save_mark)
-        let @a = save_register
         normal! "_dW
         if getline(".") == ""
           delete_
         endif
         normal! ==
+      else
+        normal! "pdib
       endif
 
-      " let closing_paren_lnr = searchpair('(', '', ')', 'Wn', 'SkipIt()') != 0
+      call setpos('.', cursor_origin)
 
-      " if closing_paren_lnr != 0
-      "   let first_arg_end = searchpairpos('(', '', ',', 'Wn', 'SkipIt()')
-      "   let save = getpos("'a")
+      exec "normal! I|>\<space>"
+      call append(line('.') - 1, split(@p, "\n"))
 
-      "   if first_arg_end != [0, 0]
-      "     " Multiple arguments
-      "   normal! lma
-      "   call cursor(first_arg_end)
-      "   normal! "ad`a
-      "   normal! "_dw
+      let @p = save_register
 
-      " else
-      "   " Single argument
-      "   normal! "adib
-      " endif
-
-      " normal! k
-      " call append(line('.'), @a)
-      " exec "normal! j==jI|>\<space>\<esc>"
-        " call setpos("'a", save)
-        " " if closing_paren_lnr != line('.')
-        " "   normal! J
-        " " endif
-        " call setpos('.', cursor_origin)
-        " normal! ^
+      let save_mark = getpos("'a")
+      normal! ma
+      call setpos('.', cursor_origin)
+      normal! =`a
+      call setpos("'a", save_mark)
     else
       return s:reset(cursor_origin)
     endif
