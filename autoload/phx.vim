@@ -57,53 +57,140 @@ function! phx#from_pipe() abort
   call setline(value_lnr, line)
 endfunction
 
+function! InRange(start, end)
+  let [start_lnr, start_col] = a:start
+  let [end_lnr, end_col] = a:end
+  let lnr = line('.')
+  let col = col('.')
+
+  if lnr > start_lnr && lnr < end_lnr | return 1 | endif
+  if lnr == start_lnr && lnr == end_lnr && col >= start_col && col <= end_col | return 1 | endif
+  if lnr == end_lnr && col <= end_col | return 1 | endif
+  return 0
+endfunction
+
+" function! s:SelectionText(sel) abort
+"   let [start, end] = [a:sel.start, a:sel.end]
+"   let lines = getbufline(a:sel.bufnr, start[1], end[1])
+"   let lines[-1] = strpart(lines[-1] . "\n", 0, end[2])
+"   let lines[0] = strpart(lines[0], start[2] - 1)
+"   if !get(a:sel, 'inclusive') && end[1] < v:maxcol
+"     let lines[-1] = substitute(lines[-1], '.$', '', '')
+"   endif
+"   return join(lines, "\n")
+" endfunction
+
+function! EmptyDelimiters(start, end)
+  let [start_lnr, start_col] = a:start
+  let [end_lnr, end_col] = a:end
+
+  if start_lnr == end_lnr && end_col == start_col + 1
+    return 1
+  else
+    return 0
+  endif
+endfunction
+
 function! SkipIt()
   return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%(String\|Comment\|CharList\|Map\|Tuple\)'
 endfunction
 
+function! s:reset(pos)
+  call setpos('.', a:pos)
+  echom "Nothing to pipe"
+  return 0
+endfunction
+
 function! phx#to_pipe() abort
+  let cursor_origin = getcurpos('.')
   let line = getline('.')
-  let msg = "Nothing to pipe"
 
   if !s:starts_with_pipe(line)
-    let cursor_origin = getcurpos('.')
-
     normal! ^
 
-    if search('(', '', line('.'), 0, "SkipIt()") != 0
-      let closing_paren_lnr = searchpair('(', '', ')', 'Wn', 'SkipIt()') != 0
+    let open_pos = searchpos('(', '', line('.'), 0, "SkipIt()") " Move cursor to this position
+    if open_pos != [0, 0] " This line starts with a function call
+      let close_pos = searchpairpos('(', '', ')', 'Wn', 'SkipIt()')
 
-      if closing_paren_lnr != 0
-        let first_arg_end = searchpairpos('(', '', ',', 'Wn', 'SkipIt()')
-        let save = @a
-
-        if first_arg_end != [0, 0]
-          " Multiple arguments
-          normal! lma
-          call cursor(first_arg_end)
-          normal! "ad`a
-          normal! "_dw
-        else
-          " Single argument
-          normal! "adib
-        endif
-
-        normal! k
-        call append(line('.'), @a)
-        exec "normal! j==jI|>\<space>\<esc>"
-        let @a = save
-        " if closing_paren_lnr != line('.')
-        "   normal! J
-        " endif
-        call setpos('.', cursor_origin)
-        normal! ^
+      " There are no args to unpipe
+      if EmptyDelimiters(open_pos, close_pos)
+        return s:reset(cursor_origin)
       endif
+
+      " Now we need to see if there are multiple arguments
+      " We need to match a `(` with a `,`.  Of course, ',' can belong to the
+      " first arg.  This isn't a problem for data structures since we can just
+      " skip the highlight groups.  It's tougher when the first arg is
+      " a function call with multiple arguments.  We need to see if there is
+      " another paren pair within the current parens.  If we do that, we can
+      " skip recursive checks for additional nested function calls by skipping
+      " everything between the nested parens.
+
+      exec "normal! 1\<space>"
+
+      let nested_open_pos = searchpos('(', 'W', close_pos[0], 500, 'SkipIt()')
+      let nested_close_pos = [0, 0]
+
+      if nested_open_pos != [0, 0] " First param has args
+        let nested_close_pos = searchpairpos('(', '', ')', '', "SkipIt()")
+        call cursor(open_pos)
+      endif
+
+      let to_pipe = ""
+
+      " Check if there is one argument
+      let F = {-> SkipIt() || (nested_open_pos !=# [0, 0] && InRange(nested_open_pos, nested_close_pos)) }
+      let comma_pos = searchpos(',', 'W', close_pos[0], 500, F)
+
+      if comma_pos !=# [0, 0]
+        let save_mark = getpos("'a")
+        let save_register = @a
+        normal! ma
+        call cursor(open_pos)
+        exec "normal! 1\<space>"
+        normal! "ad`a
+        let to_pipe = @a
+        call setpos("'a", save_mark)
+        let @a = save_register
+        normal! "_dW
+        if getline(".") == ""
+          delete_
+        endif
+        normal! ==
+      endif
+
+      " let closing_paren_lnr = searchpair('(', '', ')', 'Wn', 'SkipIt()') != 0
+
+      " if closing_paren_lnr != 0
+      "   let first_arg_end = searchpairpos('(', '', ',', 'Wn', 'SkipIt()')
+      "   let save = getpos("'a")
+
+      "   if first_arg_end != [0, 0]
+      "     " Multiple arguments
+      "   normal! lma
+      "   call cursor(first_arg_end)
+      "   normal! "ad`a
+      "   normal! "_dw
+
+      " else
+      "   " Single argument
+      "   normal! "adib
+      " endif
+
+      " normal! k
+      " call append(line('.'), @a)
+      " exec "normal! j==jI|>\<space>\<esc>"
+        " call setpos("'a", save)
+        " " if closing_paren_lnr != line('.')
+        " "   normal! J
+        " " endif
+        " call setpos('.', cursor_origin)
+        " normal! ^
     else
-      call setpos('.', cursor_origin)
-      echom msg
+      return s:reset(cursor_origin)
     endif
   else
-    echom msg
+    return s:reset(cursor_origin)
   endif
 endfunction
 
