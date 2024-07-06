@@ -18,11 +18,17 @@ function! elixir_ext#util#in_range(start, end) abort
   return 0
 endfunction
 
+function! elixir_ext#util#is_string_or_comment(line, col)
+  return s:syntax_name(a:line, a:col) =~ '\%(String\|Comment\|CharList\)'
+endfunction
+
 function! elixir_ext#util#empty_parens()
+  let cursor = getpos(".")
   let save_i = @i
   normal! "iyib
   let is_empty = empty(trim(@i))
   let @i = save_i
+  call setpos(".", cursor)
 
   return is_empty
 endfunction
@@ -39,4 +45,49 @@ function! elixir_ext#util#outer_term()
   if empty(terms) | return '' | endif
 
   return substitute(substitute(terms[0], 'elixir', '', ''), 'Delimiter', '', '')
+endfunction
+
+function! elixir_ext#util#get_map()
+  let save_i = @i
+  normal! "ida{X
+  let value = @i
+  let @i = save_i
+
+  return "%".value
+endfunction
+
+function! elixir_ext#util#get_tuple()
+  let save_i = @i
+  normal! "ida{
+  let value = @i
+  let @i = save_i
+
+  return value
+endfunction
+
+function! elixir_ext#util#get_list()
+  let save_i = @i
+  normal! "ida[
+  let value = @i
+  let @i = save_i
+
+  return map
+endfunction
+
+function! elixir_ext#util#get_string()
+  let save_i = @i
+  normal! "ida"
+  let value = @i
+  let @i = save_i
+
+  return value
+endfunction
+
+function! elixir_ext#util#get_charlist()
+  let save_i = @i
+  normal! "ida'
+  let value = @i
+  let @i = save_i
+
+  return map
 endfunction

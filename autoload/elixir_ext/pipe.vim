@@ -1,25 +1,25 @@
 if exists("g:autoloaded_elixir_ext_pipe")
-finish
+  finish
 endif
 let g:autoloaded_elixir_ext_pipe = 1
 
 function! elixir_ext#pipe#to_pipe() abort
-let cursor_origin = getcurpos('.')
-let line = getline('.')
+  let cursor_origin = getcurpos('.')
+  let line = getline('.')
 
-let open_pos = searchpos('(', 'b', line('.'), 0, "s:skip()") " Move cursor to this position
+  let open_pos = searchpos('(', 'b', line('.'), 0, "s:skip()") " Move cursor to this position
 
-if open_pos == [0, 0]
-  let open_pos = searchpos('(', '', line('.'), 0, "s:skip()") " Move cursor to this position
-endif
+  if open_pos == [0, 0]
+    let open_pos = searchpos('(', '', line('.'), 0, "s:skip()") " Move cursor to this position
+  endif
 
-let is_nested = searchpos('(', 'bn', line('.'), 0, "s:skip()") != [0, 0]
+  let is_nested = searchpos('(', 'bn', line('.'), 0, "s:skip()") != [0, 0]
 
-if !is_nested && s:starts_with_pipe(getline('.'))
-  call s:reset(cursor_origin)
+  if !is_nested && s:starts_with_pipe(getline('.'))
+    call s:reset(cursor_origin)
 
-  return
-endif
+    return
+  endif
 
   if open_pos != [0, 0]
     let close_pos = searchpairpos('(', '', ')', 'Wn', 's:skip()')
@@ -106,34 +106,70 @@ function! elixir_ext#pipe#from_pipe() abort
 
   " Find out if we're in a nested pipe
 
-  if 0
-  elseif s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
-    let value_lnr = line('.') - 1
-    let value = trim(prev_line)
-    let pipe_lnr = line('.')
-    let pipe_line = curr_line
-  elseif !s:starts_with_pipe(curr_line) && s:starts_with_pipe(next_line)
-    let value_lnr = line('.')
-    let value = trim(curr_line)
-    let pipe_lnr = line('.') + 1
-    let pipe_line = next_line
-  else
-    echom "Cannot unpipe"
-    return 0
-  end
+  let pipe_pos = searchpos('|>', 'Wn', line('.'), 'elixir_ext#util#is_string_or_comment()')
 
-  exec value_lnr."d_"
-  let line = substitute(pipe_line, '|> ', '', '')
-  normal! f(
+  if pipe_pos != [0, 0] 
+    let outer_term = elixir_ext#util#outer_term()
+    let code = ""
 
-  if !elixir_ext#util#empty_parens()
-    let addon = ', '
+    if outer_term ==# 'Map'
+      let code = elixir_ext#util#get_map()
+    elseif outer_term ==# 'List'
+      let code = elixir_ext#util#get_list()
+    elseif outer_term ==# 'String'
+      let code = elixir_ext#util#get_string()
+    elseif outer_term ==# 'Tuple'
+      let code = elixir_ext#util#get_tuple()
+    elseif outer_term ==# 'CharList'
+      let code = elixir_ext#util#get_charlist()
+    endif
+
+    if getline('.')[col('.') - 1] != "|"
+      normal! "_dt|
+    endif
+
+    normal! "_dWf(
+
+    if !elixir_ext#util#empty_parens()
+      let code = trim(code).", "
+    else
+      let code = trim(code)
+    endif
+
+    let save_p = @p
+    let @p = code
+    normal! "pp
+    let @p = save_p
+    return
   else
-    let addon = ''
+    if s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
+      let value_lnr = line('.') - 1
+      let value = trim(prev_line)
+      let pipe_lnr = line('.')
+      let pipe_line = curr_line
+    elseif !s:starts_with_pipe(curr_line) && s:starts_with_pipe(next_line)
+      let value_lnr = line('.')
+      let value = trim(curr_line)
+      let pipe_lnr = line('.') + 1
+      let pipe_line = next_line
+    else
+      echom "Cannot unpipe"
+      return 0
+    endif
+
+    exec value_lnr."d_"
+    let line = substitute(pipe_line, '|> ', '', '')
+    normal! f(
+
+    if !elixir_ext#util#empty_parens()
+      let addon = ', '
+    else
+      let addon = ''
+    endif
+
+    let line = substitute(line, '(', "(".value.addon, '')
+    call setline(value_lnr, line)
   endif
-
-  let line = substitute(line, '(', "(".value.addon, '')
-  call setline(value_lnr, line)
 endfunction
 
 function! s:skip()
