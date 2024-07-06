@@ -163,7 +163,7 @@ function! elixir_ext#related() abort
   endif
 endfunction
 
-" Pipe {{{1
+" :FromPipe and :ToPipe {{{1
 
 function! elixir_ext#to_pipe() abort
   let cursor_origin = getcurpos('.')
