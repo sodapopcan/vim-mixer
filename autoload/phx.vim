@@ -23,7 +23,7 @@ function! s:starts_with_pipe(line)
   return s:matches(trim(a:line), '^|>')
 endfunction
 
-function! phx#from_pipe() abort
+function! phx#unpipe() abort
   let curr_line = getline(".")
   let prev_line = getline(line('.') - 1)
   let next_line = getline(line('.') + 1)
@@ -47,7 +47,9 @@ function! phx#from_pipe() abort
   let line = s:sub(pipe_line, '|> ', '')
   normal! f(
 
-  if searchpair('(', '', ',', 'Wn', 'SkipIt()')
+  let close_paren = searchpairpos('(', '', ',', 'Wn', 'SkipIt()')
+
+  if !EmptyDelimiters([line('.'), col('.')], close_paren)
     let addon = ', '
   else
     let addon = ''
@@ -69,16 +71,13 @@ function! InRange(start, end)
   return 0
 endfunction
 
-" function! s:SelectionText(sel) abort
-"   let [start, end] = [a:sel.start, a:sel.end]
-"   let lines = getbufline(a:sel.bufnr, start[1], end[1])
-"   let lines[-1] = strpart(lines[-1] . "\n", 0, end[2])
-"   let lines[0] = strpart(lines[0], start[2] - 1)
-"   if !get(a:sel, 'inclusive') && end[1] < v:maxcol
-"     let lines[-1] = substitute(lines[-1], '.$', '', '')
-"   endif
-"   return join(lines, "\n")
-" endfunction
+function! SelectionText(start, end) abort
+  let lines = getbufline(bufnr('%'), a:start[0], a:end[0])
+  let lines[-1] = strpart(lines[-1] . "\n", 0, a:end[1])
+  let lines[0] = strpart(lines[0], a:start[1] - 1)
+
+  return join(lines, "\n")
+endfunction
 
 function! EmptyDelimiters(start, end)
   let [start_lnr, start_col] = a:start
@@ -261,8 +260,8 @@ function! phx#define_command() abort
     command! -buffer -nargs=0 R call phx#related()
   endif
 
-  if !s:command_exists("FromPipe")
-    command! -buffer -nargs=0 FromPipe call phx#from_pipe()
+  if !s:command_exists("Unpipe")
+    command! -buffer -nargs=0 Unpipe call phx#unpipe()
   endif
 
   if !s:command_exists("ToPipe")
