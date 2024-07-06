@@ -66,8 +66,14 @@ function! InRange(start, end)
   let col = col('.')
 
   if lnr > start_lnr && lnr < end_lnr | return 1 | endif
-  if lnr == start_lnr && lnr == end_lnr && col >= start_col && col <= end_col | return 1 | endif
+
+  if lnr == start_lnr && lnr == end_lnr
+    return col >= start_col && col <= end_col
+  endif
+
+  if lnr == start_lnr && col >= start_col | return 1 | endif
   if lnr == end_lnr && col <= end_col | return 1 | endif
+
   return 0
 endfunction
 
@@ -127,7 +133,7 @@ function! phx#to_pipe() abort
 
       exec "normal! 1\<space>"
 
-      let nested_open_pos = searchpos('(', 'W', close_pos[0], 500, 'SkipIt()')
+      let nested_open_pos = searchpos('(', 'W', close_pos[0], 0, 'SkipIt()')
       let nested_close_pos = [0, 0]
 
       if nested_open_pos != [0, 0] " First param has args
@@ -137,7 +143,7 @@ function! phx#to_pipe() abort
 
       " Check if there is one argument
       let F = {-> SkipIt() || (nested_open_pos !=# [0, 0] && InRange(nested_open_pos, nested_close_pos)) }
-      let comma_pos = searchpos(',', 'W', close_pos[0], 500, F)
+      let comma_pos = searchpos(',', 'W', close_pos[0], 0, F)
 
       let save_register = @p
 
