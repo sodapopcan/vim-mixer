@@ -49,49 +49,35 @@ function! s:outer_term()
   return substitute(substitute(terms[0], 'elixir', '', ''), 'Delimiter', '', '')
 endfunction
 
-function! s:get_map()
+function! s:get_term(cmd)
   let save_i = @i
-  normal! "ida{X
+  exec 'normal! "i'.a:cmd
   let value = @i
   let @i = save_i
+
+  return value
+endfunction
+
+function! s:get_map()
+  let value = s:get_term('da{X')
 
   return "%".value
 endfunction
 
 function! s:get_tuple()
-  let save_i = @i
-  normal! "ida{
-  let value = @i
-  let @i = save_i
-
-  return value
+  return s:get_term('da{')
 endfunction
 
 function! s:get_list()
-  let save_i = @i
-  normal! "ida[
-  let value = @i
-  let @i = save_i
-
-  return map
+  return ('da[')
 endfunction
 
 function! s:get_string()
-  let save_i = @i
-  normal! "ida"
-  let value = @i
-  let @i = save_i
-
-  return value
+  return ('ida"')
 endfunction
 
 function! s:get_charlist()
-  let save_i = @i
-  normal! "ida'
-  let value = @i
-  let @i = save_i
-
-  return map
+  return "da'"
 endfunction
 
 " Project {{{1
