@@ -69,15 +69,37 @@ function! s:get_tuple()
 endfunction
 
 function! s:get_list()
-  return ('da[')
+  return s:get_term('da[')
 endfunction
 
 function! s:get_string()
-  return ('ida"')
+  return s:get_term('ida"')
 endfunction
 
 function! s:get_charlist()
-  return "da'"
+  return s:get_term("da'")
+endfunction
+
+function! s:get_word()
+  return s:get_term("daW")
+endfunction
+
+function! s:get_outer_term()
+  let outer_term = s:outer_term()
+
+  if outer_term ==# 'Map'
+    return s:get_map()
+  elseif outer_term ==# 'List'
+    return s:get_list()
+  elseif outer_term ==# 'String'
+    return s:get_string()
+  elseif outer_term ==# 'Tuple'
+    return s:get_tuple()
+  elseif outer_term ==# 'CharList'
+    return s:get_charlist()
+  else
+    return s:get_word()
+  endif
 endfunction
 
 " Project  {{{1
@@ -260,20 +282,9 @@ function! elixir_ext#from_pipe() abort
   let pipe_pos = searchpos('|>', 'Wn', line('.'), 's:is_string_or_comment()')
 
   if pipe_pos != [0, 0] 
-    let outer_term = s:outer_term()
-    let code = ""
-
-    if outer_term ==# 'Map'
-      let code = s:get_map()
-    elseif outer_term ==# 'List'
-      let code = s:get_list()
-    elseif outer_term ==# 'String'
-      let code = s:get_string()
-    elseif outer_term ==# 'Tuple'
-      let code = s:get_tuple()
-    elseif outer_term ==# 'CharList'
-      let code = s:get_charlist()
-    endif
+    " In nested pipe.
+    " In this case we are always going to inline-pipe.
+    let code = s:get_outer_term()
 
     if getline('.')[col('.') - 1] != "|"
       normal! "_dt|
@@ -293,6 +304,7 @@ function! elixir_ext#from_pipe() abort
     let @p = save_p
     return
   else
+    " Pipe on each line
     if s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
       let value_lnr = line('.') - 1
       let value = trim(prev_line)
