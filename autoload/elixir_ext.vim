@@ -80,7 +80,7 @@ function! s:get_charlist()
   return "da'"
 endfunction
 
-" Project {{{1
+" Project  {{{1
 
 function! s:get_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
