@@ -1,0 +1,17 @@
+ElixirExt                       Extensions for *elixir*
+
+
+INTRODUCTION                                *elixir-ext*
+
+Provides extra utilities for working with Elixir outside of elixir.vim.
+
+COMMANDS                                    *elixir-ext-commands*
+
+                                            *:ToPipe* *elixir-ext-:ToPipe*
+:ToPipe             Converts a function call to a pipe.
+
+                                            *:FromPipe* *elixir-ext-:FromPipe*
+:FromPipe           Moves a piped argument into function parens.
+
+
+  vim:tw=78:et:ft=help:norl:

@@ -1,29 +1,25 @@
-function! elixir_ext#pipe#define_commands() abort
-  if exists(":ToPipe") != 2
-    command! -buffer -nargs=0 ToPipe call elixir_ext#pipe#to_pipe()
-  endif
-
-  if exists(":FromPipe") != 2
-    command! -buffer -nargs=0 FromPipe call elixir_ext#pipe#from_pipe()
-  endif
-endfunction
+if exists("g:autoloaded_elixir_ext_pipe")
+finish
+endif
+let g:autoloaded_elixir_ext_pipe = 1
 
 function! elixir_ext#pipe#to_pipe() abort
-  let cursor_origin = getcurpos('.')
-  let line = getline('.')
+let cursor_origin = getcurpos('.')
+let line = getline('.')
 
-  let open_pos = searchpos('(', 'b', line('.'), 0, "s:skip()") " Move cursor to this position
+let open_pos = searchpos('(', 'b', line('.'), 0, "s:skip()") " Move cursor to this position
 
-  if open_pos == [0, 0]
-    let open_pos = searchpos('(', '', line('.'), 0, "s:skip()") " Move cursor to this position
-  endif
+if open_pos == [0, 0]
+  let open_pos = searchpos('(', '', line('.'), 0, "s:skip()") " Move cursor to this position
+endif
 
-  let is_nested = searchpos('(', 'bn', line('.'), 0, "s:skip()") != [0, 0]
+let is_nested = searchpos('(', 'bn', line('.'), 0, "s:skip()") != [0, 0]
 
-  if !is_nested && s:starts_with_pipe(getline('.'))
-    call s:reset(cursor_origin)
-    return
-  endif
+if !is_nested && s:starts_with_pipe(getline('.'))
+  call s:reset(cursor_origin)
+
+  return
+endif
 
   if open_pos != [0, 0]
     let close_pos = searchpairpos('(', '', ')', 'Wn', 's:skip()')
