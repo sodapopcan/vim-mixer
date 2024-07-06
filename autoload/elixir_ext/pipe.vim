@@ -25,7 +25,7 @@ endif
     let close_pos = searchpairpos('(', '', ')', 'Wn', 's:skip()')
 
     " There are no args to unpipe
-    if elixir_ext#util#empty_delimiters(open_pos, close_pos)
+    if elixir_ext#util#empty_parens()
       return s:reset(cursor_origin)
     endif
 
@@ -106,6 +106,7 @@ function! elixir_ext#pipe#from_pipe() abort
 
   " Find out if we're in a nested pipe
 
+  if 0
   elseif s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
     let value_lnr = line('.') - 1
     let value = trim(prev_line)
@@ -125,9 +126,7 @@ function! elixir_ext#pipe#from_pipe() abort
   let line = substitute(pipe_line, '|> ', '', '')
   normal! f(
 
-  let close_paren = searchpairpos('(', '', ',', 'Wn', 's:skip()')
-
-  if !elixir_ext#util#empty_delimiters([line('.'), col('.')], close_paren)
+  if !elixir_ext#util#empty_parens()
     let addon = ', '
   else
     let addon = ''

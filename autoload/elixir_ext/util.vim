@@ -18,13 +18,25 @@ function! elixir_ext#util#in_range(start, end) abort
   return 0
 endfunction
 
-function! elixir_ext#util#empty_delimiters(start, end)
-  let [start_lnr, start_col] = a:start
-  let [end_lnr, end_col] = a:end
+function! elixir_ext#util#empty_parens()
+  let save_i = @i
+  normal! "iyib
+  let is_empty = empty(trim(@i))
+  let @i = save_i
 
-  if start_lnr == end_lnr && end_col == start_col + 1
-    return 1
-  else
-    return 0
-  endif
+  return is_empty
+endfunction
+
+function! elixir_ext#util#cursor_term()
+  return synIDattr(synID(line('.'), col('.'), 1), "name")
+endfunction
+
+function! elixir_ext#util#outer_term()
+  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+
+  let terms = filter(terms, 'v:val !=# "elixirBlock"')
+
+  if empty(terms) | return '' | endif
+
+  return substitute(substitute(terms[0], 'elixir', '', ''), 'Delimiter', '', '')
 endfunction
