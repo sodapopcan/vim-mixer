@@ -8,20 +8,33 @@ function! s:in_range(start, end) abort
   let lnr = line('.')
   let col = col('.')
 
-  if lnr > start_lnr && lnr < end_lnr | return 1 | endif
+  if lnr > start_lnr && lnr < end_lnr
+    return 1
+  endif
 
   if lnr == start_lnr && lnr == end_lnr
     return col >= start_col && col <= end_col
   endif
 
-  if lnr == start_lnr && col >= start_col | return 1 | endif
-  if lnr == end_lnr && col <= end_col | return 1 | endif
+  if lnr == start_lnr && col >= start_col
+    return 1
+  endif
+
+  if lnr == end_lnr && col <= end_col
+    return 1
+  endif
 
   return 0
 endfunction
 
+" Syntax Grammar {{{1
+
 function! s:is_string_or_comment(line, col)
   return s:syntax_name(a:line, a:col) =~ '\%(String\|Comment\|CharList\)'
+endfunction
+
+function! s:starts_with_pipe(line)
+  return match(trim(a:line), '^|>') >= 0
 endfunction
 
 function! s:empty_parens()
@@ -58,47 +71,23 @@ function! s:get_term(cmd)
   return value
 endfunction
 
-function! s:get_map()
-  let value = s:get_term('da{X')
-
-  return "%".value
-endfunction
-
-function! s:get_tuple()
-  return s:get_term('da{')
-endfunction
-
-function! s:get_list()
-  return s:get_term('da[')
-endfunction
-
-function! s:get_string()
-  return s:get_term('ida"')
-endfunction
-
-function! s:get_charlist()
-  return s:get_term("da'")
-endfunction
-
-function! s:get_word()
-  return s:get_term("daW")
-endfunction
-
 function! s:get_outer_term()
   let outer_term = s:outer_term()
 
   if outer_term ==# 'Map'
-    return s:get_map()
+    let value = s:get_term('da{X')
+
+    return "%".value
   elseif outer_term ==# 'List'
-    return s:get_list()
+    return s:get_term('da[')
   elseif outer_term ==# 'String'
-    return s:get_string()
+    return s:get_term('ida"')
   elseif outer_term ==# 'Tuple'
-    return s:get_tuple()
+    return s:get_term('da{')
   elseif outer_term ==# 'CharList'
-    return s:get_charlist()
+    return s:get_term("da'")
   else
-    return s:get_word()
+    return s:get_term("daW")
   endif
 endfunction
 
@@ -337,10 +326,6 @@ endfunction
 
 function! s:skip()
   return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%(String\|Comment\|CharList\|List\|Map\|Tuple\)'
-endfunction
-
-function! s:starts_with_pipe(line)
-  return match(trim(a:line), '^|>') >= 0
 endfunction
 
 function! s:reset(pos)
