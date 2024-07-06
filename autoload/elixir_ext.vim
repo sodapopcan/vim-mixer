@@ -1,9 +1,174 @@
-if exists("g:autoloaded_elixir_ext_pipe")
+" Utility {{{1
+
+" Check if cursor in range of two positions.
+" Positions are in the form of [line, col].
+function! s:in_range(start, end) abort
+  let [start_lnr, start_col] = a:start
+  let [end_lnr, end_col] = a:end
+  let lnr = line('.')
+  let col = col('.')
+
+  if lnr > start_lnr && lnr < end_lnr | return 1 | endif
+
+  if lnr == start_lnr && lnr == end_lnr
+    return col >= start_col && col <= end_col
+  endif
+
+  if lnr == start_lnr && col >= start_col | return 1 | endif
+  if lnr == end_lnr && col <= end_col | return 1 | endif
+
+  return 0
+endfunction
+
+function! s:is_string_or_comment(line, col)
+  return s:syntax_name(a:line, a:col) =~ '\%(String\|Comment\|CharList\)'
+endfunction
+
+function! s:empty_parens()
+  let cursor = getpos(".")
+  let save_i = @i
+  normal! "iyib
+  let is_empty = empty(trim(@i))
+  let @i = save_i
+  call setpos(".", cursor)
+
+  return is_empty
+endfunction
+
+function! s:cursor_term()
+  return synIDattr(synID(line('.'), col('.'), 1), "name")
+endfunction
+
+function! s:outer_term()
+  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+
+  let terms = filter(terms, 'v:val !=# "elixirBlock"')
+
+  if empty(terms) | return '' | endif
+
+  return substitute(substitute(terms[0], 'elixir', '', ''), 'Delimiter', '', '')
+endfunction
+
+function! s:get_map()
+  let save_i = @i
+  normal! "ida{X
+  let value = @i
+  let @i = save_i
+
+  return "%".value
+endfunction
+
+function! s:get_tuple()
+  let save_i = @i
+  normal! "ida{
+  let value = @i
+  let @i = save_i
+
+  return value
+endfunction
+
+function! s:get_list()
+  let save_i = @i
+  normal! "ida[
+  let value = @i
+  let @i = save_i
+
+  return map
+endfunction
+
+function! s:get_string()
+  let save_i = @i
+  normal! "ida"
+  let value = @i
+  let @i = save_i
+
+  return value
+endfunction
+
+function! s:get_charlist()
+  let save_i = @i
+  normal! "ida'
+  let value = @i
+  let @i = save_i
+
+  return map
+endfunction
+
+" Project {{{1
+
+function! s:get_mix_project() abort
+  let mix_file = findfile("mix.exs", ".;")
+
+  if mix_file == ""
+    return {"root": ""}
+  endif
+
+  if mix_file == "mix.exs"
+    let project_root = getcwd()
+  else
+    let project_root = getcwd()
+  endif
+
+  return {
+        \ "root": project_root
+        \ }
+endfunction
+
+let b:project = s:get_mix_project()
+let b:impl_lnr = 0
+let b:tpl_lnr = 0
+
+if b:project.root ==# ""
+  echom "Not in a mix project"
   finish
 endif
-let g:autoloaded_elixir_ext_pipe = 1
 
-function! elixir_ext#pipe#to_pipe() abort
+function! s:in_live_view() abort
+  return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
+endfunction
+
+let s:render_regex = '^\s\+def render('
+
+function! s:in_render() abort
+  return match(getline('.'), s:render_regex) != -1 || search(s:render_regex, 'bWn')
+endfunction
+
+function! s:has_render() abort
+  return search(s:render_regex, 'wn')
+endfunction
+
+function! elixir_ext#related() abort
+  if s:has_render()
+    if s:in_live_view()
+      if s:in_render()
+        let b:tpl_lnr = line('.')
+        if b:impl_lnr
+          exec ":".b:impl_lnr
+        else
+          call search('^\s\+def mount(')
+        endif
+      else
+        let b:impl_lnr = line('.')
+        if b:tpl_lnr
+          exec ":".b:tpl_lnr
+        else
+          call search('^\s\+def render(')
+        endif
+      endif
+    endif
+  else
+    if &ft ==# 'elixir'
+      let basename = substitute(expand("%:p"), '\.ex$', '.html.heex', '')
+    else
+      let basename = substitute(expand("%:p"), '\.html.heex$', '.ex', '')
+    endif
+    exec "e ".basename
+  endif
+endfunction
+
+" Pipe {{{1
+
+function! elixir_ext#to_pipe() abort
   let cursor_origin = getcurpos('.')
   let line = getline('.')
 
@@ -25,7 +190,7 @@ function! elixir_ext#pipe#to_pipe() abort
     let close_pos = searchpairpos('(', '', ')', 'Wn', 's:skip()')
 
     " There are no args to unpipe
-    if elixir_ext#util#empty_parens()
+    if s:empty_parens()
       return s:reset(cursor_origin)
     endif
 
@@ -49,7 +214,7 @@ function! elixir_ext#pipe#to_pipe() abort
     endif
 
     " Check if there is one argument
-    let F = {-> s:skip() || (nested_open_pos !=# [0, 0] && elixir_ext#util#in_range(nested_open_pos, nested_close_pos)) }
+    let F = {-> s:skip() || (nested_open_pos !=# [0, 0] && s:in_range(nested_open_pos, nested_close_pos)) }
     let comma_pos = searchpos(',', 'W', close_pos[0], 0, F)
 
     let save_register = @p
@@ -99,29 +264,29 @@ function! elixir_ext#pipe#to_pipe() abort
   endif
 endfunction
 
-function! elixir_ext#pipe#from_pipe() abort
+function! elixir_ext#from_pipe() abort
   let curr_line = getline(".")
   let prev_line = getline(line('.') - 1)
   let next_line = getline(line('.') + 1)
 
   " Find out if we're in a nested pipe
 
-  let pipe_pos = searchpos('|>', 'Wn', line('.'), 'elixir_ext#util#is_string_or_comment()')
+  let pipe_pos = searchpos('|>', 'Wn', line('.'), 's:is_string_or_comment()')
 
   if pipe_pos != [0, 0] 
-    let outer_term = elixir_ext#util#outer_term()
+    let outer_term = s:outer_term()
     let code = ""
 
     if outer_term ==# 'Map'
-      let code = elixir_ext#util#get_map()
+      let code = s:get_map()
     elseif outer_term ==# 'List'
-      let code = elixir_ext#util#get_list()
+      let code = s:get_list()
     elseif outer_term ==# 'String'
-      let code = elixir_ext#util#get_string()
+      let code = s:get_string()
     elseif outer_term ==# 'Tuple'
-      let code = elixir_ext#util#get_tuple()
+      let code = s:get_tuple()
     elseif outer_term ==# 'CharList'
-      let code = elixir_ext#util#get_charlist()
+      let code = s:get_charlist()
     endif
 
     if getline('.')[col('.') - 1] != "|"
@@ -130,7 +295,7 @@ function! elixir_ext#pipe#from_pipe() abort
 
     normal! "_dWf(
 
-    if !elixir_ext#util#empty_parens()
+    if !s:empty_parens()
       let code = trim(code).", "
     else
       let code = trim(code)
@@ -161,7 +326,7 @@ function! elixir_ext#pipe#from_pipe() abort
     let line = substitute(pipe_line, '|> ', '', '')
     normal! f(
 
-    if !elixir_ext#util#empty_parens()
+    if !s:empty_parens()
       let addon = ', '
     else
       let addon = ''

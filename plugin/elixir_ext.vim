@@ -9,14 +9,14 @@ endfunction
 
 function! elixir_ext#define_commands() abort
   if !s:command_exists("R")
-    command! -buffer -nargs=0 R call elixir_ext#phx#related()
+    command! -buffer -nargs=0 R call elixir_ext#related()
   endif
 
   if !s:command_exists("ToPipe")
-    command! -buffer -nargs=0 ToPipe call elixir_ext#pipe#to_pipe()
+    command! -buffer -nargs=0 ToPipe call elixir_ext#to_pipe()
   endif
 
   if !s:command_exists("FromPipe")
-    command! -buffer -nargs=0 FromPipe call elixir_ext#pipe#from_pipe()
+    command! -buffer -nargs=0 FromPipe call elixir_ext#from_pipe()
   endif
 endfunction
