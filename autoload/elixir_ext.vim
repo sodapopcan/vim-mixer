@@ -314,6 +314,7 @@ function! elixir_ext#from_pipe() abort
       delete_
     else
       echom "Cannot unpipe"
+
       return 0
     endif
 
@@ -349,5 +350,6 @@ endfunction
 function! s:reset(pos)
   call setpos('.', a:pos)
   echom "Nothing to pipe"
+
   return 0
 endfunction
