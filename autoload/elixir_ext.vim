@@ -153,7 +153,7 @@ function! s:init_mix_project() abort
         \ "name": project_name
         \ }
 
-if g:elixir_ext_define_projections
+  if g:elixir_ext_define_projections
     let g:projectionist_heuristics["mix.exs"] = {
           \   'lib/'.b:mix_project.name.'/*.ex': {
           \     'type': 'domain',
