@@ -75,7 +75,13 @@ function! s:get_outer_term()
   let outer_term = s:outer_term()
 
   if outer_term ==# 'Map'
-    let value = s:get_term('da{X')
+    let value = s:get_term('da{')
+
+    if getline('.')[col('.') - 1] == "%"
+      normal! x
+    else
+      normal! X
+    endif
 
     return "%".value
   elseif outer_term ==# 'List'
@@ -295,22 +301,23 @@ function! elixir_ext#from_pipe() abort
   else
     " Pipe on each line
     if s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
-      let value_lnr = line('.') - 1
-      let value = trim(prev_line)
       let pipe_lnr = line('.')
-      let pipe_line = curr_line
+      let term_lnr = line('.') - 1
+      exec term_lnr
+      let term = s:get_outer_term()
+      delete_
     elseif !s:starts_with_pipe(curr_line) && s:starts_with_pipe(next_line)
-      let value_lnr = line('.')
-      let value = trim(curr_line)
+      let term_lnr = line('.')
       let pipe_lnr = line('.') + 1
-      let pipe_line = next_line
+      exec term_lnr
+      let term = s:get_outer_term()
+      delete_
     else
       echom "Cannot unpipe"
       return 0
     endif
 
-    exec value_lnr."d_"
-    let line = substitute(pipe_line, '|> ', '', '')
+    let line = substitute(getline('.'), '|> ', '', '')
     normal! f(
 
     if !s:empty_parens()
@@ -319,8 +326,19 @@ function! elixir_ext#from_pipe() abort
       let addon = ''
     endif
 
-    let line = substitute(line, '(', "(".value.addon, '')
-    call setline(value_lnr, line)
+    let line_parts = split(line, "(")
+    let head = line_parts[0]
+    let tail_str = join(line_parts[1:], '(')
+    let is_multiline = len(split(term, "\n")) > 1
+    delete_
+    let term_len = len(split(term, "\n"))
+    let joiner = term_len > 1 ? "\n" : ""
+    let addon = term_len > 1 ? "," : ", "
+    let value = join(add([head."(", term.addon], tail_str), joiner)
+    let value = split(value, "\n")
+
+    call append(line('.'), value)
+    delete_
   endif
 endfunction
 
