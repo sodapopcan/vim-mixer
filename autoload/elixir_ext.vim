@@ -8,7 +8,7 @@ endfunction
 
 " Utility {{{1
 
-" Check if cursor in range of two positions.
+" Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
 function! s:in_range(start, end) abort
   let [start_lnr, start_col] = a:start
