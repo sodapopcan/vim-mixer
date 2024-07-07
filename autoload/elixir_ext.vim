@@ -109,6 +109,11 @@ function! s:get_mix_project() abort
     return {"root": ""}
   endif
 
+  echom mix_file
+  let contents = join(readfile(mix_file), "\n")
+  let app_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z_]\+\ze,')
+  echom "app_name=".app_name
+
   if mix_file == "mix.exs"
     let project_root = getcwd()
   else
@@ -117,6 +122,7 @@ function! s:get_mix_project() abort
 
   return {
         \ "root": project_root
+        \ "name": app_name
         \ }
 endfunction
 
