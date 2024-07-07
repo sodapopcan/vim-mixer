@@ -38,6 +38,8 @@ endfunction
 function! s:command_exists(cmd)
   return exists(":".a:cmd) == 2
 endfunction
+
+
 " Commands {{{1
 
 function! s:define_commands() abort
@@ -126,6 +128,7 @@ function! s:get_outer_term()
     return s:get_term("daW")
   endif
 endfunction
+
 
 " Mix Project  {{{1
 
@@ -234,6 +237,7 @@ function! s:related() abort
     exec "e ".basename
   endif
 endfunction
+
 
 " :FromPipe and :ToPipe {{{1
 
