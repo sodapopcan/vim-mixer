@@ -19,6 +19,17 @@ INTRODUCTION                                *elixir-ext-introduction*
 
 Provides extra utilities for working with Elixir outside of elixir.vim.
 
+This plugin currently exists for me to work on Elixir stuff in one place.  In
+the future, some of this functionality may get broken out into its own plugins
+and perhaps some will get merged into elixir.vim.
+
+This plugin makes no guarantees around NeoVim compatibility.  Reasonable
+patches will be accepted to improve this situation but some of elixir-ext's
+functionality depends on elixir.vim which is an unnecessary plugin for NeoVim.
+NeoVim users are encouraged to checkout elixir-tools.nvim which has many of
+the same features available here.
+
+
 EDITING                                     *elixir-ext-editing*
 
                                             *elixir-ext-pipes*
