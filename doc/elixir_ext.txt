@@ -1,7 +1,12 @@
 *elixir-ext.txt*  Extras and extensions for *elixir*
 
+TABLE OF CONTENTS                           *elixir-ext*
 
-INTRODUCTION                                *elixir-ext*
+INTRODUCTION................................*elixir-ext-introduction*
+COMMANDS....................................*elixir-ext-commands*
+PHOENIX.....................................*elixir-ext-phoenix*
+
+INTRODUCTION                                *elixir-ext-introduction*
 
 Provides extra utilities for working with Elixir outside of elixir.vim.
 

@@ -27,6 +27,33 @@ function! s:in_range(start, end) abort
   return 0
 endfunction
 
+function! s:command_exists(cmd)
+  return exists(":".a:cmd) == 2
+endfunction
+
+" Init {{{1
+
+function! elixir_ext#init() abort
+  call elixir_ext#define_commands()
+  call elixir_ext#init_mix_project()
+endfunction
+
+" Commands {{{1
+
+function! elixir_ext#define_commands() abort
+  if !s:command_exists("R")
+    command! -buffer -nargs=0 R call elixir_ext#related()
+  endif
+
+  if !s:command_exists("ToPipe")
+    command! -buffer -nargs=0 ToPipe call elixir_ext#to_pipe()
+  endif
+
+  if !s:command_exists("FromPipe")
+    command! -buffer -nargs=0 FromPipe call elixir_ext#from_pipe()
+  endif
+endfunction
+
 " Syntax Grammar {{{1
 
 function! s:is_string_or_comment(line, col)
@@ -92,9 +119,9 @@ function! s:get_outer_term()
     return s:get_term('da{')
   elseif outer_term ==# 'CharList'
     return s:get_term("da'")
-  " elseif outer_term ==# 'Sigil'
-  "   normal! F~
-        "\~\%([a-z]\|[A-Z]\+\)\%([\[{('"|/<]\).*\%([\]})'"|/>]\)"
+    " elseif outer_term ==# 'Sigil'
+    "   normal! F~
+    "\~\%([a-z]\|[A-Z]\+\)\%([\[{('"|/<]\).*\%([\]})'"|/>]\)"
   else
     return s:get_term("daW")
   endif
@@ -102,38 +129,64 @@ endfunction
 
 " Mix Project  {{{1
 
-function! s:get_mix_project() abort
+function! elixir_ext#init_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
 
   if mix_file == ""
-    return {"root": ""}
+    return 0
   endif
+
+  let b:mix_project = 0
+  let b:impl_lnr = 0
+  let b:tpl_lnr = 0
+  let project_root = getcwd()
 
   try
     let contents = join(readfile(mix_file), "\n")
-    let app_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze,')
+    let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze,')
   catch
-    let app_name = ""
+    let project_name = ""
   endtry
 
-  if mix_file == "mix.exs"
-    let project_root = getcwd()
-  endif
-
-  return {
+  let b:mix_project = {
         \ "root": project_root,
-        \ "name": app_name
+        \ "name": project_name
         \ }
+
+if g:elixir_ext_define_projections
+    let g:projectionist_heuristics["mix.exs"] = {
+          \   'lib/'.b:mix_project.name.'/*.ex': {
+          \     'type': 'domain',
+          \     'alternate': 'test/'.b:mix_project.name.'/{}_test.exs',
+          \     'template': ['defmodule {camelcase|capitalize|dot} do', 'end']
+          \   },
+          \   'lib/'.b:mix_project.name.'_web/*.ex': {
+          \     'type': 'web',
+          \     'alternate': 'test/'.b:mix_project.name.'_web/{}_test.exs'
+          \   },
+          \   'test/'.b:mix_project.name.'/*_test.exs': {
+          \     'type': 'test',
+          \     'alternate': 'lib/'.b:mix_project.name.'/{}.ex',
+          \     'template': ['defmodule {camelcase|capitalize|dot}Test do', '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}', 'end'],
+          \   },
+          \   'mix.exs': {
+          \     'type': 'mix',
+          \     'alternate': 'mix.lock',
+          \     'dispatch': 'mix deps.get'
+          \   },
+          \   'mix.lock': {
+          \     'type': 'lock',
+          \     'alternate': 'mix.exs',
+          \     'dispatch': 'mix deps.get'
+          \   },
+          \   'config/*.exs': {
+          \     'type': 'config',
+          \     'related': 'config/config.exs'
+          \   },
+          \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
+          \ }
+  endif
 endfunction
-
-let b:project = s:get_mix_project()
-let b:impl_lnr = 0
-let b:tpl_lnr = 0
-
-if b:project.root ==# ""
-  echom "Not in a mix project"
-  finish
-endif
 
 function! s:in_live_view() abort
   return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
@@ -150,6 +203,10 @@ function! s:has_render() abort
 endfunction
 
 function! elixir_ext#related() abort
+  if !exists("b:mix_project")
+    return
+  endif
+
   if s:has_render()
     if s:in_live_view()
       if s:in_render()

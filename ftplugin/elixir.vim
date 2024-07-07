@@ -1,1 +1,1 @@
-call elixir_ext#define_commands()
+call elixir_ext#init()
