@@ -1,11 +1,3 @@
-" Init {{{1
-
-function! elixir_ext#init() abort
-  call s:init_mix_project()
-  call s:define_commands()
-endfunction
-
-
 " Utility {{{1
 
 " Check if cursor is in range of two positions.
@@ -40,9 +32,11 @@ function! s:command_exists(cmd)
 endfunction
 
 
-" Commands {{{1
+" Init {{{1
 
-function! s:define_commands() abort
+function! elixir_ext#init() abort
+  call s:init_mix_project()
+
   if !s:command_exists("R")
     command! -buffer -nargs=0 R call s:related()
   endif
@@ -59,6 +53,7 @@ function! s:define_commands() abort
     command! -buffer -complete=custom,MixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 endfunction
+
 
 " Syntax Grammar {{{1
 
@@ -138,6 +133,10 @@ endfunction
 
 function! s:root(path) abort
   return b:mix_project.root.'/'.a:path
+endfunction
+
+function! s:is_mix_project() abort
+  return exists("b:mix_project")
 endfunction
 
 function! s:init_mix_project() abort
