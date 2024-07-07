@@ -54,6 +54,10 @@ function! s:define_commands() abort
   if !s:command_exists("FromPipe")
     command! -buffer -nargs=0 FromPipe call s:from_pipe()
   endif
+
+  if !s:command_exists("Mix")
+    command! -buffer -nargs=* Mix call s:Mix(<f-args>)
+  endif
 endfunction
 
 " Syntax Grammar {{{1
@@ -190,6 +194,20 @@ function! s:init_mix_project() abort
           \ }
   endif
 endfunction
+
+
+" Mix command
+
+function! s:Mix(...) abort
+  if s:command_exists("Dispatch")
+    exec "Dispatch mix ".join(a:000, " ")
+  else
+    call system("mix ".join(a:000, " "))
+  endif
+endfunction
+
+
+" Phoenix {{{1
 
 function! s:in_live_view() abort
   return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
