@@ -320,7 +320,6 @@ function! elixir_ext#from_pipe() abort
       let pipe_lnr = line('.') + 1
       exec term_lnr
       let term = s:get_outer_term()
-      delete_
     else
       echom "Cannot unpipe"
 
@@ -339,15 +338,21 @@ function! elixir_ext#from_pipe() abort
     let line_parts = split(line, "(")
     let head = line_parts[0]
     let tail_str = join(line_parts[1:], '(')
-    let is_multiline = len(split(term, "\n")) > 1
-    delete_
+    let term_line_count = len(split(term, "\n"))
     let term_len = len(split(term, "\n"))
     let joiner = term_len > 1 ? "\n" : ""
-    let addon = term_len > 1 ? "," : ", "
+    if s:empty_parens()
+      let addon = ""
+    else
+      let addon = term_len > 1 ? "," : ", "
+    endif
     let value = split(join(add([head."(", term.addon], tail_str), joiner), "\n")
 
     call append(line('.'), value)
     delete_
+    if term_line_count > 1
+      exec "normal! ".(term_line_count + 1)."=j"
+    endif
   endif
 endfunction
 
