@@ -12,9 +12,9 @@ NAVIGATION..................................|elixir-ext-navigation|
 MIX.........................................|elixir-ext-mix|
 PHOENIX.....................................|elixir-ext-phoenix|
 COMMANDS....................................|elixir-ext-commands|
- * Mix......................................|elixir-ext-navigation-commands|
- * Editing..................................|elixir-ext-navigation-commands|
- * Navigation...............................|elixir-ext-navigation-commands|
+ * Mix......................................|elixir-ext-commands-mix|
+ * Editing..................................|elixir-ext-commands-editing|
+ * Navigation...............................|elixir-ext-commands-navigation|
 
 
 INTRODUCTION                                *elixir-ext-introduction*
@@ -77,7 +77,8 @@ PHOENIX                                     *elixir-ext-phoenix*
 
 COMMANDS                                    *elixir-ext-commands*
 
-                                            *elixir-ext-commands-mix*
+Mix                                         *elixir-ext-commands-mix*
+
 :Mix                Run a mix command.  Uses |dispatch| if available.
 
                     Completion is available for tasks whose packages follow
@@ -98,15 +99,7 @@ COMMANDS                                    *elixir-ext-commands*
 <
                     PRs for other libraries are welcome!
 
-
-                                            *:Emigration* *elixir-ext-:Emigration*
-:Emigration         Edit a migration file.
-
-                    Without arguments, it will navigate to the most recent
-                    migration.
-
-                    Support autocompletion.
-
+Editing                                     *elixir-ext-commands-editing*
 
                                             *:FromPipe* *elixir-ext-:FromPipe*
 :FromPipe[!]        Moves a piped argument into function parens.
@@ -134,5 +127,15 @@ COMMANDS                                    *elixir-ext-commands*
                     even if you use the bang version.
 
                     See *elixir-ext-pipes* for more info.
+
+Navigation                                  *elixir-ext-commands-navigation*
+
+                                            *:Emigration* *elixir-ext-:Emigration*
+:Emigration         Edit a migration file.
+
+                    Without arguments, it will navigate to the most recent
+                    migration.
+
+                    Support autocompletion.
 
   vim:tw=78:et:ft=help:norl:
