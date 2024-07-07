@@ -1,3 +1,11 @@
+" Init {{{1
+
+function! elixir_ext#init() abort
+  call s:define_commands()
+  call s:init_mix_project()
+endfunction
+
+
 " Utility {{{1
 
 " Check if cursor in range of two positions.
@@ -30,14 +38,6 @@ endfunction
 function! s:command_exists(cmd)
   return exists(":".a:cmd) == 2
 endfunction
-
-" Init {{{1
-
-function! elixir_ext#init() abort
-  call s:define_commands()
-  call s:init_mix_project()
-endfunction
-
 " Commands {{{1
 
 function! s:define_commands() abort
