@@ -335,8 +335,7 @@ function! elixir_ext#from_pipe() abort
     let term_len = len(split(term, "\n"))
     let joiner = term_len > 1 ? "\n" : ""
     let addon = term_len > 1 ? "," : ", "
-    let value = join(add([head."(", term.addon], tail_str), joiner)
-    let value = split(value, "\n")
+    let value = split(join(add([head."(", term.addon], tail_str), joiner), "\n")
 
     call append(line('.'), value)
     delete_
