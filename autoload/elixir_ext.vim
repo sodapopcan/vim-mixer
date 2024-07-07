@@ -92,6 +92,9 @@ function! s:get_outer_term()
     return s:get_term('da{')
   elseif outer_term ==# 'CharList'
     return s:get_term("da'")
+  " elseif outer_term ==# 'Sigil'
+  "   normal! F~
+        "\~\%([a-z]\|[A-Z]\+\)\%([\[{('"|/<]\).*\%([\]})'"|/>]\)"
   else
     return s:get_term("daW")
   endif
