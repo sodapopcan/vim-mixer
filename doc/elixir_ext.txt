@@ -75,16 +75,23 @@ COMMANDS                                    *elixir-ext-commands*
                       :Generate migration add_name_to_users
                       :Generate live Accounts User users name:string age:integer
 <
-                    You may add your own:
+                    These tasks are hardcoded to avoid possible naming
+                    conflicts if a dynamic way were to be used.
+
+                    You can add your own generators like so:
 >
                       let g:elixir_ext_generators['custom'] = 'my_app.gen.custom'
 <
+                    PRs for other libraries are welcome!
+
 
                                             *:Emigration* *elixir-ext-:Emigration*
 :Emigration         Edit a migration file.
 
                     Without arguments, it will navigate to the most recent
                     migration.
+
+                    Support autocompletion.
 
 
                                             *:FromPipe* *elixir-ext-:FromPipe*

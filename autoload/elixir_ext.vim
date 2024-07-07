@@ -38,19 +38,23 @@ function! elixir_ext#init() abort
   call s:init_mix_project()
 
   if !s:command_exists("R")
-    command! -buffer -nargs=0 R call s:related()
+    command -buffer -nargs=0 R call s:related()
   endif
 
   if !s:command_exists("ToPipe")
-    command! -buffer -nargs=0 ToPipe call s:to_pipe()
+    command -buffer -nargs=0 ToPipe call s:to_pipe()
   endif
 
   if !s:command_exists("FromPipe")
-    command! -buffer -nargs=0 FromPipe call s:from_pipe()
+    command -buffer -nargs=0 FromPipe call s:from_pipe()
   endif
 
   if !s:command_exists("Mix")
-    command! -buffer -complete=custom,MixComplete -nargs=* Mix call s:Mix(<f-args>)
+    command -buffer -complete=custom,MixComplete -nargs=* Mix call s:Mix(<f-args>)
+  endif
+
+  if !s:command_exists("Generate")
+    command -buffer -complete=custom,GenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
 endfunction
 
@@ -210,6 +214,39 @@ function! MixComplete(A, L, P) abort
   return system("ls -1 ".s:root("deps/**/*/mix/tasks/*.ex | xargs basename | sed s/\.ex$//"))
 endfunction
 
+  let g:elixir_ext_generators = {
+        \   'repo': 'ecto.gen.repo',
+        \   'migration': 'ecto.gen.migration',
+        \   'auth': 'phx.gen.auth',
+        \   'cert': 'phx.gen.cert',
+        \   'channel': 'phx.gen.channel',
+        \   'context': 'phx.gen.context',
+        \   'embedded': 'phx.gen.embedded',
+        \   'gen': 'phx.gen',
+        \   'html': 'phx.gen.html',
+        \   'json': 'phx.gen.json',
+        \   'live': 'phx.gen.live',
+        \   'notifier': 'phx.gen.notifier',
+        \   'presence': 'phx.gen.presence',
+        \   'release': 'phx.gen.release',
+        \   'schema': 'phx.gen.schema',
+        \   'secret': 'phx.gen.secret',
+        \   'socket': 'phx.gen.socket'
+        \ }
+
+function! s:Generate(...) abort
+  let task = g:elixir_ext_generator[a:0]
+
+  if s:command_exists("Dispatch")
+    exec "Dispatch mix ".join(a:000[1:])
+  else
+    call system("mix ".join(a:000[1:]))
+  endif
+endfunction
+
+function! GenerateComplete(A, L, P) abort
+  return join(keys(g:elixir_ext_generators), "\n")
+endfunction
 
 " Phoenix {{{1
 
@@ -260,6 +297,12 @@ function! s:related() abort
   endif
 endfunction
 
+
+" Ecto {{{1
+
+function! s:EditMigration(type, ...) abort
+
+endfunction
 
 " :FromPipe and :ToPipe {{{1
 
