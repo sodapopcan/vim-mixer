@@ -3,6 +3,7 @@
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
+
 TABLE OF CONTENTS                           *elixir-ext*
 
 INTRODUCTION................................|elixir-ext-introduction|
@@ -14,6 +15,7 @@ COMMANDS....................................|elixir-ext-commands|
  * Mix......................................|elixir-ext-navigation-commands|
  * Editing..................................|elixir-ext-navigation-commands|
  * Navigation...............................|elixir-ext-navigation-commands|
+
 
 INTRODUCTION                                *elixir-ext-introduction*
 
@@ -71,6 +73,7 @@ EDITING                                     *elixir-ext-editing*
 <
 
 PHOENIX                                     *elixir-ext-phoenix*
+
 
 COMMANDS                                    *elixir-ext-commands*
 
