@@ -5,12 +5,15 @@ License: Same terms as Vim itself (see |license|)
 
 TABLE OF CONTENTS                           *elixir-ext*
 
-INTRODUCTION................................*elixir-ext-introduction*
-EDITING.....................................*elixir-ext-editing*
-NAVIGATION..................................*elixir-ext-navigation*
-MIX.........................................*elixir-ext-mix*
-PHOENIX.....................................*elixir-ext-phoenix*
-COMMANDS....................................*elixir-ext-commands*
+INTRODUCTION................................|elixir-ext-introduction|
+EDITING.....................................|elixir-ext-editing|
+NAVIGATION..................................|elixir-ext-navigation|
+MIX.........................................|elixir-ext-mix|
+PHOENIX.....................................|elixir-ext-phoenix|
+COMMANDS....................................|elixir-ext-commands|
+ * Mix......................................|elixir-ext-navigation-commands|
+ * Editing..................................|elixir-ext-navigation-commands|
+ * Navigation...............................|elixir-ext-navigation-commands|
 
 INTRODUCTION                                *elixir-ext-introduction*
 
@@ -60,11 +63,36 @@ PHOENIX                                     *elixir-ext-phoenix*
 
 COMMANDS                                    *elixir-ext-commands*
 
+                                            *elixir-ext-commands-mix*
+:Mix                Run a mix command with autocompletion for Phoenix and Ecto.
+
+                    Uses |dispatch| if available.
+
+
+:Generate           Unified generator command, aware of Phoenix and Ecto:
+>
+                      :Generate migration add_name_to_users
+                      :Generate live Accounts User users name:string age:integer
+<
+                    You may add your own:
+>
+                      let g:elixir_ext_generators['custom'] = 'my_app.gen.custom'
+<
+
+                                            *:Emigration* *elixir-ext-:Emigration*
+:Emigration         Edit a migration file.
+
+                    Without arguments, it will navigate to the most recent
+                    migration.
+
+
+                                            *:FromPipe* *elixir-ext-:FromPipe*
 :FromPipe[!]        Moves a piped argument into function parens.
 
                     The bang version will attempt to format.
 
                     See *elixir-ext-pipes* for more info.
+
 
                                             *:ToPipe* *elixir-ext-:ToPipe*
 :ToPipe[!]          Converts a function call to an inline pipe.
