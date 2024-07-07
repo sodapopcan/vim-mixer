@@ -1,4 +1,4 @@
-ElixirExt                       Extensions for *elixir*
+*elixir-ext.txt*  Extras and extensions for *elixir*
 
 
 INTRODUCTION                                *elixir-ext*
@@ -7,11 +7,70 @@ Provides extra utilities for working with Elixir outside of elixir.vim.
 
 COMMANDS                                    *elixir-ext-commands*
 
-                                            *:ToPipe* *elixir-ext-:ToPipe*
-:ToPipe             Converts a function call to a pipe.
+                                            *elixir-ext-pipes*
+                    NOTE: These commands depend on *elixir.vim*
+
+                    NOTE: These commands only work for functions called with
+                    parens.  A special case is made for `case`.
+
+                    This plugin provides two commands for manipulating pipes:
+                    |:FromPipe| and |:ToPipe|.  While it's quite robust it is
+                    not perfect and will need to be formatted.  This is mostly
+                    only true if un-piping a multiline data-structure.
+
+                    For example:
+>
+                      %{
+                        bar: baz()
+                      }
+                      |> foo("biz")
+<
+                    will become:
+>
+                      foo(
+                        %{
+                          bar: baz()
+                        }, "biz")
+<
+
+                    But for simplier cases it works quite well, even with more
+                    complex datastructres.  It is even aware of infix
+                    operators, so you can actually convert between:
+>
+                      1 + 1
+<
+                    and
+>
+                      1
+                      |> Kernel.+()
+<
+
+
 
                                             *:FromPipe* *elixir-ext-:FromPipe*
-:FromPipe           Moves a piped argument into function parens.
+:FromPipe[!]        Moves a piped argument into function parens.
 
+                    The bang version will attempt to format.
+
+                    See *elixir-ext-pipes* for more info.
+
+                                            *:ToPipe* *elixir-ext-:ToPipe*
+:ToPipe[!]          Converts a function call to an inline pipe.
+
+                    The bang version creates a multi-line pipe.  This is
+                    ignored if you are creating a nested pipe.  For example:
+>
+                      foo
+                      |> bar(baz("biz"))
+<
+                    If you want to pipe `"biz"` into `baz()` it will always
+                    produce:
+>
+                      foo
+                      |> bar("biz" |> baz())
+<
+                    even if you use the bang version.
+
+                    See *elixir-ext-pipes* for more info.
 
   vim:tw=78:et:ft=help:norl:
