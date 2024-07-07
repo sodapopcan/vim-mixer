@@ -100,7 +100,7 @@ function! s:get_outer_term()
   endif
 endfunction
 
-" Project  {{{1
+" Mix Project  {{{1
 
 function! s:get_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
