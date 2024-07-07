@@ -1,5 +1,8 @@
 *elixir-ext.txt*  Extras and extensions for *elixir*
 
+Author:  Andrew Haust <https://andrew.hau.st>
+License: Same terms as Vim itself (see |license|)
+
 TABLE OF CONTENTS                           *elixir-ext*
 
 INTRODUCTION................................*elixir-ext-introduction*
