@@ -310,12 +310,13 @@ function! elixir_ext#from_pipe() abort
   else
     " Pipe on each line
     if s:starts_with_pipe(curr_line) && !s:starts_with_pipe(prev_line)
+      " We're on the piped line
       let pipe_lnr = line('.')
       let term_lnr = line('.') - 1
       exec term_lnr
       let term = s:get_outer_term()
-      delete_
     elseif !s:starts_with_pipe(curr_line) && s:starts_with_pipe(next_line)
+      " Were on the value line
       let term_lnr = line('.')
       let pipe_lnr = line('.') + 1
       exec term_lnr
@@ -325,6 +326,8 @@ function! elixir_ext#from_pipe() abort
 
       return 0
     endif
+
+    delete_
 
     let line = substitute(getline('.'), '|> ', '', '')
     normal! f(
@@ -341,11 +344,13 @@ function! elixir_ext#from_pipe() abort
     let term_line_count = len(split(term, "\n"))
     let term_len = len(split(term, "\n"))
     let joiner = term_len > 1 ? "\n" : ""
+
     if s:empty_parens()
       let addon = ""
     else
       let addon = term_len > 1 ? "," : ", "
     endif
+
     let value = split(join(add([head."(", term.addon], tail_str), joiner), "\n")
 
     call append(line('.'), value)
