@@ -64,9 +64,10 @@ PHOENIX                                     *elixir-ext-phoenix*
 COMMANDS                                    *elixir-ext-commands*
 
                                             *elixir-ext-commands-mix*
-:Mix                Run a mix command with autocompletion for Phoenix and Ecto.
+:Mix                Run a mix command.  Uses |dispatch| if available.
 
-                    Uses |dispatch| if available.
+                    Completion is available for tasks whose packages follow
+                    the `mix/tasks/task.name.ex` file naming convention.
 
 
 :Generate           Unified generator command, aware of Phoenix and Ecto:

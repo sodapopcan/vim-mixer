@@ -1,8 +1,8 @@
 " Init {{{1
 
 function! elixir_ext#init() abort
-  call s:define_commands()
   call s:init_mix_project()
+  call s:define_commands()
 endfunction
 
 
@@ -56,7 +56,7 @@ function! s:define_commands() abort
   endif
 
   if !s:command_exists("Mix")
-    command! -buffer -nargs=* Mix call s:Mix(<f-args>)
+    command! -buffer -complete=custom,MixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 endfunction
 
@@ -134,7 +134,11 @@ function! s:get_outer_term()
 endfunction
 
 
-" Mix Project  {{{1
+" Mix {{{1
+
+function! s:root(path) abort
+  return b:mix_project.root.'/'.a:path
+endfunction
 
 function! s:init_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
@@ -195,15 +199,16 @@ function! s:init_mix_project() abort
   endif
 endfunction
 
-
-" Mix command
-
 function! s:Mix(...) abort
   if s:command_exists("Dispatch")
     exec "Dispatch mix ".join(a:000, " ")
   else
     call system("mix ".join(a:000, " "))
   endif
+endfunction
+
+function! MixComplete(A, L, P) abort
+  return system("ls -1 ".s:root("deps/**/*/mix/tasks/*.ex | xargs basename | sed s/\.ex$//"))
 endfunction
 
 
