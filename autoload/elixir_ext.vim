@@ -34,23 +34,23 @@ endfunction
 " Init {{{1
 
 function! elixir_ext#init() abort
-  call elixir_ext#define_commands()
-  call elixir_ext#init_mix_project()
+  call s:define_commands()
+  call s:init_mix_project()
 endfunction
 
 " Commands {{{1
 
-function! elixir_ext#define_commands() abort
+function! s:define_commands() abort
   if !s:command_exists("R")
-    command! -buffer -nargs=0 R call elixir_ext#related()
+    command! -buffer -nargs=0 R call s:related()
   endif
 
   if !s:command_exists("ToPipe")
-    command! -buffer -nargs=0 ToPipe call elixir_ext#to_pipe()
+    command! -buffer -nargs=0 ToPipe call s:to_pipe()
   endif
 
   if !s:command_exists("FromPipe")
-    command! -buffer -nargs=0 FromPipe call elixir_ext#from_pipe()
+    command! -buffer -nargs=0 FromPipe call s:from_pipe()
   endif
 endfunction
 
@@ -129,7 +129,7 @@ endfunction
 
 " Mix Project  {{{1
 
-function! elixir_ext#init_mix_project() abort
+function! s:init_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
 
   if mix_file == ""
@@ -202,7 +202,7 @@ function! s:has_render() abort
   return search(s:render_regex, 'wn')
 endfunction
 
-function! elixir_ext#related() abort
+function! s:related() abort
   if !exists("b:mix_project")
     return
   endif
@@ -237,7 +237,7 @@ endfunction
 
 " :FromPipe and :ToPipe {{{1
 
-function! elixir_ext#to_pipe() abort
+function! s:to_pipe() abort
   let cursor_origin = getcurpos('.')
   let line = getline('.')
 
@@ -333,7 +333,7 @@ function! elixir_ext#to_pipe() abort
   endif
 endfunction
 
-function! elixir_ext#from_pipe() abort
+function! s:from_pipe() abort
   let curr_line = getline(".")
   let prev_line = getline(line('.') - 1)
   let next_line = getline(line('.') + 1)
