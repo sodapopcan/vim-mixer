@@ -3,14 +3,17 @@
 TABLE OF CONTENTS                           *elixir-ext*
 
 INTRODUCTION................................*elixir-ext-introduction*
-COMMANDS....................................*elixir-ext-commands*
+EDITING.....................................*elixir-ext-editing*
+NAVIGATION..................................*elixir-ext-navigation*
+MIX.........................................*elixir-ext-mix*
 PHOENIX.....................................*elixir-ext-phoenix*
+COMMANDS....................................*elixir-ext-commands*
 
 INTRODUCTION                                *elixir-ext-introduction*
 
 Provides extra utilities for working with Elixir outside of elixir.vim.
 
-COMMANDS                                    *elixir-ext-commands*
+EDITING                                     *elixir-ext-editing*
 
                                             *elixir-ext-pipes*
                     NOTE: These commands depend on *elixir.vim*
@@ -50,9 +53,10 @@ COMMANDS                                    *elixir-ext-commands*
                       |> Kernel.+()
 <
 
+PHOENIX                                     *elixir-ext-phoenix*
 
+COMMANDS                                    *elixir-ext-commands*
 
-                                            *:FromPipe* *elixir-ext-:FromPipe*
 :FromPipe[!]        Moves a piped argument into function parens.
 
                     The bang version will attempt to format.
