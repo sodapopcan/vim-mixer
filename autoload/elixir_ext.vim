@@ -138,30 +138,44 @@ endfunction
 
 " Text Objects {{{1
 
-function! s:textobj_map_i() abort
+function! s:textobj_map(inside) abort
   let char = s:get_cursor_char()
   let current_pos = getpos('.')
 
   if char == "%"
-    let [start_lnr, start_col] = [line('.'), col('.') + 2]
+    let [start_lnr, start_col] = [line('.'), col('.')]
     let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
-    let end_col = end_col - 1
+    if a:inside
+      let start_col = start_col + 2
+      let end_col = end_col - 1
+    else
+      let start_col = 0
+    endif
   elseif char == "{"
-    let [start_lnr, start_col] = [line('.'), col('.') + 1]
+    let [start_lnr, start_col] = [line('.'), col('.')]
     let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
-    let start_col = start_col + 1
-    let end_col = end_col - 1
+    if a:inside
+      let start_col = start_col + 1
+      let end_col = end_col - 1
+    else
+      let start_col = 0
+    endif
   else
     let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', 's:is_string_or_comment()')
     let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
-    let start_col = start_col + 2
-    let end_col = end_col - 1
+    if a:inside
+      let start_col = start_col + 2
+      let end_col = end_col - 1
+    else
+      let start_col = 0
+    endif
   endif
 
   call setpos('.', current_pos)
 
   if !s:in_range([start_lnr, start_col - 2], [end_lnr, end_col + 1])
     echom start_col . " curr: ".col('.')
+
     return 0
   endif
 
@@ -170,7 +184,10 @@ function! s:textobj_map_i() abort
   normal! gv
 endfunction
 
-onoremap <silent> im :call <sid>textobj_map_i()<cr>
+vnoremap <silent> im :call <sid>textobj_map(1)<cr>
+vnoremap <silent> am :call <sid>textobj_map(0)<cr>
+onoremap <silent> im :call <sid>textobj_map(1)<cr>
+onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
 " Mix {{{1
 
