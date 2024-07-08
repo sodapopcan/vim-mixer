@@ -61,7 +61,7 @@ endfunction
 
 " Syntax Helpers {{{1
 
-function! s:get_cursor_char(...)
+function! s:get_cursor_char()
   return getline('.')[col('.') - 1]
 endfunction
 
@@ -174,8 +174,6 @@ function! s:textobj_map(inside) abort
   call setpos('.', current_pos)
 
   if !s:in_range([start_lnr, start_col - 2], [end_lnr, end_col + 1])
-    echom start_col . " curr: ".col('.')
-
     return 0
   endif
 
