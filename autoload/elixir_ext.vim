@@ -285,16 +285,22 @@ function! s:init_mix_project() abort
   endtry
 
   let b:mix_project = {
-        \ "root": project_root,
-        \ "name": project_name
+        \   "root": project_root,
+        \   "name": project_name
         \ }
 
   if g:elixir_ext_define_projections
     let g:projectionist_heuristics["mix.exs"] = {
+          \   'lib/'.b:mix_project.name.'.ex': {
+          \     'type': 'domain'
+          \   },
           \   'lib/'.b:mix_project.name.'/*.ex': {
           \     'type': 'domain',
           \     'alternate': 'test/'.b:mix_project.name.'/{}_test.exs',
           \     'template': ['defmodule {camelcase|capitalize|dot} do', 'end']
+          \   },
+          \   'lib/'.b:mix_project.name.'_web.ex': {
+          \     'type': 'web'
           \   },
           \   'lib/'.b:mix_project.name.'_web/*.ex': {
           \     'type': 'web',
@@ -365,12 +371,13 @@ let g:elixir_ext_generators = {
       \ }
 
 function! s:Generate(...) abort
-  let task = g:elixir_ext_generator[a:0]
+  let task = g:elixir_ext_generators[a:1]
+  echom "task=".task
 
   if s:command_exists("Dispatch")
-    exec "Dispatch mix ".join(a:000[1:])
+    exec "Dispatch mix ".task." ".join(a:000[1:])
   else
-    call system("mix ".join(a:000[1:]))
+    call system("mix ".task." ".join(a:000[1:]))
   endif
 endfunction
 
