@@ -139,6 +139,7 @@ function! s:get_outer_term()
   endif
 endfunction
 
+
 " Text Objects {{{1
 
 function! s:textobj_map(inside) abort
