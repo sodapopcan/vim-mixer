@@ -59,10 +59,14 @@ function! elixir_ext#init() abort
 endfunction
 
 
-" Syntax Grammar {{{1
+" Syntax Helpers {{{1
 
-function! s:is_string_or_comment(line, col)
-  return s:syntax_name(a:line, a:col) =~ '\%(String\|Comment\|CharList\)'
+function! s:get_cursor_char(...)
+  return getline('.')[col('.') - 1]
+endfunction
+
+function! s:is_string_or_comment()
+  return s:cursor_term() =~ '\%(String\|Comment\|CharList\)'
 endfunction
 
 function! s:starts_with_pipe(line)
@@ -132,6 +136,43 @@ function! s:get_outer_term()
   endif
 endfunction
 
+" Text Objects {{{1
+
+function! ElixirTextobjMap() abort
+  let char = s:get_cursor_char()
+  let current_pos = getpos('.')
+
+  if char == "}" || (char !=# "%" && char !=# "{")
+    let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', 's:is_string_or_comment()')
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let start_col = start_col + 2
+    let end_col = end_col - 1
+  elseif char == "%"
+    let [start_lnr, start_col] = [line('.'), col('.') + 2]
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let end_col = end_col - 1
+  elseif char == "{"
+    let [start_lnr, start_col] = [line('.'), col('.') + 1]
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let start_col = start_col + 1
+    let end_col = end_col - 1
+  else
+    return 0
+  endif
+
+  call setpos('.', current_pos)
+
+  if !s:in_range([start_lnr, start_col - 2], [end_lnr, end_col + 1])
+    echom start_col . " curr: ".col('.')
+    return 0
+  endif
+
+  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  normal! gv
+endfunction
+
+onoremap <silent> im :call ElixirTextobjMap()<cr>
 
 " Mix {{{1
 
