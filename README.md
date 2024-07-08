@@ -8,14 +8,21 @@ NeoVim users: YMMV.  I recommend [elixir-tools.nvim](https://github.com/elixir-t
 
 ## Features
 
-- `:Mix` for runnings mix commands with completions (will use [dispatch.vim](https://github.com/tpope/vim-dispatch) if available).
+- Text objects like `if` (function), `is` (sigil), `im` (map), `ic` (charlist)
+  and more.
+- `:Mix` for runnings mix commands with completions.
 - `:Generate` for unifying generator commands, ex:
-  ```viml
-  :Generate migration add_name_to_users
-  :Generate live Accounts User users name:string age:integer
-  ```
-  Uses [dispatch.vim](https://github.com/tpope/vim-dispatch) if available.
+  - `:Generate migration add_name_to_users`
+  - `:Generate live Accounts User users name:string age:integer`
 - `:R` for jumping between controllers and templates
+  - Works with LiveViews with `render` functions and controllers with component
+    templates.
+- `:ToPipe` and `:FromPipe` for creating and undoing pipelines.
+- [Projectionist](https://github.com/tpope) support with dynamic definitions
+  based on your project's name.
+
+
+-------------------
   - With your cursor within the `index` controller action, `:R` will take you to
     either `index.html.heex` or to the relevant `HTML` module with your cursor
     placed on the `index` component.
