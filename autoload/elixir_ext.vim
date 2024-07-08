@@ -1,3 +1,6 @@
+" Location:     autoload/elixir_ext.vim
+" Maintainer:   Andrew Haust <https://andrew.hau.st>
+
 " Utility {{{1
 
 " Check if cursor is in range of two positions.
