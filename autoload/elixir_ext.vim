@@ -142,12 +142,7 @@ function! ElixirTextobjMap() abort
   let char = s:get_cursor_char()
   let current_pos = getpos('.')
 
-  if char == "}" || (char !=# "%" && char !=# "{")
-    let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', 's:is_string_or_comment()')
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
-    let start_col = start_col + 2
-    let end_col = end_col - 1
-  elseif char == "%"
+  if char == "%"
     let [start_lnr, start_col] = [line('.'), col('.') + 2]
     let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
     let end_col = end_col - 1
@@ -157,7 +152,10 @@ function! ElixirTextobjMap() abort
     let start_col = start_col + 1
     let end_col = end_col - 1
   else
-    return 0
+    let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', 's:is_string_or_comment()')
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let start_col = start_col + 2
+    let end_col = end_col - 1
   endif
 
   call setpos('.', current_pos)
