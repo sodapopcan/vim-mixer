@@ -7,6 +7,10 @@ License: Same terms as Vim itself (see |license|)
 TABLE OF CONTENTS                           *elixir-ext*
 
 INTRODUCTION................................|elixir-ext-introduction|
+TEXT OBJECTS................................|elixir-ext-text-objects|
+  * Maps....................................|elixir-ext-maps|
+  * Functions...............................|elixir-ext-functions|
+  * Sigils..................................|elixir-ext-sigils|
 EDITING.....................................|elixir-ext-editing|
 NAVIGATION..................................|elixir-ext-navigation|
 MIX.........................................|elixir-ext-mix|
@@ -31,6 +35,12 @@ functionality depends on elixir.vim which is an unnecessary plugin for NeoVim.
 NeoVim users are encouraged to checkout elixir-tools.nvim which has many of
 the same features available here.
 
+
+TEXT OBJECTS                                *elixir-text-objects*
+                                            *elixir-text-object*
+                                            *elixir-textobj*
+
+Maps                                        *elixir-ext-maps*
 
 EDITING                                     *elixir-ext-editing*
 

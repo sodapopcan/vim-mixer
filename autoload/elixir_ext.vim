@@ -251,6 +251,14 @@ function! s:init_mix_project() abort
           \     'type': 'config',
           \     'related': 'config/config.exs'
           \   },
+          \   'lib/'.b:mix_project.name.'_web/router.ex': {
+          \     'type': 'router',
+          \     'alternate': 'lib/'.b:mix_project.name.'_web/endpoint.ex'
+          \   },
+          \   'lib/'.b:mix_project.name.'_web/endpoint.ex': {
+          \     'type': 'router',
+          \     'alternate': 'lib/'.b:mix_project.name.'_web/router.ex'
+          \   },
           \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
           \ }
   endif
