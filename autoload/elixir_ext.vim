@@ -138,7 +138,7 @@ endfunction
 
 " Text Objects {{{1
 
-function! ElixirTextobjMap() abort
+function! s:textobj_map_i() abort
   let char = s:get_cursor_char()
   let current_pos = getpos('.')
 
@@ -170,7 +170,7 @@ function! ElixirTextobjMap() abort
   normal! gv
 endfunction
 
-onoremap <silent> im :call ElixirTextobjMap()<cr>
+onoremap <silent> im :call <sid>textobj_map_i()<cr>
 
 " Mix {{{1
 
