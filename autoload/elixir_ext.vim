@@ -53,11 +53,11 @@ function! elixir_ext#init() abort
   endif
 
   if !s:command_exists("Mix")
-    command -buffer -complete=custom,MixComplete -nargs=* Mix call s:Mix(<f-args>)
+    command -buffer -complete=custom,ElixirExtMixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 
   if !s:command_exists("Generate")
-    command -buffer -complete=custom,GenerateComplete -nargs=* Generate call s:Generate(<f-args>)
+    command -buffer -complete=custom,ElixirExtGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
 endfunction
 
@@ -281,7 +281,7 @@ function! s:Mix(...) abort
   endif
 endfunction
 
-function! MixComplete(A, L, P) abort
+function! ElixirExtMixComplete(A, L, P) abort
   return system("ls -1 ".s:root("deps/**/*/mix/tasks/*.ex | xargs basename | sed s/\.ex$//"))
 endfunction
 
@@ -315,7 +315,7 @@ function! s:Generate(...) abort
   endif
 endfunction
 
-function! GenerateComplete(A, L, P) abort
+function! ElixirExtGenerateComplete(A, L, P) abort
   return join(keys(g:elixir_ext_generators), "\n")
 endfunction
 
