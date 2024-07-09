@@ -208,18 +208,18 @@ function! s:pair_skip(key) abort
   return a:key.':\@!\|\<do\>'
 endfunction
 
-function! s:textobj_def(inside) abort
+function! s:textobj_def(type, inside) abort
   let word = expand("<cword>")
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
-  let pair_skip = s:pair_skip('def')
+  let pair_skip = s:pair_skip(a:type)
   let F = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'W', Skip)}
   let B = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'Wb', Skip)}
 
-  if match(word, 'def') >= 0
+  if match(word, a:type) >= 0
     let [start_lnr, start_col] = [line('.'), col('.')]
   else
-    let [start_lnr, start_col] = searchpos('\<def\>', 'Wb')
+    let [start_lnr, start_col] = searchpos('\<'.a:type.'\>', 'Wb')
   endif
 
   let [end_lnr, end_col] = F('')
@@ -237,10 +237,14 @@ function! s:textobj_def(inside) abort
   normal! gv
 endfunction
 
-vnoremap <silent> if :<c-u>call <sid>textobj_def(1)<cr>
-vnoremap <silent> af :<c-u>call <sid>textobj_def(0)<cr>
-onoremap <silent> if :call <sid>textobj_def(1)<cr>
-onoremap <silent> af :call <sid>textobj_def(0)<cr>
+let macros = [['def', 'f'], ['defmodule', 'M']]
+
+for [macro, obj] in macros
+  exec "vnoremap <silent> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
+  exec "vnoremap <silent> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0)\<cr>"
+  exec "onoremap <silent> i".obj." :call <sid>textobj_def('".macro."', 1)\<cr>"
+  exec "onoremap <silent> a".obj." :call <sid>textobj_def('".macro."', 0)\<cr>"
+endfor
 
 " Mix {{{1
 
