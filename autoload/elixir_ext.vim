@@ -64,7 +64,7 @@ endfunction
 
 " Syntax Helpers {{{1
 
-function! s:get_cursor_char()
+function! s:cur_char()
   return getline('.')[col('.') - 1]
 endfunction
 
@@ -143,7 +143,7 @@ endfunction
 " Text Objects {{{1
 
 function! s:textobj_map(inside) abort
-  let char = s:get_cursor_char()
+  let char = s:cur_char()
   let current_pos = getpos('.')
 
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
