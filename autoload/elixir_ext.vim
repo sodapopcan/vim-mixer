@@ -212,7 +212,6 @@ function! s:textobj_def(inside) abort
   let word = expand("<cword>")
   let current_pos = getpos('.')
 
-  echom s:skip_terms(["Tuple", "String", "Comment"])
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
   let pair_skip = s:pair_skip('def')
@@ -362,7 +361,6 @@ let g:elixir_ext_generators = {
 
 function! s:Generate(...) abort
   let task = g:elixir_ext_generators[a:1]
-  echom "task=".task
 
   if s:command_exists("Dispatch")
     exec "Dispatch mix ".task." ".join(a:000[1:])
