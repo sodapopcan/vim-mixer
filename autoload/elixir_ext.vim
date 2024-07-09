@@ -290,25 +290,25 @@ function! ElixirExtMixComplete(A, L, P) abort
   return system("ls -1 ".s:root("deps/**/*/mix/tasks/*.ex | xargs basename | sed s/\.ex$//"))
 endfunction
 
-  let g:elixir_ext_generators = {
-        \   'repo': 'ecto.gen.repo',
-        \   'migration': 'ecto.gen.migration',
-        \   'auth': 'phx.gen.auth',
-        \   'cert': 'phx.gen.cert',
-        \   'channel': 'phx.gen.channel',
-        \   'context': 'phx.gen.context',
-        \   'embedded': 'phx.gen.embedded',
-        \   'gen': 'phx.gen',
-        \   'html': 'phx.gen.html',
-        \   'json': 'phx.gen.json',
-        \   'live': 'phx.gen.live',
-        \   'notifier': 'phx.gen.notifier',
-        \   'presence': 'phx.gen.presence',
-        \   'release': 'phx.gen.release',
-        \   'schema': 'phx.gen.schema',
-        \   'secret': 'phx.gen.secret',
-        \   'socket': 'phx.gen.socket'
-        \ }
+let g:elixir_ext_generators = {
+      \   'repo': 'ecto.gen.repo',
+      \   'migration': 'ecto.gen.migration',
+      \   'auth': 'phx.gen.auth',
+      \   'cert': 'phx.gen.cert',
+      \   'channel': 'phx.gen.channel',
+      \   'context': 'phx.gen.context',
+      \   'embedded': 'phx.gen.embedded',
+      \   'gen': 'phx.gen',
+      \   'html': 'phx.gen.html',
+      \   'json': 'phx.gen.json',
+      \   'live': 'phx.gen.live',
+      \   'notifier': 'phx.gen.notifier',
+      \   'presence': 'phx.gen.presence',
+      \   'release': 'phx.gen.release',
+      \   'schema': 'phx.gen.schema',
+      \   'secret': 'phx.gen.secret',
+      \   'socket': 'phx.gen.socket'
+      \ }
 
 function! s:Generate(...) abort
   let task = g:elixir_ext_generator[a:0]
@@ -323,6 +323,7 @@ endfunction
 function! ElixirExtGenerateComplete(A, L, P) abort
   return join(keys(g:elixir_ext_generators), "\n")
 endfunction
+
 
 " Phoenix {{{1
 
