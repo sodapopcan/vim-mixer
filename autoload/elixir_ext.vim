@@ -3,6 +3,10 @@
 
 " Utility {{{1
 
+function! s:sub(str, pat, rep)
+  return substitute(a:str, a:pat, a:rep, '')
+endfunction
+
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
 function! s:in_range(start, end) abort
@@ -98,7 +102,7 @@ function! s:outer_term()
 
   if empty(terms) | return '' | endif
 
-  return substitute(substitute(terms[0], 'elixir', '', ''), 'Delimiter', '', '')
+  return s:sub(s:sub(terms[0], 'elixir', ''), 'Delimiter', '')
 endfunction
 
 function! s:get_term(cmd)
@@ -360,9 +364,9 @@ function! s:related() abort
     endif
   else
     if &ft ==# 'elixir'
-      let basename = substitute(expand("%:p"), '\.ex$', '.html.heex', '')
+      let basename = s:sub(expand("%:p"), '\.ex$', '.html.heex')
     else
-      let basename = substitute(expand("%:p"), '\.html.heex$', '.ex', '')
+      let basename = s:sub(expand("%:p"), '\.html.heex$', '.ex')
     endif
     exec "e ".basename
   endif
@@ -526,7 +530,7 @@ function! s:from_pipe() abort
 
     delete_
 
-    let line = substitute(getline('.'), '|> ', '', '')
+    let line = s:sub(getline('.'), '|> ', '')
     normal! f(
 
     if !s:empty_parens()
