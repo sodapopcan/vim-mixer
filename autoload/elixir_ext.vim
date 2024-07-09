@@ -146,48 +146,49 @@ function! s:textobj_map(inside) abort
   let char = s:get_cursor_char()
   let current_pos = getpos('.')
 
+  let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
+
   if char == "%"
     let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+
     if a:inside
-      let start_col = start_col + 2
-      let end_col = end_col - 1
-    else
-      let start_col = 0
+      let start_col += 2
     endif
   elseif char == "{"
     let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+
     if a:inside
-      let start_col = start_col + 1
-      let end_col = end_col - 1
-    else
-      let start_col = 0
+      let start_col += 1
     endif
   else
-    let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', 's:is_string_or_comment()')
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', 's:is_string_or_comment()')
+    let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', Skip)
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+
     if a:inside
-      let start_col = start_col + 2
-      let end_col = end_col - 1
-    else
-      let start_col = 0
+      let start_col += 2
     endif
+  endif
+
+  if a:inside
+    let end_col -= 1
+  endif
+
+  if getline(end_lnr)[0] ==# "}"
+    let end_lnr -= 1
+    let end_col = len(end_lnr) + 2 " Grab the \n as well
   endif
 
   call setpos('.', current_pos)
-
-  if !s:in_range([start_lnr, start_col - 2], [end_lnr, end_col + 1])
-    return 0
-  endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
   normal! gv
 endfunction
 
-vnoremap <silent> im :call <sid>textobj_map(1)<cr>
-vnoremap <silent> am :call <sid>textobj_map(0)<cr>
+vnoremap <silent> im :<c-u>call <sid>textobj_map(1)<cr>
+vnoremap <silent> am :<c-u>call <sid>textobj_map(0)<cr>
 onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
@@ -555,6 +556,12 @@ endfunction
 
 function! s:skip()
   return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%(String\|Comment\|CharList\|List\|Map\|Tuple\)'
+endfunction
+
+function! s:skip_terms(terms)
+  let terms = join(a:terms, '\|')
+
+  return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%('.terms.'\)'
 endfunction
 
 function! s:reset(pos)
