@@ -183,7 +183,7 @@ function! s:textobj_map(inside) abort
     let end_col -= 1
   endif
 
-  if getline(end_lnr)[0] ==# "}"
+  if getline(end_lnr)[0] ==# "}" && a:inside
     let end_lnr -= 1
     let end_col = len(end_lnr) + 2 " Grab the \n as well
   endif
