@@ -40,7 +40,25 @@ TEXT OBJECTS                                *elixir-text-objects*
                                             *elixir-text-object*
                                             *elixir-textobj*
 
-Maps                                        *elixir-ext-maps*
+Text objects are defined for function/macro/module defintions, conditionals,
+sigils, maps, with, and list comprehensions
+
+      Elixir construct         Text Object Key
+      ___________________________________________
+
+      def*                     "d"
+      if, unless, case, cond   "c" (c for conditional)
+      %{}                      "m"
+      ~s"" etc.                "~"
+      with                     "h"
+      for                      "f"
+      pipeline                 "|"
+
+These are fully configurable.
+>
+    let g:elixir_ext_textobj['d'] = 'f'
+    let g:elixir_ext_textobj['f'] = 'l'
+<
 
 EDITING                                     *elixir-ext-editing*
 
