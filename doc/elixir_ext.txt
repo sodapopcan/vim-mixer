@@ -107,11 +107,31 @@ COMMANDS                                    *elixir-ext-commands*
 
 Mix                                         *elixir-ext-commands-mix*
 
-:Mix                Run a mix command.  Uses |dispatch| if available.
+:{range}Mix [args]  Run a mix command.  Uses |dispatch| if available.
 
                     Completion is available for tasks whose packages follow
                     the `mix/tasks/task.name.ex` file naming convention.
 
+
+:{range}Deps [task] [args]
+                    A wrapper around `mix deps` with some added functionality.
+
+                    The standard tasks are available as well as an `add` task.
+>
+                      :Deps add live_view
+<
+                    With a range, it will operate on the current line.  This
+                    can have different effects in different contexts.  For
+                    now, this only works with deps.  For example, with you
+                    cursor on the following line:
+>
+                      {:live_view, "~> 0.20"},
+<
+                    You could upgrade LiveView like so:
+      >
+                      :.Deps unlock
+                      :.Deps update
+<
 
 :Generate           Unified generator command, aware of Phoenix and Ecto:
 >
@@ -163,6 +183,10 @@ Navigation                                  *elixir-ext-commands-navigation*
 
                     Without arguments, it will navigate to the most recent
                     migration.
+
+:{range}R [args]    Edit a "related" file.
+
+                    This 
 
                     Support autocompletion.
 
