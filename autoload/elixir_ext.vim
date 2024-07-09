@@ -72,6 +72,10 @@ function! s:cur_char()
   return getline('.')[col('.') - 1]
 endfunction
 
+function! s:prev_char()
+  return getline('.')[col('.') - 2]
+endfunction
+
 function! s:is_string_or_comment()
   return s:cursor_term() =~ '\%(String\|Comment\|CharList\)'
 endfunction
@@ -161,7 +165,7 @@ function! s:textobj_map(inside) abort
     if a:inside
       let start_col += 2
     endif
-  elseif char == "{"
+  elseif char == "{" && s:prev_char() == "%"
     let [start_lnr, start_col] = [line('.'), col('.')]
     let [end_lnr, end_col] = SearchForward()
 
@@ -200,6 +204,56 @@ vnoremap <silent> am :<c-u>call <sid>textobj_map(0)<cr>
 onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
+function! s:pair_skip(key) abort
+  let all = ['def', 'defmacro', 'defmodule', 'case', 'cond', 'if', 'unless', 'for', 'with']
+  let skips = join(filter(all, {t -> t !=# a:key}), '\|')
+  return a:key.':\@!\|\%('.skips.'\)'
+endfunction
+
+function! s:textobj_def(inside) abort
+  let word = expand("<cword>")
+  let current_pos = getpos('.')
+
+  let F = {-> searchpairpos(s:pair_skip('def'), '', 'end', 'W', Skip)}
+  let B = {-> searchpairpos(s:pair_skip('def'), '', 'end', 'Wb', Skip)}
+
+  echom match(word, 'def')
+  if match(word, 'def') >= 0
+    normal! b
+    let [start_lnr, start_col] = [line('.'), col('.')]
+    let [end_lnr, end_col] = F()
+    echom "what"
+
+    if a:inside
+      let start_col += 2
+    endif
+  " elseif char == "{"
+  "   let [start_lnr, start_col] = [line('.'), col('.')]
+  "   let [end_lnr, end_col] = SearchForward()
+
+  "   if a:inside
+  "     let start_col += 1
+  "   else
+  "     let start_col -= 1
+  "   endif
+  " else
+  "   let [start_lnr, start_col] = SearchBack()
+  "   let [end_lnr, end_col] = SearchForward()
+
+  "   if a:inside
+  "     let start_col += 2
+  "   endif
+  endif
+
+  let pair_skip = s:pair_skip('def')
+  let SearchForward = {-> searchpair('\<'.pair_skip.'\>', '', '\<end\>', 'W')}
+  let SearchBack = {-> searchpair('\<'.pair_skip.'\>', '', '\<end\>', 'Wb')}
+endfunction
+
+vnoremap <silent> id :<c-u>call <sid>textobj_def(1)<cr>
+vnoremap <silent> ad :<c-u>call <sid>textobj_def(0)<cr>
+onoremap <silent> id :call <sid>textobj_def(1)<cr>
+onoremap <silent> ad :call <sid>textobj_def(0)<cr>
 
 " Mix {{{1
 
