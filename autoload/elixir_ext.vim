@@ -205,55 +205,45 @@ onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
 function! s:pair_skip(key) abort
-  let all = ['def', 'defmacro', 'defmodule', 'case', 'cond', 'if', 'unless', 'for', 'with']
-  let skips = join(filter(all, {t -> t !=# a:key}), '\|')
-  return a:key.':\@!\|\%('.skips.'\)'
+  return a:key.':\@!\|\<do\>'
 endfunction
 
 function! s:textobj_def(inside) abort
   let word = expand("<cword>")
   let current_pos = getpos('.')
 
-  let F = {-> searchpairpos(s:pair_skip('def'), '', 'end', 'W', Skip)}
-  let B = {-> searchpairpos(s:pair_skip('def'), '', 'end', 'Wb', Skip)}
-
-  echom match(word, 'def')
-  if match(word, 'def') >= 0
-    normal! b
-    let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = F()
-    echom "what"
-
-    if a:inside
-      let start_col += 2
-    endif
-  " elseif char == "{"
-  "   let [start_lnr, start_col] = [line('.'), col('.')]
-  "   let [end_lnr, end_col] = SearchForward()
-
-  "   if a:inside
-  "     let start_col += 1
-  "   else
-  "     let start_col -= 1
-  "   endif
-  " else
-  "   let [start_lnr, start_col] = SearchBack()
-  "   let [end_lnr, end_col] = SearchForward()
-
-  "   if a:inside
-  "     let start_col += 2
-  "   endif
-  endif
+  echom s:skip_terms(["Tuple", "String", "Comment"])
+  let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
   let pair_skip = s:pair_skip('def')
-  let SearchForward = {-> searchpair('\<'.pair_skip.'\>', '', '\<end\>', 'W')}
-  let SearchBack = {-> searchpair('\<'.pair_skip.'\>', '', '\<end\>', 'Wb')}
+  let F = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'W', Skip)}
+  let B = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'Wb', Skip)}
+
+  if match(word, 'def') >= 0
+    let [start_lnr, start_col] = [line('.'), col('.')]
+  else
+    let [start_lnr, start_col] = searchpos('\<def\>', 'Wb')
+  endif
+
+  let [end_lnr, end_col] = F('')
+
+  let end_col = len(getline(end_lnr - 1)) + 1 " include \n
+
+  if a:inside
+    let [start_lnr, start_col] = B('do')
+    let start_lnr += 1
+    let end_lnr -= 1
+  endif
+
+  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  normal! gv
 endfunction
 
-vnoremap <silent> id :<c-u>call <sid>textobj_def(1)<cr>
-vnoremap <silent> ad :<c-u>call <sid>textobj_def(0)<cr>
-onoremap <silent> id :call <sid>textobj_def(1)<cr>
-onoremap <silent> ad :call <sid>textobj_def(0)<cr>
+vnoremap <silent> if :<c-u>call <sid>textobj_def(1)<cr>
+vnoremap <silent> af :<c-u>call <sid>textobj_def(0)<cr>
+onoremap <silent> if :call <sid>textobj_def(1)<cr>
+onoremap <silent> af :call <sid>textobj_def(0)<cr>
 
 " Mix {{{1
 
