@@ -163,6 +163,8 @@ function! s:textobj_map(inside) abort
 
     if a:inside
       let start_col += 1
+    else
+      let start_col -= 1
     endif
   else
     let [start_lnr, start_col] = SearchBack()
