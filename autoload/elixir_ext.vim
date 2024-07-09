@@ -147,24 +147,26 @@ function! s:textobj_map(inside) abort
   let current_pos = getpos('.')
 
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
+  let SearchForward = {-> searchpairpos('%{', '', '}', 'W', Skip)}
+  let SearchBack = {-> searchpairpos('%{', '', '}', 'Wb', Skip)}
 
   if char == "%"
     let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+    let [end_lnr, end_col] = SearchForward()
 
     if a:inside
       let start_col += 2
     endif
   elseif char == "{"
     let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+    let [end_lnr, end_col] = SearchForward()
 
     if a:inside
       let start_col += 1
     endif
   else
-    let [start_lnr, start_col] = searchpairpos('%{', '', '}', 'Wb', Skip)
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+    let [start_lnr, start_col] = SearchBack()
+    let [end_lnr, end_col] = SearchForward()
 
     if a:inside
       let start_col += 2
