@@ -210,8 +210,6 @@ endfunction
 
 function! s:textobj_def(inside) abort
   let word = expand("<cword>")
-  let current_pos = getpos('.')
-
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
   let pair_skip = s:pair_skip('def')
