@@ -200,6 +200,7 @@ vnoremap <silent> am :<c-u>call <sid>textobj_map(0)<cr>
 onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
+
 " Mix {{{1
 
 function! s:root(path) abort
