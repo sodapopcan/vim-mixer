@@ -189,6 +189,8 @@ function! s:textobj_map(inside) abort
 
   if a:inside
     let end_col -= 1
+  else
+    let end_col += 1
   endif
 
   if getline(end_lnr)[0] ==# "}" && a:inside
