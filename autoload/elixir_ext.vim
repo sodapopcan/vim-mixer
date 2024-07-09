@@ -213,17 +213,26 @@ function! s:pair_skip(key) abort
 endfunction
 
 function! s:textobj_def(type, inside) abort
-  let word = expand("<cword>")
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
   let pair_skip = s:pair_skip(a:type)
   let F = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'W', Skip)}
   let B = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'Wb', Skip)}
 
+  let cursor_pos = getcurpos('.')
+
+  normal! ^
+  let word = expand("<cword>")
+
   if match(word, a:type) >= 0
     let [start_lnr, start_col] = [line('.'), col('.')]
   else
     let [start_lnr, start_col] = searchpos('\<'.a:type.'\>', 'Wb')
+  endif
+
+  if start_lnr == 0 && start_col == 0
+    call setpos('.', cursor_pos)
+    return 0
   endif
 
   let [end_lnr, end_col] = F('')
@@ -233,10 +242,11 @@ function! s:textobj_def(type, inside) abort
   if a:inside
     let [start_lnr, start_col] = B('do')
     let start_lnr += 1
-    let start_col = 0
     let end_lnr -= 1
-    let end_col = len(getline(end_lnr)) + 1 " Include \n
   endif
+
+  let start_col = 0
+  let end_col = len(getline(end_lnr)) + 1 " Include \n
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
