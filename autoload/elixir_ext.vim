@@ -7,6 +7,10 @@ function! s:sub(str, pat, rep)
   return substitute(a:str, a:pat, a:rep, '')
 endfunction
 
+function! s:matches(str, pat)
+  return match(str, path) >= 0
+endfunction
+
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
 function! s:in_range(start, end) abort
@@ -224,12 +228,14 @@ function! s:textobj_def(type, inside) abort
 
   let [end_lnr, end_col] = F('')
 
-  let end_col = len(getline(end_lnr - 1)) + 1 " include \n
+  let whitespace_len = len(matchstr(getline(end_lnr), '\s\+'))
 
   if a:inside
     let [start_lnr, start_col] = B('do')
     let start_lnr += 1
+    let start_col = 0
     let end_lnr -= 1
+    let end_col = len(getline(end_lnr)) + 1 " Include \n
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
