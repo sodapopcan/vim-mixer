@@ -205,10 +205,10 @@ function! s:textobj_map(inside) abort
   normal! gv
 endfunction
 
-vnoremap <silent> im :<c-u>call <sid>textobj_map(1)<cr>
-vnoremap <silent> am :<c-u>call <sid>textobj_map(0)<cr>
-onoremap <silent> im :call <sid>textobj_map(1)<cr>
-onoremap <silent> am :call <sid>textobj_map(0)<cr>
+vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
+vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
+onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
+onoremap <silent> <buffer> am :call <sid>textobj_map(0)<cr>
 
 function! s:textobj_def(keyword, inside) abort
   let cursor_origin = getcurpos('.')
@@ -253,10 +253,10 @@ endfunction
 let macros = [['def', 'f'], ['defmodule', 'M']]
 
 for [macro, obj] in macros
-  exec "vnoremap <silent> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
-  exec "vnoremap <silent> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0)\<cr>"
-  exec "onoremap <silent> i".obj." :call <sid>textobj_def('".macro."', 1)\<cr>"
-  exec "onoremap <silent> a".obj." :call <sid>textobj_def('".macro."', 0)\<cr>"
+  exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
+  exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0)\<cr>"
+  exec "onoremap <silent> <buffer> i".obj." :call <sid>textobj_def('".macro."', 1)\<cr>"
+  exec "onoremap <silent> <buffer> a".obj." :call <sid>textobj_def('".macro."', 0)\<cr>"
 endfor
 
 " Mix {{{1
