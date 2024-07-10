@@ -213,7 +213,6 @@ onoremap <silent> am :call <sid>textobj_map(0)<cr>
 function! s:textobj_def(keyword, inside) abort
   let curpos = getcurpos('.')
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
-  let start_col = 0
 
   let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
   let on_first_char_of_type = cursor_on_keyword && s:cursor_char() == a:keyword[0]
@@ -225,6 +224,8 @@ function! s:textobj_def(keyword, inside) abort
   let [start_lnr, _start_col] = searchpos('\<do\>', 'W', 0, 0, Skip)
   let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
   let whitespace_len = len(matchstr(getline(end_lnr), '\s\+'))
+
+  let start_col = 0
 
   if a:inside
     let start_lnr += 1
