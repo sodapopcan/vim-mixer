@@ -47,6 +47,7 @@ endfunction
 
 function! elixir_ext#init() abort
   call s:init_mix_project()
+  call s:define_text_objects()
 
   if !s:command_exists("R")
     command -buffer -nargs=0 R call s:related()
@@ -189,13 +190,17 @@ function! s:textobj_map(inside) abort
 
   if a:inside
     let end_col -= 1
-  else
-    let end_col += 1
+    " else
+    "   let end_col += 1
   endif
 
   if getline(end_lnr)[0] ==# "}" && a:inside
     let end_lnr -= 1
     let end_col = len(end_lnr) + 2 " Grab the \n as well
+  endif
+
+  if reverse(getline(end_lnr))[0] ==# "}" && !a:inside
+    let end_lnr += 1
   endif
 
   call setpos('.', current_pos)
@@ -204,11 +209,6 @@ function! s:textobj_map(inside) abort
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
   normal! gv
 endfunction
-
-vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
-vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
-onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
-onoremap <silent> <buffer> am :call <sid>textobj_map(0)<cr>
 
 function! s:textobj_def(keyword, inside) abort
   let cursor_origin = getcurpos('.')
@@ -250,14 +250,21 @@ function! s:textobj_def(keyword, inside) abort
   normal! gv
 endfunction
 
-let macros = [['def', 'f'], ['defmodule', 'M']]
+function! s:define_text_objects()
+  let macros = [['def', 'f'], ['defmodule', 'M']]
 
-for [macro, obj] in macros
-  exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
-  exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0)\<cr>"
-  exec "onoremap <silent> <buffer> i".obj." :call <sid>textobj_def('".macro."', 1)\<cr>"
-  exec "onoremap <silent> <buffer> a".obj." :call <sid>textobj_def('".macro."', 0)\<cr>"
-endfor
+  for [macro, obj] in macros
+    exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
+    exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0)\<cr>"
+    exec "onoremap <silent> <buffer> i".obj." :call <sid>textobj_def('".macro."', 1)\<cr>"
+    exec "onoremap <silent> <buffer> a".obj." :call <sid>textobj_def('".macro."', 0)\<cr>"
+  endfor
+
+  vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
+  vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
+  onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
+  onoremap <silent> <buffer> am :call <sid>textobj_map(0)<cr>
+endfunction
 
 " Mix {{{1
 
