@@ -72,7 +72,7 @@ endfunction
 
 " Syntax Helpers {{{1
 
-function! s:cur_char()
+function! s:cursor_char()
   return getline('.')[col('.') - 1]
 endfunction
 
@@ -155,7 +155,7 @@ endfunction
 " Text Objects {{{1
 
 function! s:textobj_map(inside) abort
-  let char = s:cur_char()
+  let char = s:cursor_char()
   let current_pos = getpos('.')
 
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
@@ -210,44 +210,30 @@ vnoremap <silent> am :<c-u>call <sid>textobj_map(0)<cr>
 onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
-function! s:pair_skip(key) abort
-  return a:key.':\@!\|\<do\>'
-endfunction
-
-function! s:textobj_def(type, inside) abort
+function! s:textobj_def(keyword, inside) abort
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
+  let start_col = 0
 
-  let pair_skip = s:pair_skip(a:type)
-  let F = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'W', Skip)}
-  let B = {m -> searchpairpos('\<'.pair_skip.'\>', '\<'.m.'\>', '\<end\>', 'Wb', Skip)}
+  let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
+  let on_first_char_of_type = cursor_on_keyword && s:cursor_char() == a:keyword[0]
 
-  let cursor_pos = getcurpos('.')
-
-  normal! ^
-  let word = expand("<cword>")
-
-  if match(word, a:type) >= 0
-    let [start_lnr, start_col] = [line('.'), col('.')]
-  else
-    let [start_lnr, start_col] = searchpos('\<'.a:type.'\>', 'Wb')
+  if !on_first_char_of_type
+    call search('\<'.a:keyword.'\>', 'Wb', 0, 0, Skip)
   endif
 
-  if start_lnr == 0 && start_col == 0
-    call setpos('.', cursor_pos)
-    return 0
-  endif
+  let [start_lnr, _start_col] = searchpos('\<do\>', 'W', 0, 0, Skip)
 
-  let [end_lnr, end_col] = F('')
+  let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
+
+  echom [end_lnr, end_col]
 
   let whitespace_len = len(matchstr(getline(end_lnr), '\s\+'))
 
   if a:inside
-    let [start_lnr, start_col] = B('do')
     let start_lnr += 1
     let end_lnr -= 1
   endif
 
-  let start_col = 0
   let end_col = len(getline(end_lnr)) + 1 " Include \n
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
