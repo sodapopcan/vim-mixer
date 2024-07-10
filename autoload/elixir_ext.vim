@@ -98,6 +98,16 @@ function! s:cursor_prev_char()
   return getline('.')[col('.') - 2]
 endfunction
 
+function! s:cursor_in_gutter()
+  let leading_whitespace_len = len(matchstr(getline('.'), '^\s\+'))
+
+  return col('.') <= leading_whitespace_len
+endfunction
+
+function! s:cursor_function_metadata()
+  return s:outer_term() ==# 'Variable' || s:outer_term() ==# 'DocString' || s:outer_term() ==# 'DocStringDelimiter'
+endfunction
+
 function! s:is_string_or_comment()
   return s:cursor_term() =~ '\%(String\|Comment\|CharList\)'
 endfunction
@@ -225,10 +235,18 @@ function! s:textobj_def(keyword, inside) abort
   let cursor_origin = getcurpos('.')
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
+  if s:cursor_in_gutter()
+    normal! ^
+  endif
+
   let cursor_is_on_keyword = match(expand("<cword>"), a:keyword) >= 0
   let on_first_char_of_type = cursor_is_on_keyword && s:cursor_char() == a:keyword[0]
 
-  if !on_first_char_of_type
+  if cursor_is_on_keyword && !on_first_char_of_type
+    normal! b
+  elseif s:cursor_function_metadata()
+    call search('\<'.a:keyword.'\>', 'W', 0, 0, Skip)
+  elseif !cursor_is_on_keyword
     call search('\<'.a:keyword.'\>', 'Wb', 0, 0, Skip)
   endif
 
@@ -251,6 +269,8 @@ function! s:textobj_def(keyword, inside) abort
     return 0
   endif
 
+  echom [start_lnr, start_col, end_lnr, end_col]
+
   if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
     return 0
   endif
@@ -260,13 +280,18 @@ function! s:textobj_def(keyword, inside) abort
 
   if !a:inside && !empty(trim(getline(line('.') - 1)))
     normal! k^
-    while s:outer_term() ==# 'Variable' || s:outer_term() ==# 'DocString' || s:outer_term() ==# 'DocStringDelimiter'
+    while s:cursor_function_metadata()
       normal! k^
     endwhile
 
     if start_lnr != line('.')
       let start_lnr = line('.') + 1
     endif
+  endif
+
+  if !a:inside
+    let start_col = len(getline(start_lnr - 1)) + 1
+    let start_lnr = start_lnr - 1
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
