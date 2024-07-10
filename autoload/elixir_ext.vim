@@ -214,8 +214,8 @@ function! s:textobj_def(keyword, inside) abort
   let curpos = getcurpos('.')
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
-  let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
-  let on_first_char_of_type = cursor_on_keyword && s:cursor_char() == a:keyword[0]
+  let cursor_is_on_keyword = match(expand("<cword>"), a:keyword) >= 0
+  let on_first_char_of_type = cursor_is_on_keyword && s:cursor_char() == a:keyword[0]
 
   if !on_first_char_of_type
     call search('\<'.a:keyword.'\>', 'Wb', 0, 0, Skip)
