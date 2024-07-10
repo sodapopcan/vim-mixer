@@ -225,8 +225,6 @@ function! s:textobj_def(keyword, inside) abort
 
   let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
 
-  echom [end_lnr, end_col]
-
   let whitespace_len = len(matchstr(getline(end_lnr), '\s\+'))
 
   if a:inside
