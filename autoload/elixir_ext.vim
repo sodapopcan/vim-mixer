@@ -211,7 +211,7 @@ onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
 function! s:textobj_def(keyword, inside) abort
-  let curpos = getcurpos('.')
+  let cursor_origin = getcurpos('.')
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
   let cursor_is_on_keyword = match(expand("<cword>"), a:keyword) >= 0
@@ -235,7 +235,13 @@ function! s:textobj_def(keyword, inside) abort
   let end_col = len(getline(end_lnr)) + 1 " Include \n
 
   if start_lnr ==# end_lnr + 1
-    call setpos('.', curpos)
+    call setpos('.', cursor_origin)
+    return 0
+  endif
+
+  call setpos('.', cursor_origin)
+
+  if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
     return 0
   endif
 
