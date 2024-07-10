@@ -245,12 +245,11 @@ function! s:textobj_def(keyword, inside) abort
 
   let end_col = len(getline(end_lnr)) + 1 " Include \n
 
+  call setpos('.', cursor_origin)
+
   if start_lnr ==# end_lnr + 1
-    call setpos('.', cursor_origin)
     return 0
   endif
-
-  call setpos('.', cursor_origin)
 
   if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
     return 0
@@ -261,7 +260,7 @@ function! s:textobj_def(keyword, inside) abort
 
   if !a:inside && !empty(trim(getline(line('.') - 1)))
     normal! k^
-    while s:cursor_term() ==# 'Variable' || s:cursor_term() ==# 'DocString' || s:cursor_term() ==# 'DocStringDelimiter'
+    while s:outer_term() ==# 'Variable' || s:outer_term() ==# 'DocString' || s:outer_term() ==# 'DocStringDelimiter'
       normal! k^
     endwhile
 
