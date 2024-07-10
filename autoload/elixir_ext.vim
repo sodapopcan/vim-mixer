@@ -94,6 +94,10 @@ function! s:prev_char()
   return getline('.')[col('.') - 2]
 endfunction
 
+function! s:cursor_term()
+  return s:sub((synIDattr(synID(line('.'), col('.'), 1), "name")), '^elixir', '')
+endfunction
+
 function! s:is_string_or_comment()
   return s:cursor_term() =~ '\%(String\|Comment\|CharList\)'
 endfunction
@@ -111,10 +115,6 @@ function! s:empty_parens()
   call setpos(".", cursor)
 
   return is_empty
-endfunction
-
-function! s:cursor_term()
-  return synIDattr(synID(line('.'), col('.'), 1), "name")
 endfunction
 
 function! s:outer_term()
@@ -254,6 +254,20 @@ function! s:textobj_def(keyword, inside) abort
 
   if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
     return 0
+  endif
+
+  exec start_lnr
+  normal! ^
+
+  if !a:inside && !empty(trim(getline(line('.') - 1)))
+    normal! k^
+    while s:cursor_term() ==# 'Variable' || s:cursor_term() ==# 'DocString' || s:cursor_term() ==# 'DocStringDelimiter'
+      normal! k^
+    endwhile
+
+    if start_lnr != line('.')
+      let start_lnr = line('.') + 1
+    endif
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
