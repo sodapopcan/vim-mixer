@@ -295,7 +295,7 @@ function! s:init_mix_project() abort
   let b:mix_project = 0
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
-  let project_root = getcwd()
+  let project_root = s:sub(mix_file, 'mix.exs$', '')
 
   try
     let contents = join(readfile(mix_file), "\n")
@@ -308,6 +308,8 @@ function! s:init_mix_project() abort
         \   "root": project_root,
         \   "name": project_name
         \ }
+
+  autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
   if g:elixir_ext_define_projections
     let g:projectionist_heuristics["mix.exs"] = {
