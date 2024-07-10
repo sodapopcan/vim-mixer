@@ -211,6 +211,7 @@ onoremap <silent> im :call <sid>textobj_map(1)<cr>
 onoremap <silent> am :call <sid>textobj_map(0)<cr>
 
 function! s:textobj_def(keyword, inside) abort
+  let curpos = getcurpos('.')
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
   let start_col = 0
 
@@ -231,6 +232,11 @@ function! s:textobj_def(keyword, inside) abort
   endif
 
   let end_col = len(getline(end_lnr)) + 1 " Include \n
+
+  if start_lnr ==# end_lnr + 1
+    call setpos('.', curpos)
+    return 0
+  endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
