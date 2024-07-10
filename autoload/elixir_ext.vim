@@ -90,12 +90,12 @@ function! s:cursor_char()
   return getline('.')[col('.') - 1]
 endfunction
 
-function! s:prev_char()
-  return getline('.')[col('.') - 2]
-endfunction
-
 function! s:cursor_term()
   return s:sub((synIDattr(synID(line('.'), col('.'), 1), "name")), '^elixir', '')
+endfunction
+
+function! s:cursor_prev_char()
+  return getline('.')[col('.') - 2]
 endfunction
 
 function! s:is_string_or_comment()
@@ -183,7 +183,7 @@ function! s:textobj_map(inside) abort
     if a:inside
       let start_col += 2
     endif
-  elseif char == "{" && s:prev_char() == "%"
+  elseif char == "{" && s:cursor_prev_char() == "%"
     let [start_lnr, start_col] = [line('.'), col('.')]
     let [end_lnr, end_col] = SearchForward()
 
