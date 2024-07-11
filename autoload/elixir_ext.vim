@@ -232,27 +232,33 @@ function! s:textobj_map(inside) abort
 endfunction
 
 function! s:textobj_def(keyword, inside) abort
-  let cursor_origin = getcurpos('.')
+  " helpers
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
+  " init
+  let cursor_origin = getcurpos('.')
+
+  """ start
   if s:cursor_in_gutter()
     normal! ^
   endif
 
-  let cursor_is_on_keyword = match(expand("<cword>"), a:keyword) >= 0
-  let on_first_char = cursor_is_on_keyword && s:cursor_char() == a:keyword[0]
+  let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
+  let on_first_char_of_keyword = cursor_on_keyword && s:cursor_char() == a:keyword[0]
 
-  if cursor_is_on_keyword && !on_first_char
+  if cursor_on_keyword && !on_first_char_of_keyword
     normal! b
   elseif s:cursor_function_metadata()
     call search('\<'.a:keyword.'\>', 'W', 0, 0, Skip)
-  elseif !cursor_is_on_keyword
+  elseif !cursor_on_keyword
     call search('\<'.a:keyword.'\>', 'Wb', 0, 0, Skip)
+  else
+    " cursor is on the first character of the keyword or not in a function...
+    " though this needs further investigation.
   endif
 
   let [start_lnr, _start_col] = searchpos('\<do\>', 'W', 0, 0, Skip)
   let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
-  let whitespace_len = len(matchstr(getline(end_lnr), '\s\+'))
 
   let start_col = 0
 
@@ -266,12 +272,6 @@ function! s:textobj_def(keyword, inside) abort
   call setpos('.', cursor_origin)
 
   if start_lnr ==# end_lnr + 1
-    return 0
-  endif
-
-  echom [start_lnr, start_col, end_lnr, end_col]
-
-  if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
     return 0
   endif
 
@@ -293,6 +293,10 @@ function! s:textobj_def(keyword, inside) abort
     let start_col = len(getline(start_lnr - 1)) + 1
     let start_lnr = start_lnr - 1
     let end_lnr -= 1
+  endif
+
+  if !s:in_range([start_lnr, 0], [end_lnr, 0])
+    return 0
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
