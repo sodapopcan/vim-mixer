@@ -240,9 +240,9 @@ function! s:textobj_def(keyword, inside) abort
   endif
 
   let cursor_is_on_keyword = match(expand("<cword>"), a:keyword) >= 0
-  let on_first_char_of_type = cursor_is_on_keyword && s:cursor_char() == a:keyword[0]
+  let on_first_char = cursor_is_on_keyword && s:cursor_char() == a:keyword[0]
 
-  if cursor_is_on_keyword && !on_first_char_of_type
+  if cursor_is_on_keyword && !on_first_char
     normal! b
   elseif s:cursor_function_metadata()
     call search('\<'.a:keyword.'\>', 'W', 0, 0, Skip)
