@@ -292,6 +292,7 @@ function! s:textobj_def(keyword, inside) abort
   if !a:inside
     let start_col = len(getline(start_lnr - 1)) + 1
     let start_lnr = start_lnr - 1
+    let end_lnr -= 1
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
