@@ -107,10 +107,20 @@ COMMANDS                                    *elixir-ext-commands*
 
 Mix                                         *elixir-ext-commands-mix*
 
-:{range}Mix [args]  Run a mix command.  Uses |dispatch| if available.
+:{range}Mix[!] [args]
+                    Run a mix command.  Uses |dispatch| if available.
 
                     Completion is available for tasks whose packages follow
                     the `mix/tasks/task.name.ex` file naming convention.
+
+                    You can specifify the environment like so:
+>
+                      :Deps -test mix compile
+<
+                    This works for any environment you have specified outside
+                    the standard "dev", "test", and "prod".  When called with
+                    a bang [!], it will run the task in both dev and test
+                    envs.
 
 
 :{range}Deps [task] [args]
