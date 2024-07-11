@@ -78,6 +78,10 @@ function! elixir_ext#init() abort
     command -buffer -complete=custom,ElixirExtMixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 
+  if !s:command_exists("Deps")
+    command -buffer -nargs=* -range Deps call s:Deps(<range>, <f-args>)
+  endif
+
   if !s:command_exists("Generate")
     command -buffer -complete=custom,ElixirExtGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
@@ -397,6 +401,20 @@ function! s:Mix(...) abort
     exec "Dispatch mix ".join(a:000, " ")
   else
     call system("mix ".join(a:000, " "))
+  endif
+endfunction
+
+function! s:Deps(range, ...) abort
+  let args = join(a:000, " ")
+
+  if a:range == 1
+    let args = args." ".matchstr(getline("."), '\%(\s\+\)\?{:\zs\w\+')
+  endif
+
+  if s:command_exists("Dispatch")
+    exec "Dispatch mix deps.".args
+  else
+    call system("mix deps.".args)
   endif
 endfunction
 
