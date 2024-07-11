@@ -284,18 +284,21 @@ function! s:textobj_def(keyword, inside) abort
       normal! k^
     endwhile
 
-    if start_lnr != line('.')
+    if start_lnr !=# line('.')
       let start_lnr = line('.') + 1
     endif
   endif
 
   if !a:inside
-    let start_col = len(getline(start_lnr - 1)) + 1
-    let start_lnr = start_lnr - 1
-    let end_lnr -= 1
+    " let start_col = len(getline(start_lnr - 1)) + 1
+    " let start_lnr = start_lnr - 1
+    " let end_lnr -= 1
   endif
 
-  if !s:in_range([start_lnr, 0], [end_lnr, 0])
+  call setpos('.', cursor_origin)
+  " echom [start_lnr, start_col, end_lnr, end_col]
+
+  if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
     return 0
   endif
 
