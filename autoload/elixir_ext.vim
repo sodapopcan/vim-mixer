@@ -362,6 +362,7 @@ function! s:init_mix_project() abort
 
   let b:mix_project["root"] = project_root
   let b:mix_project["name"] = project_name
+  let b:mix_project["alias"] = s:to_elixir_alias(b:mix_project.name)
 
   autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
@@ -374,7 +375,7 @@ function! s:init_mix_project() abort
           \     'type': 'domain',
           \     'alternate': 'test/'.b:mix_project.name.'/{}_test.exs',
           \     'template': [
-          \       'defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot} do',
+          \       'defmodule '.b:mix_project.alias.'.{camelcase|capitalize|dot} do',
           \       'end'
           \     ]
           \   },
@@ -389,7 +390,7 @@ function! s:init_mix_project() abort
           \     'type': 'test',
           \     'alternate': 'lib/'.b:mix_project.name.'/{}.ex',
           \     'template': [
-          \       'defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot}Test do',
+          \       'defmodule '.b:mix_project.alias.'.{camelcase|capitalize|dot}Test do',
           \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
           \       'end'
           \     ],
