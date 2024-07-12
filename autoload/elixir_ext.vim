@@ -315,6 +315,10 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     return 0
   endif
 
+  if !a:inside && empty(trim(getline(start_lnr - 1)))
+    let start_lnr -= 1
+  endif
+
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
   normal! gv
