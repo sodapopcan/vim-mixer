@@ -319,13 +319,6 @@ function! s:textobj_def(keyword, inside) abort
     endif
   endif
 
-  if !a:inside
-    " let start_col = len(getline(start_lnr - 1)) + 1
-    " let start_lnr = start_lnr - 1
-    " let end_lnr -= 1
-  endif
-
-  " call setpos('.', cursor_origin)
   echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
 
   if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
