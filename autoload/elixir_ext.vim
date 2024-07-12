@@ -398,7 +398,7 @@ function! s:init_mix_project() abort
           \   'mix.exs': {
           \     'type': 'mix',
           \     'alternate': 'mix.lock',
-          \     'dispatch': 'mix deps.get'
+          \     'dispatch': 'mix do deps.unlock --all, deps.update --all'
           \   },
           \   'mix.lock': {
           \     'type': 'lock',
