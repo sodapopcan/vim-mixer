@@ -43,14 +43,20 @@ endfunction
 " Init {{{1
 
 function! elixir_ext#init() abort
-  let macros = [['def\|defp\|defmacro\|defmacrop', 'f'], ['defmodule', 'M']]
+  let defregex = 'def\|defp\|defmacro\|defmacrop'
+  let macros = [[defregex, 'f'], ['defmodule', 'M']]
 
   for [macro, obj] in macros
-    exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
-    exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0)\<cr>"
-    exec "onoremap <silent> <buffer> i".obj." :call <sid>textobj_def('".macro."', 1)\<cr>"
-    exec "onoremap <silent> <buffer> a".obj." :call <sid>textobj_def('".macro."', 0)\<cr>"
+    exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1, 0)\<cr>"
+    exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0, 0)\<cr>"
+    exec "onoremap <silent> <buffer> i".obj." :call <sid>textobj_def('".macro."', 1, 0)\<cr>"
+    exec "onoremap <silent> <buffer> a".obj." :call <sid>textobj_def('".macro."', 0, 0)\<cr>"
   endfor
+
+  exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> iF :call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> aF :call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
   vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
   vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
@@ -219,7 +225,7 @@ function! s:textobj_map(inside) abort
   normal! gv
 endfunction
 
-function! s:textobj_def(keyword, inside) abort
+function! s:textobj_def(keyword, inside, ignore_meta) abort
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
   " helpers
@@ -288,7 +294,7 @@ function! s:textobj_def(keyword, inside) abort
   exec start_lnr
   normal! ^
 
-  if !a:inside && !empty(trim(getline(line('.') - 1)))
+  if !a:inside && !empty(trim(getline(line('.') - 1))) && !a:ignore_meta
     normal! k^
     while s:cursor_function_metadata()
       normal! k^
