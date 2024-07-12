@@ -396,6 +396,25 @@ function! s:init_mix_project() abort
           \   },
           \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
           \ }
+
+    let application_file = ""
+    let application_files = [
+          \   "lib/".b:mix_project.name."/application.ex",
+          \   "lib/".b:mix_project.name."/app.ex",
+          \   "lib/".b:mix_project.name."_application.ex",
+          \   "lib/".b:mix_project.name."_app.ex"
+          \ ]
+
+    for file in application_files
+      if filereadable(s:root(file))
+        let application_file = s:sub(s:root(file), b:mix_project.root, '')
+        break
+      endif
+    endfor
+
+    if !empty(application_file)
+      let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
+    endif
   endif
 endfunction
 
