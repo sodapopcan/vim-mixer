@@ -332,6 +332,9 @@ function! s:init_mix_project() abort
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
   let project_root = s:sub(mix_file, 'mix.exs$', '')
+  if project_root ==# ""
+    let project_root = "."
+  endif
 
   try
     let contents = join(readfile(mix_file), "\n")
