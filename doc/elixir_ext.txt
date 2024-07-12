@@ -11,14 +11,9 @@ TEXT OBJECTS................................|elixir-ext-text-objects|
   * Maps....................................|elixir-ext-maps|
   * Functions...............................|elixir-ext-functions|
   * Sigils..................................|elixir-ext-sigils|
-EDITING.....................................|elixir-ext-editing|
-NAVIGATION..................................|elixir-ext-navigation|
-MIX.........................................|elixir-ext-mix|
-PHOENIX.....................................|elixir-ext-phoenix|
 COMMANDS....................................|elixir-ext-commands|
  * Mix......................................|elixir-ext-commands-mix|
  * Editing..................................|elixir-ext-commands-editing|
- * Navigation...............................|elixir-ext-commands-navigation|
 
 
 INTRODUCTION                                *elixir-ext-introduction*
@@ -43,16 +38,16 @@ TEXT OBJECTS                                *elixir-text-objects*
 Text objects are defined for function/macro/module defintions, conditionals,
 sigils, maps, with, and list comprehensions
 
-      Elixir construct         Text Object Key
-      ___________________________________________
-
-      def*                     "d"
-      if, unless, case, cond   "c" (c for conditional)
-      %{}                      "m"
-      ~s"" etc.                "~"
-      with                     "h"
-      for                      "f"
-      pipeline                 "|"
+      Elixir construct             | Text Object Key
+      -----------------------------+-------------------
+      def/defp/defmacro/defmacrop  | f
+      defmodule                    | M
+      if/unless/case/cond          | c (c for conditional)
+      %{}                          | m
+      ~s"" etc.                    | S
+      with                         | h
+      for                          | f
+      pipeline                     | |
 
 These are fully configurable.
 >
@@ -100,66 +95,8 @@ EDITING                                     *elixir-ext-editing*
                       |> Kernel.+()
 <
 
-PHOENIX                                     *elixir-ext-phoenix*
-
-
 COMMANDS                                    *elixir-ext-commands*
 
-Mix                                         *elixir-ext-commands-mix*
-
-:{range}Mix[!] [args]
-                    Run a mix command.  Uses |dispatch| if available.
-
-                    Completion is available for tasks whose packages follow
-                    the `mix/tasks/task.name.ex` file naming convention.
-
-                    You can specifify the environment like so:
->
-                      :Deps -test mix compile
-<
-                    This works for any environment you have specified outside
-                    the standard "dev", "test", and "prod".  When called with
-                    a bang [!], it will run the task in both dev and test
-                    envs.
-
-
-:{range}Deps [task] [args]
-                    A wrapper around `mix deps` with some added functionality.
-
-                    The standard tasks are available as well as an `add` task.
->
-                      :Deps add live_view
-<
-                    With a range, it will operate on the current line.  This
-                    can have different effects in different contexts.  For
-                    now, this only works with deps.  For example, with you
-                    cursor on the following line:
->
-                      {:live_view, "~> 0.20"},
-<
-                    You could upgrade LiveView like so:
-      >
-                      :.Deps unlock
-                      :.Deps update
-<
-
-:Generate           Unified generator command, aware of Phoenix and Ecto:
->
-                      :Generate migration add_name_to_users
-                      :Generate live Accounts User users name:string age:integer
-<
-                    These tasks are hardcoded to avoid possible naming
-                    conflicts if a dynamic way were to be used.
-
-                    You can add your own generators like so:
->
-                      let g:elixir_ext_generators['custom'] = 'my_app.gen.custom'
-<
-                    PRs for other libraries are welcome!
-
-Editing                                     *elixir-ext-commands-editing*
-
-                                            *:FromPipe* *elixir-ext-:FromPipe*
 :FromPipe[!]        Moves a piped argument into function parens.
 
                     The bang version will attempt to format.
@@ -185,19 +122,5 @@ Editing                                     *elixir-ext-commands-editing*
                     even if you use the bang version.
 
                     See *elixir-ext-pipes* for more info.
-
-Navigation                                  *elixir-ext-commands-navigation*
-
-                                            *:Emigration* *elixir-ext-:Emigration*
-:Emigration         Edit a migration file.
-
-                    Without arguments, it will navigate to the most recent
-                    migration.
-
-:{range}R [args]    Edit a "related" file.
-
-                    This 
-
-                    Support autocompletion.
 
   vim:tw=78:et:ft=help:norl:

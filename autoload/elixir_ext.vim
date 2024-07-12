@@ -11,21 +11,6 @@ function! s:matches(str, pat)
   return match(str, path) >= 0
 endfunction
 
-" From tpope
-
-function! s:to_elixir_alias(word)
-  return substitute(s:camelcase(a:word),'^.','\u&','')
-endfunction
-
-function! s:camelcase(word)
-  let word = substitute(a:word, '-', '_', 'g')
-  if word !~# '_' && word =~# '\l'
-    return substitute(word,'^.','\l&','')
-  else
-    return substitute(word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
-  endif
-endfunction
-
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
 function! s:in_range(lnr, col, start, end) abort
@@ -58,8 +43,6 @@ endfunction
 " Init {{{1
 
 function! elixir_ext#init() abort
-  call s:init_mix_project()
-
   let macros = [['def', 'f'], ['defmodule', 'M']]
 
   for [macro, obj] in macros
@@ -74,28 +57,12 @@ function! elixir_ext#init() abort
   onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
   onoremap <silent> <buffer> am :call <sid>textobj_map(0)<cr>
 
-  if !s:command_exists("R")
-    command -buffer -nargs=0 R call s:related()
-  endif
-
   if !s:command_exists("ToPipe")
     command -buffer -nargs=0 ToPipe call s:to_pipe()
   endif
 
   if !s:command_exists("FromPipe")
     command -buffer -nargs=0 FromPipe call s:from_pipe()
-  endif
-
-  if !s:command_exists("Mix")
-    command -buffer -complete=custom,ElixirExtMixComplete -nargs=* Mix call s:Mix(<f-args>)
-  endif
-
-  if !s:command_exists("Deps")
-    command -buffer -nargs=* -range Deps call s:Deps(<range>, <f-args>)
-  endif
-
-  if !s:command_exists("Generate")
-    command -buffer -complete=custom,ElixirExtGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
 endfunction
 
@@ -343,239 +310,6 @@ function! s:textobj_def(keyword, inside) abort
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
   normal! gv
-endfunction
-
-" Mix {{{1
-
-function! s:root(path) abort
-  return b:mix_project.root.'/'.a:path
-endfunction
-
-function! s:is_mix_project() abort
-  return exists("b:mix_project")
-endfunction
-
-function! s:init_mix_project() abort
-  let mix_file = findfile("mix.exs", ".;")
-
-  if mix_file == ""
-    return 0
-  endif
-
-  if !exists("b:mix_project")
-    let b:mix_project = {}
-  endif
-
-  let b:impl_lnr = 0
-  let b:tpl_lnr = 0
-  let project_root = s:sub(mix_file, 'mix.exs$', '')
-  if project_root ==# ""
-    let project_root = "."
-  endif
-
-  try
-    let contents = join(readfile(mix_file), "\n")
-    let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze,')
-  catch
-    let project_name = ""
-  endtry
-
-  let b:mix_project["root"] = project_root
-  let b:mix_project["name"] = project_name
-  let b:mix_project["alias"] = s:to_elixir_alias(b:mix_project.name)
-
-  autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
-
-  if g:elixir_ext_define_projections
-    let g:projectionist_heuristics["mix.exs"] = {
-          \   'lib/'.b:mix_project.name.'.ex': {
-          \     'type': 'domain'
-          \   },
-          \   'lib/'.b:mix_project.name.'/*.ex': {
-          \     'type': 'domain',
-          \     'alternate': 'test/'.b:mix_project.name.'/{}_test.exs',
-          \     'template': [
-          \       'defmodule '.b:mix_project.alias.'.{camelcase|capitalize|dot} do',
-          \       'end'
-          \     ]
-          \   },
-          \   'lib/'.b:mix_project.name.'_web.ex': {
-          \     'type': 'web'
-          \   },
-          \   'lib/'.b:mix_project.name.'_web/*.ex': {
-          \     'type': 'web',
-          \     'alternate': 'test/'.b:mix_project.name.'_web/{}_test.exs'
-          \   },
-          \   'test/'.b:mix_project.name.'/*_test.exs': {
-          \     'type': 'test',
-          \     'alternate': 'lib/'.b:mix_project.name.'/{}.ex',
-          \     'template': [
-          \       'defmodule '.b:mix_project.alias.'.{camelcase|capitalize|dot}Test do',
-          \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
-          \       'end'
-          \     ],
-          \   },
-          \   'mix.exs': {
-          \     'type': 'mix',
-          \     'alternate': 'mix.lock',
-          \     'dispatch': 'mix do deps.unlock --all, deps.update --all'
-          \   },
-          \   'mix.lock': {
-          \     'type': 'lock',
-          \     'alternate': 'mix.exs',
-          \     'dispatch': 'mix deps.get'
-          \   },
-          \   'config/*.exs': {
-          \     'type': 'config',
-          \     'related': 'config/config.exs'
-          \   },
-          \   'lib/'.b:mix_project.name.'_web/router.ex': {
-          \     'type': 'router',
-          \     'alternate': 'lib/'.b:mix_project.name.'_web/endpoint.ex'
-          \   },
-          \   'lib/'.b:mix_project.name.'_web/endpoint.ex': {
-          \     'type': 'endpoint',
-          \     'alternate': 'lib/'.b:mix_project.name.'_web/router.ex'
-          \   },
-          \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
-          \ }
-
-    let application_file = ""
-    let application_files = [
-          \   "lib/".b:mix_project.name."/application.ex",
-          \   "lib/".b:mix_project.name."/app.ex",
-          \   "lib/".b:mix_project.name."_application.ex",
-          \   "lib/".b:mix_project.name."_app.ex"
-          \ ]
-
-    for file in application_files
-      if filereadable(s:root(file))
-        let application_file = s:sub(s:root(file), b:mix_project.root, '')
-        break
-      endif
-    endfor
-
-    if !empty(application_file)
-      let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
-    endif
-  endif
-endfunction
-
-function! s:Mix(...) abort
-  if s:command_exists("Dispatch")
-    exec "Dispatch mix ".join(a:000, " ")
-  else
-    call system("mix ".join(a:000, " "))
-  endif
-endfunction
-
-function! s:Deps(range, ...) abort
-  let args = join(a:000, " ")
-
-  if a:range == 1
-    let args = args." ".matchstr(getline("."), '\%(\s\+\)\?{:\zs\w\+')
-  endif
-
-  if s:command_exists("Dispatch")
-    exec "Dispatch mix deps.".args
-  else
-    call system("mix deps.".args)
-  endif
-endfunction
-
-function! ElixirExtMixComplete(A, L, P) abort
-  return system("ls -1 ".s:root("deps/**/*/mix/tasks/*.ex | xargs basename | sed s/\.ex$//"))
-endfunction
-
-let g:elixir_ext_generators = {
-      \   'repo': 'ecto.gen.repo',
-      \   'migration': 'ecto.gen.migration',
-      \   'auth': 'phx.gen.auth',
-      \   'cert': 'phx.gen.cert',
-      \   'channel': 'phx.gen.channel',
-      \   'context': 'phx.gen.context',
-      \   'embedded': 'phx.gen.embedded',
-      \   'gen': 'phx.gen',
-      \   'html': 'phx.gen.html',
-      \   'json': 'phx.gen.json',
-      \   'live': 'phx.gen.live',
-      \   'notifier': 'phx.gen.notifier',
-      \   'presence': 'phx.gen.presence',
-      \   'release': 'phx.gen.release',
-      \   'schema': 'phx.gen.schema',
-      \   'secret': 'phx.gen.secret',
-      \   'socket': 'phx.gen.socket'
-      \ }
-
-function! s:Generate(...) abort
-  let task = g:elixir_ext_generators[a:1]
-
-  if s:command_exists("Dispatch")
-    exec "Dispatch mix ".task." ".join(a:000[1:])
-  else
-    call system("mix ".task." ".join(a:000[1:]))
-  endif
-endfunction
-
-function! ElixirExtGenerateComplete(A, L, P) abort
-  return join(keys(g:elixir_ext_generators), "\n")
-endfunction
-
-
-" Phoenix {{{1
-
-function! s:in_live_view() abort
-  return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
-endfunction
-
-let s:render_regex = '^\s\+def render('
-
-function! s:in_render() abort
-  return match(getline('.'), s:render_regex) != -1 || search(s:render_regex, 'bWn')
-endfunction
-
-function! s:has_render() abort
-  return search(s:render_regex, 'wn')
-endfunction
-
-function! s:related() abort
-  if !exists("b:mix_project")
-    return
-  endif
-
-  if s:has_render()
-    if s:in_live_view()
-      if s:in_render()
-        let b:tpl_lnr = line('.')
-        if b:impl_lnr
-          exec ":".b:impl_lnr
-        else
-          call search('^\s\+def mount(')
-        endif
-      else
-        let b:impl_lnr = line('.')
-        if b:tpl_lnr
-          exec ":".b:tpl_lnr
-        else
-          call search('^\s\+def render(')
-        endif
-      endif
-    endif
-  else
-    if &ft ==# 'elixir'
-      let basename = s:sub(expand("%:p"), '\.ex$', '.html.heex')
-    else
-      let basename = s:sub(expand("%:p"), '\.html.heex$', '.ex')
-    endif
-    exec "e ".basename
-  endif
-endfunction
-
-
-" Ecto {{{1
-
-function! s:EditMigration(type, ...) abort
-
 endfunction
 
 " :FromPipe and :ToPipe {{{1
