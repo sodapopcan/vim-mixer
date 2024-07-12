@@ -267,7 +267,6 @@ function! s:textobj_def(keyword, inside) abort
   endif
 
   let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
-  echom cursor_on_keyword
   " let cursor_on_function_metadata = s:cursor_function_metadata()
   let on_first_char_of_keyword = cursor_on_keyword && s:cursor_char() == a:keyword[0]
 
@@ -321,7 +320,7 @@ function! s:textobj_def(keyword, inside) abort
     endif
   endif
 
-  echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
+  " echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
 
   if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
     call winrestview(winstate)
