@@ -108,12 +108,12 @@ function! s:cursor_char()
   return getline('.')[col('.') - 1]
 endfunction
 
-function! s:cursor_term()
-  return s:sub((synIDattr(synID(line('.'), col('.'), 1), "name")), '^elixir', '')
-endfunction
-
 function! s:cursor_prev_char()
   return getline('.')[col('.') - 2]
+endfunction
+
+function! s:cursor_term()
+  return s:sub((synIDattr(synID(line('.'), col('.'), 1), "name")), '^elixir', '')
 endfunction
 
 function! s:cursor_in_gutter()
@@ -670,7 +670,7 @@ function! s:from_pipe() abort
     " In this case we are always going to inline-pipe.
     let code = s:get_outer_term()
 
-    if getline('.')[col('.') - 1] != "|"
+    if s:cursor_prev_char() != "|"
       normal! "_dt|
     endif
 
