@@ -253,7 +253,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   endif
 
   let cursor_on_keyword = match(expand("<cword>"), keyword) >= 0
-  let on_first_char_of_keyword = cursor_on_keyword && s:cursor_char() == a:keyword[0]
+  let on_first_char_of_keyword = cursor_on_keyword && expand("<cword>")[0] ==# s:cursor_char()
 
   if cursor_on_keyword && !on_first_char_of_keyword
     normal! b
