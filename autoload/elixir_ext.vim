@@ -122,6 +122,11 @@ function! s:cursor_in_gutter()
   return col('.') <= leading_whitespace_len
 endfunction
 
+" Move the cursor one character forward across newlines
+function! s:cursor_move_forward()
+  exec "normal! 1\<space>"
+endfunction
+
 function! s:cursor_function_metadata()
   return s:outer_term() ==# 'Variable' || s:outer_term() ==# 'DocString' || s:outer_term() ==# 'DocStringDelimiter'
 endfunction
@@ -564,40 +569,42 @@ function! s:to_pipe() abort
   let cursor_origin = getcurpos('.')
   let line = getline('.')
 
-  let open_pos = searchpos('(', 'b', line('.'), 0, "s:skip()") " Move cursor to this position
+  " Search for an open paren before the cursor on the current line and jump to it if found.
+  let open_pos = searchpos('(', 'b', line('.'), 0, "s:skip()")
 
   if open_pos == [0, 0]
-    let open_pos = searchpos('(', '', line('.'), 0, "s:skip()") " Move cursor to this position
+    " If not found, look backwards for an open paren on the current liine and
+    " jump to it if found.
+    let open_pos = searchpos('(', '', line('.'), 0, "s:skip()")
   endif
 
+  " Check to see if there are nested parens on the current line
   let is_nested = searchpos('(', 'bn', line('.'), 0, "s:skip()") != [0, 0]
 
   if !is_nested && s:starts_with_pipe(getline('.'))
-    call s:reset(cursor_origin)
-
-    return
+    return s:reset(cursor_origin)
   endif
 
   if open_pos != [0, 0]
-    let close_pos = searchpairpos('(', '', ')', 'Wn', 's:skip()')
+    let outer_close_pos = searchpairpos('(', '', ')', 'Wn', 's:skip()')
 
     " There are no args to unpipe
     if s:empty_parens()
       return s:reset(cursor_origin)
     endif
 
-    " Now we need to see if there are multiple arguments
-    " We need to match a `(` with a `,`.  Of course, ',' can belong to the
-    " first arg.  This isn't a problem for data structures since we can just
-    " skip the highlight groups.  It's tougher when the first arg is
-    " a function call with multiple arguments.  We need to see if there is
-    " another paren pair within the current parens.  If we do that, we can
-    " skip recursive checks for additional nested function calls by skipping
+    " Now we need to see if there are multiple arguments.  We need to match
+    " a `(` with a `,`.  Of course, ',' may be present *within* the first arg.
+    " This isn't a problem for data structures since we can just skip the
+    " highlight groups.  It's tougher when the first arg is a function call with
+    " multiple arguments.  In this case we need to see if there is another
+    " paren pair within the current parens.  If we do that, we can skip
+    " recursive checks for additional nested function calls by skipping
     " everything between the nested parens.
 
-    exec "normal! 1\<space>"
+    call s:cursor_move_forward()
 
-    let nested_open_pos = searchpos('(', 'W', close_pos[0], 0, "s:skip()")
+    let nested_open_pos = searchpos('(', 'W', outer_close_pos[0], 0, "s:skip()")
     let nested_close_pos = [0, 0]
 
     if nested_open_pos != [0, 0] " First param has args
@@ -607,7 +614,7 @@ function! s:to_pipe() abort
 
     " Check if there is one argument
     let F = {-> s:skip() || (nested_open_pos !=# [0, 0] && s:in_range(nested_open_pos, nested_close_pos)) }
-    let comma_pos = searchpos(',', 'W', close_pos[0], 0, F)
+    let comma_pos = searchpos(',', 'W', outer_close_pos[0], 0, F)
 
     let save_register = @p
 
@@ -616,7 +623,7 @@ function! s:to_pipe() abort
       let save_mark = getpos("'a")
       normal! ma
       call cursor(open_pos)
-      exec "normal! 1\<space>"
+      call s:cursor_move_forward()
       normal! "pd`a
       call setpos("'a", save_mark)
       normal! "_dW
