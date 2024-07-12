@@ -287,6 +287,8 @@ function! s:textobj_def(keyword, inside) abort
     return 0
   endif
 
+  let keyword_lnr = line('.')
+
   if a:inside
     let [start_lnr, _start_col] = searchpairpos('\<'.a:keyword.'\>', '', '\<do\>', 'W', Skip)
   else
@@ -324,7 +326,7 @@ function! s:textobj_def(keyword, inside) abort
   if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
     call winrestview(winstate)
     return 0
-  elseif a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr - 1, 0], [end_lnr + 1, end_col])
+  elseif a:inside && !s:in_range(origin_lnr, origin_col, [keyword_lnr, 0], [end_lnr + 1, end_col])
     call winrestview(winstate)
     return 0
   endif
