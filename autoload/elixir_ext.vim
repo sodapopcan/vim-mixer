@@ -342,7 +342,10 @@ function! s:init_mix_project() abort
     return 0
   endif
 
-  let b:mix_project = 0
+  if !exists("b:mix_project")
+    let b:mix_project = {}
+  endif
+
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
   let project_root = s:sub(mix_file, 'mix.exs$', '')
@@ -357,10 +360,8 @@ function! s:init_mix_project() abort
     let project_name = ""
   endtry
 
-  let b:mix_project = {
-        \   "root": project_root,
-        \   "name": project_name
-        \ }
+  let b:mix_project["root"] = project_root
+  let b:mix_project["name"] = project_name
 
   autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
