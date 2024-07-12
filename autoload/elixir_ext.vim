@@ -373,7 +373,10 @@ function! s:init_mix_project() abort
           \   'lib/'.b:mix_project.name.'/*.ex': {
           \     'type': 'domain',
           \     'alternate': 'test/'.b:mix_project.name.'/{}_test.exs',
-          \     'template': ['defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot} do', 'end']
+          \     'template': [
+          \       'defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot} do',
+          \       'end'
+          \     ]
           \   },
           \   'lib/'.b:mix_project.name.'_web.ex': {
           \     'type': 'web'
@@ -385,7 +388,11 @@ function! s:init_mix_project() abort
           \   'test/'.b:mix_project.name.'/*_test.exs': {
           \     'type': 'test',
           \     'alternate': 'lib/'.b:mix_project.name.'/{}.ex',
-          \     'template': ['defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot}Test do', '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}', 'end'],
+          \     'template': [
+          \       'defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot}Test do',
+          \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
+          \       'end'
+          \     ],
           \   },
           \   'mix.exs': {
           \     'type': 'mix',
