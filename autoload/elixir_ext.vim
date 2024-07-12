@@ -266,8 +266,18 @@ function! s:textobj_def(keyword, inside) abort
     normal! ^
   endif
 
+  if s:cursor_function_metadata()
+    while s:cursor_function_metadata()
+      normal! j^
+    endwhile
+
+    if match(expand("<cword>"), a:keyword) >= 0
+      let cursor_origin = getcurpos('.')
+      let [_, origin_lnr, origin_col, _, _] = cursor_origin
+    endif
+  endif
+
   let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
-  " let cursor_on_function_metadata = s:cursor_function_metadata()
   let on_first_char_of_keyword = cursor_on_keyword && s:cursor_char() == a:keyword[0]
 
   if cursor_on_keyword && !on_first_char_of_keyword
