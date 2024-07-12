@@ -391,7 +391,7 @@ function! s:init_mix_project() abort
           \     'alternate': 'lib/'.b:mix_project.name.'_web/endpoint.ex'
           \   },
           \   'lib/'.b:mix_project.name.'_web/endpoint.ex': {
-          \     'type': 'router',
+          \     'type': 'endpoint',
           \     'alternate': 'lib/'.b:mix_project.name.'_web/router.ex'
           \   },
           \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
