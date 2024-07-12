@@ -128,7 +128,7 @@ function! s:cursor_move_forward()
 endfunction
 
 function! s:cursor_function_metadata()
-  return s:outer_term() ==# 'Variable' || s:outer_term() ==# 'DocString' || s:outer_term() ==# 'DocStringDelimiter'
+  return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:outer_term()) > -1
 endfunction
 
 function! s:is_string_or_comment()
@@ -260,6 +260,7 @@ function! s:textobj_def(keyword, inside) abort
 
   " init
   let cursor_origin = getcurpos('.')
+  let winstate = winsaveview()
 
   """ start
   if s:cursor_in_gutter()
@@ -295,6 +296,8 @@ function! s:textobj_def(keyword, inside) abort
   call setpos('.', cursor_origin)
 
   if start_lnr ==# end_lnr + 1
+    call winrestview(winstate)
+
     return 0
   endif
 
@@ -321,8 +324,10 @@ function! s:textobj_def(keyword, inside) abort
   call setpos('.', cursor_origin)
   " echom [start_lnr, start_col, end_lnr, end_col]
 
-  if !s:in_range([start_lnr, start_col], [end_lnr, end_col])
+  if !a:inside && !s:in_range([start_lnr, 0], [end_lnr, end_col])
+    call winrestview(winstate)
     return 0
+  elseif a:inside && !s:in_range([start_lnr - 1, 0], [end_lnr + 1, end_col])
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
