@@ -28,25 +28,23 @@ endfunction
 
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
-function! s:in_range(start, end) abort
+function! s:in_range(lnr, col, start, end) abort
   let [start_lnr, start_col] = a:start
   let [end_lnr, end_col] = a:end
-  let lnr = line('.')
-  let col = col('.')
 
-  if lnr > start_lnr && lnr < end_lnr
+  if a:lnr > start_lnr && a:lnr < end_lnr
     return 1
   endif
 
-  if lnr == start_lnr && lnr == end_lnr
-    return col >= start_col && col <= end_col
+  if a:lnr == start_lnr && a:lnr == end_lnr
+    return a:col >= start_col && a:col <= end_col
   endif
 
-  if lnr == start_lnr && col >= start_col
+  if a:lnr == start_lnr && a:col >= start_col
     return 1
   endif
 
-  if lnr == end_lnr && col <= end_col
+  if a:lnr == end_lnr && a:col <= end_col
     return 1
   endif
 
@@ -260,6 +258,7 @@ function! s:textobj_def(keyword, inside) abort
 
   " init
   let cursor_origin = getcurpos('.')
+  let [_, origin_lnr, origin_col, _, _] = cursor_origin
   let winstate = winsaveview()
 
   """ start
@@ -268,20 +267,33 @@ function! s:textobj_def(keyword, inside) abort
   endif
 
   let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
+  echom cursor_on_keyword
+  " let cursor_on_function_metadata = s:cursor_function_metadata()
   let on_first_char_of_keyword = cursor_on_keyword && s:cursor_char() == a:keyword[0]
 
   if cursor_on_keyword && !on_first_char_of_keyword
     normal! b
-  elseif s:cursor_function_metadata()
-    call search('\<'.a:keyword.'\>', 'W', 0, 0, Skip)
+  elseif cursor_on_keyword
+    " cursor is on the first character of the keyword or not in a function...
+    " though this needs further investigation.
   elseif !cursor_on_keyword
     call search('\<'.a:keyword.'\>', 'Wb', 0, 0, Skip)
   else
-    " cursor is on the first character of the keyword or not in a function...
-    " though this needs further investigation.
+    call search('\<'.a:keyword.'\>', 'W', 0, 0, Skip)
   endif
 
-  let [start_lnr, _start_col] = searchpos('\<do\>', 'W', 0, 0, Skip)
+  if expand("<cword>") !=# a:keyword
+    call winrestview(winstate)
+    return 0
+  endif
+
+  if a:inside
+    let [start_lnr, _start_col] = searchpairpos('\<'.a:keyword.'\>', '', '\<do\>', 'W', Skip)
+  else
+    let start_lnr = line('.')
+    call searchpos('\<do\>', 'W', 0, 0, Skip)
+  endif
+
   let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
 
   let start_col = 0
@@ -292,14 +304,6 @@ function! s:textobj_def(keyword, inside) abort
   endif
 
   let end_col = len(getline(end_lnr)) + 1 " Include \n
-
-  call setpos('.', cursor_origin)
-
-  if start_lnr ==# end_lnr + 1
-    call winrestview(winstate)
-
-    return 0
-  endif
 
   exec start_lnr
   normal! ^
@@ -321,13 +325,15 @@ function! s:textobj_def(keyword, inside) abort
     " let end_lnr -= 1
   endif
 
-  call setpos('.', cursor_origin)
-  " echom [start_lnr, start_col, end_lnr, end_col]
+  " call setpos('.', cursor_origin)
+  echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
 
-  if !a:inside && !s:in_range([start_lnr, 0], [end_lnr, end_col])
+  if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
     call winrestview(winstate)
     return 0
-  elseif a:inside && !s:in_range([start_lnr - 1, 0], [end_lnr + 1, end_col])
+  elseif a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr - 1, 0], [end_lnr + 1, end_col])
+    call winrestview(winstate)
+    return 0
   endif
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
@@ -572,6 +578,7 @@ endfunction
 
 function! s:to_pipe() abort
   let cursor_origin = getcurpos('.')
+  let [_, origin_lnr, origin_col, _, _] = cursor_origin
   let line = getline('.')
 
   " Search for an open paren before the cursor on the current line and jump to it if found.
@@ -618,7 +625,7 @@ function! s:to_pipe() abort
     endif
 
     " Check if there is one argument
-    let F = {-> s:skip() || (nested_open_pos !=# [0, 0] && s:in_range(nested_open_pos, nested_close_pos)) }
+    let F = {-> s:skip() || (nested_open_pos !=# [0, 0] && s:in_range(origin_lnr, origin_pos, nested_open_pos, nested_close_pos)) }
     let comma_pos = searchpos(',', 'W', outer_close_pos[0], 0, F)
 
     let save_register = @p
