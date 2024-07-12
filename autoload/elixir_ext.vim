@@ -43,7 +43,7 @@ endfunction
 " Init {{{1
 
 function! elixir_ext#init() abort
-  let macros = [['def', 'f'], ['defmodule', 'M']]
+  let macros = [['def\|defp\|defmacro\|defmacrop', 'f'], ['defmodule', 'M']]
 
   for [macro, obj] in macros
     exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1)\<cr>"
@@ -220,6 +220,8 @@ function! s:textobj_map(inside) abort
 endfunction
 
 function! s:textobj_def(keyword, inside) abort
+  let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
+
   " helpers
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
@@ -238,13 +240,13 @@ function! s:textobj_def(keyword, inside) abort
       normal! j^
     endwhile
 
-    if match(expand("<cword>"), a:keyword) >= 0
+    if match(expand("<cword>"), keyword) >= 0
       let cursor_origin = getcurpos('.')
       let [_, origin_lnr, origin_col, _, _] = cursor_origin
     endif
   endif
 
-  let cursor_on_keyword = match(expand("<cword>"), a:keyword) >= 0
+  let cursor_on_keyword = match(expand("<cword>"), keyword) >= 0
   let on_first_char_of_keyword = cursor_on_keyword && s:cursor_char() == a:keyword[0]
 
   if cursor_on_keyword && !on_first_char_of_keyword
@@ -253,12 +255,12 @@ function! s:textobj_def(keyword, inside) abort
     " cursor is on the first character of the keyword or not in a function...
     " though this needs further investigation.
   elseif !cursor_on_keyword
-    call search('\<'.a:keyword.'\>', 'Wb', 0, 0, Skip)
+    call search(keyword, 'Wb', 0, 0, Skip)
   else
-    call search('\<'.a:keyword.'\>', 'W', 0, 0, Skip)
+    call search(keyword, 'W', 0, 0, Skip)
   endif
 
-  if expand("<cword>") !=# a:keyword
+  if match(expand("<cword>"), keyword) == -1
     call winrestview(winstate)
     return 0
   endif
@@ -266,7 +268,7 @@ function! s:textobj_def(keyword, inside) abort
   let keyword_lnr = line('.')
 
   if a:inside
-    let [start_lnr, _start_col] = searchpairpos('\<'.a:keyword.'\>', '', '\<do\>', 'W', Skip)
+    let [start_lnr, _start_col] = searchpairpos(keyword, '', '\<do\>', 'W', Skip)
   else
     let start_lnr = line('.')
     call searchpos('\<do\>', 'W', 0, 0, Skip)
