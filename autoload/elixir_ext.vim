@@ -11,6 +11,21 @@ function! s:matches(str, pat)
   return match(str, path) >= 0
 endfunction
 
+" From tpope
+
+function! s:to_elixir_alias(word)
+  return substitute(s:camelcase(a:word),'^.','\u&','')
+endfunction
+
+function! s:camelcase(word)
+  let word = substitute(a:word, '-', '_', 'g')
+  if word !~# '_' && word =~# '\l'
+    return substitute(word,'^.','\l&','')
+  else
+    return substitute(word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
+  endif
+endfunction
+
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
 function! s:in_range(start, end) abort
@@ -41,7 +56,6 @@ endfunction
 function! s:command_exists(cmd)
   return exists(":".a:cmd) == 2
 endfunction
-
 
 " Init {{{1
 
@@ -358,7 +372,7 @@ function! s:init_mix_project() abort
           \   'lib/'.b:mix_project.name.'/*.ex': {
           \     'type': 'domain',
           \     'alternate': 'test/'.b:mix_project.name.'/{}_test.exs',
-          \     'template': ['defmodule {camelcase|capitalize|dot} do', 'end']
+          \     'template': ['defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot} do', 'end']
           \   },
           \   'lib/'.b:mix_project.name.'_web.ex': {
           \     'type': 'web'
@@ -370,7 +384,7 @@ function! s:init_mix_project() abort
           \   'test/'.b:mix_project.name.'/*_test.exs': {
           \     'type': 'test',
           \     'alternate': 'lib/'.b:mix_project.name.'/{}.ex',
-          \     'template': ['defmodule {camelcase|capitalize|dot}Test do', '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}', 'end'],
+          \     'template': ['defmodule '.s:to_elixir_alias(b:mix_project.name).'.{camelcase|capitalize|dot}Test do', '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}', 'end'],
           \   },
           \   'mix.exs': {
           \     'type': 'mix',
