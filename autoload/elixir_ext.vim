@@ -67,6 +67,11 @@ function! elixir_ext#init() abort
   exec "onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>"
   exec "onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>"
 
+  vnoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
+  vnoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
+  onoremap <silent> <buffer> ic :call <sid>textobj_comment(1)<cr>
+  onoremap <silent> <buffer> ac :call <sid>textobj_comment(0)<cr>
+
   vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
   vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
   onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
@@ -120,6 +125,18 @@ endfunction
 function! s:cursor_function_metadata()
   return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:cursor_outer_term()) > -1
 endfunction
+
+function! s:cursor_on_comment()
+  return index(['Comment', 'DocString', 'DocStringDelimiter'], s:cursor_outer_term()) > -1
+endfunction
+
+function! s:cursor_on_comment_or_blank_line()
+  return s:cursor_on_comment() || s:is_blank(getline('.'))
+endfunction
+
+fun! S()
+  return s:cursor_on_comment_or_blank_line()
+endfun
 
 function! s:is_string_or_comment()
   return s:cursor_term() =~ '\%(String\|Comment\|CharList\)'
@@ -348,6 +365,62 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  normal! gv
+endfunction
+
+function! s:textobj_comment(inside)
+  let view = winsaveview()
+  let cursor_origin = getcurpos('.')
+
+  normal $
+
+  if !s:cursor_on_comment()
+    return winrestview(view)
+  endif
+
+  let comment_type = s:cursor_outer_term()
+
+  while s:cursor_on_comment() && comment_type == s:cursor_outer_term()
+    if line('.') == 1
+      break
+    endif
+
+    normal k$
+  endwhile
+
+  if !s:cursor_on_comment() || comment_type != s:cursor_outer_term()
+    normal j$
+  endif
+
+  let start_lnr = line('.')
+
+  call setpos('.', cursor_origin)
+
+  normal $
+
+  while s:cursor_on_comment() && comment_type ==# s:cursor_outer_term()
+    if line('.') == line('$')
+      break
+    endif
+
+    normal j$
+  endwhile
+
+  echom line('.')
+
+  if !s:cursor_on_comment() || comment_type != s:cursor_outer_term()
+    normal k$
+  endif
+
+  let end_lnr = line('.')
+
+  if a:inside && comment_type ==# 'DocString'
+    let start_lnr += 1
+    let end_lnr -= 1
+  endif
+
+  call setpos("'<", [bufnr('%'), start_lnr, 1, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, len(getline(end_lnr)) + 1, 0])
   normal! gv
 endfunction
 
