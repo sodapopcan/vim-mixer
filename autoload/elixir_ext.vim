@@ -44,7 +44,7 @@ endfunction
 
 function! elixir_ext#init() abort
   let defregex = 'def\|defp\|defmacro\|defmacrop'
-  let macros = [[defregex, 'f'], ['defmodule', 'M']]
+  let macros = [[defregex, 'f'], ['defmodule', 'M'], ['quote', 'q']]
 
   for [macro, obj] in macros
     exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1, 0)\<cr>"
@@ -57,6 +57,11 @@ function! elixir_ext#init() abort
   exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
   exec "onoremap <silent> <buffer> iF :call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
   exec "onoremap <silent> <buffer> aF :call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+
+  exec "vnoremap <silent> <buffer> iq :\<c-u>call <sid>textobj_def('quote', 1, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> aq :\<c-u>call <sid>textobj_def('quote', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>"
 
   vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
   vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
