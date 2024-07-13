@@ -276,8 +276,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   endif
 
   if match(expand("<cword>"), keyword) == -1
-    call winrestview(winstate)
-    return 0
+    return winrestview(winstate)
   endif
 
   let keyword_lnr = line('.')
@@ -287,8 +286,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   if dokw != [0, 0]
     " We're dealing with keyword syntax so we're going to bail for now
 
-    call winrestview(winstate)
-    return 0
+    return winrestview(winstate)
     " call search('(', 'W', line('.'))
     " if s:cursor_char() ==# '('
     "   normal! vib
@@ -338,11 +336,9 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   " echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
 
   if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
-    call winrestview(winstate)
-    return 0
+    return winrestview(winstate)
   elseif a:inside && !s:in_range(origin_lnr, origin_col, [keyword_lnr, 0], [end_lnr + 1, end_col])
-    call winrestview(winstate)
-    return 0
+    return winrestview(winstate)
   endif
 
   " If the previous line is just whitespace, grab it as well
