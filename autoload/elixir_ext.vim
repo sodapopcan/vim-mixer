@@ -278,6 +278,27 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   let keyword_lnr = line('.')
 
+  " let dokw = searchpairpos(keyword, '', '\<do\>\:', 'W', Skip, line('.') + 1)
+
+  " if dokw != [0, 0]
+  "   " We'rc dealing with keyword syntax and we're gonna abort
+
+  "   " Let's look for an open paren on the same line since this is the only legal
+  "   " thing:
+  "   call search('(', 'W', line('.'))
+  "   if s:cursor_char() ==# '('
+  "     normal! vib
+  "   else
+  "     normal! Wv$
+  "   endif
+
+  "   return 0
+  "   " call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  "   " call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  "   " normal! gv
+  "   " return winrestview(winstate)
+  " endif
+
   if a:inside
     let [start_lnr, _start_col] = searchpairpos(keyword, '', '\<do\>', 'W', Skip)
   else
@@ -287,7 +308,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
 
-  let start_col = 0
+  let start_col = 1
 
   if a:inside
     let start_lnr += 1
@@ -320,7 +341,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     return 0
   endif
 
-  if !a:inside && empty(trim(getline(start_lnr - 1)))
+  if start_lnr - 1 != 0 && !a:inside && empty(trim(getline(start_lnr - 1)))
     let start_lnr -= 1
   endif
 
