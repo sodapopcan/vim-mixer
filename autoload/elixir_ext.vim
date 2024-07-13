@@ -345,6 +345,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     return 0
   endif
 
+  " If the previous line is just whitespace, grab it as well
   if start_lnr - 1 != 0 && !a:inside && s:is_blank(getline(start_lnr - 1))
     let start_lnr -= 1
   endif
