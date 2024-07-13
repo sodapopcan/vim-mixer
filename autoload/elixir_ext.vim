@@ -11,6 +11,10 @@ function! s:matches(str, pat)
   return match(str, path) >= 0
 endfunction
 
+function! s:is_blank(str)
+  return empty(trim(a:str))
+endfunction
+
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
 function! s:in_range(lnr, col, start, end) abort
@@ -119,7 +123,7 @@ function! s:empty_parens()
   let cursor = getpos(".")
   let save_i = @i
   normal! "iyib
-  let is_empty = empty(trim(@i))
+  let is_empty = s:is_blank(@i)
   let @i = save_i
   call setpos(".", cursor)
 
@@ -320,7 +324,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   exec start_lnr
   normal! ^
 
-  if !a:inside && !empty(trim(getline(line('.') - 1))) && !a:ignore_meta
+  if !a:inside && !s:is_blank(getline(line('.') - 1)) && !a:ignore_meta
     normal! k^
     while s:cursor_function_metadata()
       normal! k^
@@ -341,7 +345,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     return 0
   endif
 
-  if start_lnr - 1 != 0 && !a:inside && empty(trim(getline(start_lnr - 1)))
+  if start_lnr - 1 != 0 && !a:inside && s:is_blank(getline(start_lnr - 1))
     let start_lnr -= 1
   endif
 
