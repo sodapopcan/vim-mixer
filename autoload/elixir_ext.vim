@@ -107,8 +107,18 @@ function! s:cursor_move_forward()
   exec "normal! 1\<space>"
 endfunction
 
+function! s:cursor_outer_term()
+  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+
+  let terms = filter(terms, 'v:val !=# "elixirBlock"')
+
+  if empty(terms) | return '' | endif
+
+  return s:sub(s:sub(terms[0], 'elixir', ''), 'Delimiter', '')
+endfunction
+
 function! s:cursor_function_metadata()
-  return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:outer_term()) > -1
+  return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:cursor_outer_term()) > -1
 endfunction
 
 function! s:is_string_or_comment()
@@ -130,16 +140,6 @@ function! s:empty_parens()
   return is_empty
 endfunction
 
-function! s:outer_term()
-  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
-
-  let terms = filter(terms, 'v:val !=# "elixirBlock"')
-
-  if empty(terms) | return '' | endif
-
-  return s:sub(s:sub(terms[0], 'elixir', ''), 'Delimiter', '')
-endfunction
-
 function! s:get_term(cmd)
   let save_i = @i
   exec 'normal! "i'.a:cmd
@@ -150,7 +150,7 @@ function! s:get_term(cmd)
 endfunction
 
 function! s:get_outer_term()
-  let outer_term = s:outer_term()
+  let outer_term = s:cursor_outer_term()
 
   if outer_term ==# 'Map'
     let value = s:get_term('da{')
