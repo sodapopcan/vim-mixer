@@ -11,6 +11,7 @@ TEXT OBJECTS................................|elixir-ext-text-objects|
   * Maps....................................|elixir-ext-maps|
   * Functions...............................|elixir-ext-functions|
   * Sigils..................................|elixir-ext-sigils|
+  * Comments................................*elixir-ext-comments*
 COMMANDS....................................|elixir-ext-commands|
  * Mix......................................|elixir-ext-commands-mix|
  * Editing..................................|elixir-ext-commands-editing|
@@ -31,29 +32,52 @@ NeoVim users are encouraged to checkout elixir-tools.nvim which has many of
 the same features available here.
 
 
-TEXT OBJECTS                                *elixir-text-objects*
-                                            *elixir-text-object*
-                                            *elixir-textobj*
+TEXT OBJECTS                                *elixir-ext-text-objects*
+                                            *elixir-ext-text-object*
+                                            *elixir-ext-textobj*
 
 Text objects are defined for function/macro/module defintions, conditionals,
 sigils, maps, with, and list comprehensions
 
       Elixir construct             | Text Object Key
       -----------------------------+-------------------
+      block (between do/end)       | e
       def/defp/defmacro/defmacrop  | f
+      def/etc. without meta        | F
       defmodule                    | M
-      if/unless/case/cond          | c (c for conditional)
       %{}                          | m
-      ~s"" etc.                    | S
-      with                         | h
-      for                          | f
+      ~s""/etc.                    | S (note: uppercase)
       pipeline                     | |
+      #/@doc """/etc               | c (comment)
 
-These are fully configurable.
->
-    let g:elixir_ext_textobj['d'] = 'f'
-    let g:elixir_ext_textobj['f'] = 'l'
-<
+
+ie                                          *elixir-ext-ie* *elixir-ext-ae*
+ae                  A do/end block.  Includes else.
+
+
+if                                          *elixir-ext-if* *elixir-ext-af*
+af                                          *elixir-ext-iF* *elixir-ext-aF*
+iF
+aF                  A function including def, defp, defmacro, and defmacrop to
+                    their respective end.  Useful for not having to worry
+                    about being inside another block.
+
+                    "if" and "af" will include docstrings, specs, comments,
+                    and other meta.  This will only work so long as there are
+                    no blank lines with the excpetion of docstrings.  The "aF"
+                    variant will only include the function itself.  "iF" is
+                    included for convenience but is identical to "aF"
+
+
+iM                                          *elixir-ext-iM* *elixir-ext-aM*
+aM                  A module, ie, defmodule/end.  Useful for not
+                    having to worry about being inside another block.
+
+
+ic                                          *elixir-ext-ic* *elixir-ext-ac*
+ac                  A comment or docstring.  "ic" is identical to "ac" when
+                    operating on a comment.
+
 
 EDITING                                     *elixir-ext-editing*
 
