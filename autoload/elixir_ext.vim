@@ -282,26 +282,26 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   let keyword_lnr = line('.')
 
-  " let dokw = searchpairpos(keyword, '', '\<do\>\:', 'W', Skip, line('.') + 1)
+  let dokw = searchpairpos(keyword, '', '\<do\>\:', 'W', Skip, line('.') + 1)
 
-  " if dokw != [0, 0]
-  "   " We'rc dealing with keyword syntax and we're gonna abort
+  if dokw != [0, 0]
+    " We're dealing with keyword syntax so we're going to bail for now
 
-  "   " Let's look for an open paren on the same line since this is the only legal
-  "   " thing:
-  "   call search('(', 'W', line('.'))
-  "   if s:cursor_char() ==# '('
-  "     normal! vib
-  "   else
-  "     normal! Wv$
-  "   endif
+    call winrestview(winstate)
+    return 0
+    " call search('(', 'W', line('.'))
+    " if s:cursor_char() ==# '('
+    "   normal! vib
+    " else
+    "   normal! Wv$
+    " endif
 
-  "   return 0
-  "   " call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  "   " call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-  "   " normal! gv
-  "   " return winrestview(winstate)
-  " endif
+    " return 0
+    " call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+    " call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+    " normal! gv
+    " return winrestview(winstate)
+  endif
 
   if a:inside
     let [start_lnr, _start_col] = searchpairpos(keyword, '', '\<do\>', 'W', Skip)
