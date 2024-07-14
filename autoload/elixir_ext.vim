@@ -364,7 +364,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   """ start
   if s:cursor_in_gutter()
     normal! ^
-endif
+  endif
 
   if s:cursor_function_metadata()
     while s:cursor_function_metadata()
