@@ -67,6 +67,11 @@ function! elixir_ext#init() abort
   exec "onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>"
   exec "onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>"
 
+  vnoremap <silent> <buffer> ie :<c-u>call <sid>textobj_block(1)<cr>
+  vnoremap <silent> <buffer> ae :<c-u>call <sid>textobj_block(0)<cr>
+  onoremap <silent> <buffer> ie :call <sid>textobj_block(1)<cr>
+  onoremap <silent> <buffer> ae :call <sid>textobj_block(0)<cr>
+
   vnoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
   vnoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
   onoremap <silent> <buffer> ic :call <sid>textobj_comment(1)<cr>
@@ -248,6 +253,27 @@ function! s:textobj_map(inside) abort
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  normal! gv
+endfunction
+
+function! s:textobj_block(inside) abort
+  let view = winsaveview()
+  let [do_lnr, _] = searchpos('\<do\>', 'Wb', 0, 0, {-> s:is_string_or_comment()})
+  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
+
+  if view.lnum > end_lnr
+    exec view.lnum
+    let [do_lnr, _] = searchpos('\<do\>', 'W', 0, 0, {-> s:is_string_or_comment()})
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
+  endif
+
+  if a:inside
+    let do_lnr += 1
+    let end_lnr -= 1
+  endif
+
+  call setpos("'<", [bufnr('%'), do_lnr, 0, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, len(getline(end_lnr)), 0])
   normal! gv
 endfunction
 
