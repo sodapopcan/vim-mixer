@@ -112,7 +112,7 @@ function! s:cursor_move_forward()
   exec "normal! 1\<space>"
 endfunction
 
-function! s:cursor_outer_term()
+function! s:cursor_outer_syn_name()
   let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
 
   let terms = filter(terms, 'v:val !=# "elixirBlock"')
@@ -123,11 +123,11 @@ function! s:cursor_outer_term()
 endfunction
 
 function! s:cursor_function_metadata()
-  return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:cursor_outer_term()) > -1
+  return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:cursor_outer_syn_name()) > -1
 endfunction
 
 function! s:cursor_on_comment()
-  return index(['Comment', 'DocString', 'DocStringDelimiter'], s:cursor_outer_term()) > -1
+  return index(['Comment', 'DocString', 'DocStringDelimiter'], s:cursor_outer_syn_name()) > -1
 endfunction
 
 function! s:cursor_on_comment_or_blank_line()
@@ -167,7 +167,7 @@ function! s:get_term(cmd)
 endfunction
 
 function! s:get_outer_term()
-  let outer_term = s:cursor_outer_term()
+  let outer_term = s:cursor_outer_syn_name()
 
   if outer_term ==# 'Map'
     let value = s:get_term('da{')
@@ -378,9 +378,9 @@ function! s:textobj_comment(inside)
     return winrestview(view)
   endif
 
-  let comment_type = s:cursor_outer_term()
+  let comment_type = s:cursor_outer_syn_name()
 
-  while s:cursor_on_comment() && comment_type == s:cursor_outer_term()
+  while s:cursor_on_comment() && comment_type == s:cursor_outer_syn_name()
     if line('.') == 1
       break
     endif
@@ -388,7 +388,7 @@ function! s:textobj_comment(inside)
     normal k$
   endwhile
 
-  if !s:cursor_on_comment() || comment_type != s:cursor_outer_term()
+  if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
     normal j$
   endif
 
@@ -398,7 +398,7 @@ function! s:textobj_comment(inside)
 
   normal $
 
-  while s:cursor_on_comment() && comment_type ==# s:cursor_outer_term()
+  while s:cursor_on_comment() && comment_type ==# s:cursor_outer_syn_name()
     if line('.') == line('$')
       break
     endif
@@ -408,7 +408,7 @@ function! s:textobj_comment(inside)
 
   echom line('.')
 
-  if !s:cursor_on_comment() || comment_type != s:cursor_outer_term()
+  if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
     normal k$
   endif
 
