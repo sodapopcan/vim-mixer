@@ -296,15 +296,20 @@ function! s:jump_to_function()
     " and we're done.
     normal! w
 
-    return [line('.'), col('.')]
+    return [line('.'), 0]
   else
     " There could be matching.  We're going to find the last `=` or `->`, skipping
     " any language constructs.  This should cover cases like:
     " 
     "     let foo = bar = if true do
     "
-    return searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
-  endif
+    let has_assignment = search('\%(\%(=\|->\)\s\+\)', 'W', line('.'), 0, Skip)
+    if has_assignment
+      let [start_lnr, start_col] = searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
+    else
+      return [line('.'), 0]
+    endif
+  end
 endfunction
 
 function! T()
@@ -314,7 +319,7 @@ endfunction
 function! s:textobj_block(inside) abort
   let view = winsaveview()
   let start_col = 0
-  let [start_lnr, _] = searchpos('\<do\>', 'Wb', 0, 0, {-> s:is_string_or_comment()})
+  let [start_lnr, _] = searchpos('\<do\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
   let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
 
   if view.lnum > end_lnr
@@ -325,11 +330,15 @@ function! s:textobj_block(inside) abort
 
   if a:inside
     let start_lnr += 1
+    let start_col = 0
     let end_lnr -= 1
+    let end_col = len(getline(end_lnr)) + 1
   else
     let [start_lnr, start_col] = s:jump_to_function()
-    let end_col = len(getline(end_lnr)) + 2
+    let end_col = len(getline(end_lnr)) + 1
   endif
+
+  echom [start_lnr, end_lnr]
 
   call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
