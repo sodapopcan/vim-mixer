@@ -318,15 +318,15 @@ function! s:jump_to_function()
 
   " With out cursor on the 'd' of a `do` block, we want to find its matching
   " function without knowing its name.
+
+  " First lets check if we have a builtin as that is simple.
+  if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
+  " We're not going to do anything here
   "
-  " First we are going to check if we are multi-line.
-  " Thanks to Elixir's syntax rules, the only legal way we can have multi-line
-  " arguments to a `do` block is Thanks to Elixir's syntax rules, the only sane
-  " way we can have multi-line arguments to a `do` block is if they are wrapped
-  " in parens or a single map or list.  There is a third insane way involving an
-  " escape char but this plugin does not aim to cover this case.
-  " let maybe_leading_whitespace = '^\%(\s\+\)\?'
-  if search('^\%(\s\+\)\?\zs\%()\|]\|}\) \<do\>', 'Wb', line('.'))
+  " If not we're going to check if we have either a paren block or a single
+  " argument list, tuple, or map.  This is the only other case like we will
+  " cover for now.
+  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \<do\>', 'Wb', line('.'))
     " We're multiline which means we can skip right to the line that has our
     " function call!  Again, this is thanks to Elixir's syntax rules that you
     " cannot have whitespace between a function call and its opening paren.
@@ -344,34 +344,8 @@ function! s:jump_to_function()
     call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
   endif
 
-  " Now we're going to jump to the start of the so we think forward.
   normal! ^
-
-  if expand("<cword>") =~ '^def'
-    " We're on a def so we don't need to think about preceeding pattern matching
-    " (as in Elixir assignment), so we're just going to jump to the next token
-    " and we're done.
-    normal! w
-
-    return [line('.'), 0]
-  else
-    " There could be matching.  We're going to find the first `=` or `->`, skipping
-    " any language constructs.  This means that in the following case:
-    " 
-    "     %User{} = bar = if true do
-    "       true
-    "     end
-    "
-    " dae will grab the `bar =` as well.  I'm not going to worry about this
-    " right now (or probably ever).
-    let assignment = searchpos('\%(=\|->\)\@<=\s\+\w', 'W', line('.'), 0, Skip)
-
-    if assignment != [0, 0]
-      return assignment
-    else
-      return [line('.'), 0]
-    endif
-  end
+  return [line('.'), 0]
 endfunction
 
 " -- textobj_def {{{1
