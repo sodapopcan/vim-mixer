@@ -203,9 +203,22 @@ endfunction
 
 " Text Objects {{{1
 
+" -- helpers {{{1
+function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+  let b:elixir_ext_view = a:view
+
+  call setpos("'<", [bufnr('%'), a:start_lnr, a:start_col, 0])
+  call setpos("'>", [bufnr('%'), a:end_lnr, a:end_col, 0])
+
+  normal! gv
+
+  call feedkeys(":silent call winrestview(b:elixir_ext_view)\<cr>:silent call setpos('.', b:elixir_ext_view.lnum)\<cr>:silent unlet b:elixir_ext_view\<cr>:normal! ^\<cr>", "n")
+endfunction!
+
 " -- textobj_map {{{1
 
 function! s:textobj_map(inside) abort
+  let view = winsavestate()
   let char = s:cursor_char()
   let current_pos = getpos('.')
 
@@ -253,9 +266,7 @@ function! s:textobj_map(inside) abort
 
   call setpos('.', current_pos)
 
-  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-  normal! gv
+  call s:textobj_select_obj(view, start_lnr, end_col, end_lnr, end_col)
 endfunction
 
 " -- textobj_block {{{1
@@ -303,9 +314,7 @@ function! s:textobj_block(inside) abort
 
   echom [start_lnr, end_lnr]
 
-  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-  normal! gv
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
 function! F()
@@ -357,9 +366,9 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
 
   " init
+  let view = winsaveview()
   let cursor_origin = getcurpos('.')
   let [_, origin_lnr, origin_col, _, _] = cursor_origin
-  let winstate = winsaveview()
 
   """ start
   if s:cursor_in_gutter()
@@ -392,7 +401,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   endif
 
   if match(expand("<cword>"), keyword) == -1
-    return winrestview(winstate)
+    return winrestview(view)
   endif
 
   let keyword_lnr = line('.')
@@ -402,7 +411,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   if dokw != [0, 0]
     " We're dealing with keyword syntax so we're going to bail for now
 
-    return winrestview(winstate)
+    return winrestview(view)
     " call search('(', 'W', line('.'))
     " if s:cursor_char() ==# '('
     "   normal! vib
@@ -414,7 +423,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     " call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
     " call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
     " normal! gv
-    " return winrestview(winstate)
+    " return winrestview(view)
   endif
 
   if a:inside
@@ -452,9 +461,9 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   " echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
 
   if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
-    return winrestview(winstate)
+    return winrestview(view)
   elseif a:inside && !s:in_range(origin_lnr, origin_col, [keyword_lnr, 0], [end_lnr + 1, end_col])
-    return winrestview(winstate)
+    return winrestview(view)
   endif
 
   " If the previous line is just whitespace, grab it as well
@@ -462,9 +471,8 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     let start_lnr -= 1
   endif
 
-  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-  normal! gv
+  let view.lnum = keyword_lnr
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
 " -- textobj_comment {{{1
@@ -520,9 +528,7 @@ function! s:textobj_comment(inside)
     let end_lnr -= 1
   endif
 
-  call setpos("'<", [bufnr('%'), start_lnr, 1, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, len(getline(end_lnr)) + 1, 0])
-  normal! gv
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
 " :FromPipe and :ToPipe {{{1
