@@ -4,7 +4,6 @@ source t/_helpers.vim
 silent filetype plugin indent on
 syntax enable
 
-
 describe 'Block'
   before
     new
