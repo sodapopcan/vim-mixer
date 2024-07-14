@@ -364,9 +364,10 @@ function! s:jump_to_function()
     "
     " dae will grab the `bar =` as well.  I'm not going to worry about this
     " right now (or probably ever).
-    let has_assignment = search('\%(\%(=\|->\)\s\+\)', 'W', line('.'), 0, Skip)
-    if has_assignment
-      return searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
+    let assignment = searchpos('\%(=\|->\)\@<=\s\+\w', 'W', line('.'), 0, Skip)
+
+    if assignment != [0, 0]
+      return assignment
     else
       return [line('.'), 0]
     endif
