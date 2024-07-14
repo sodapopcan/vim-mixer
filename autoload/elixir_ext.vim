@@ -260,16 +260,35 @@ endfunction
 
 " -- textobj_block {{{1
 
+function! D()
+  return searchpos('\<\%(do\|end\)\>', 'Wc', 0, 0, {-> s:is_string_or_comment()})
+endfunction
+
 function! s:textobj_block(inside) abort
   let view = winsaveview()
   let start_col = 0
-  let [start_lnr, _] = searchpos('\<do\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
-  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
 
-  if view.lnum > end_lnr
-    exec view.lnum
-    let [start_lnr, _] = searchpos('\<do\>', 'W', 0, 0, {-> s:is_string_or_comment()})
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
+  normal! wb
+
+  let matchpos1 = searchpos('\<\%(do\|end\)\>', 'Wc', 0, 0, {-> s:is_string_or_comment()})
+  let match = expand('<cword>')
+
+  if match ==# 'do'
+    let flag = 'n'
+  else
+    let flag = 'b'
+  endif
+
+  let matchpos2 = searchpairpos('\<do\>', '', '\<end\>', 'W'.flag, {-> s:is_string_or_comment()})
+
+  echom [matchpos1, matchpos2]
+
+  if match ==# 'do'
+    let [start_lnr, start_col] = matchpos1
+    let [end_lnr, end_col] = matchpos2
+  else
+    let [start_lnr, start_col] = matchpos2
+    let [end_lnr, end_col] = matchpos1
   endif
 
   if a:inside
