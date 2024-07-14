@@ -203,6 +203,8 @@ endfunction
 
 " Text Objects {{{1
 
+" -- textobj_map {{{1
+
 function! s:textobj_map(inside) abort
   let char = s:cursor_char()
   let current_pos = getpos('.')
@@ -256,6 +258,42 @@ function! s:textobj_map(inside) abort
   normal! gv
 endfunction
 
+" -- textobj_block {{{1
+
+function! s:textobj_block(inside) abort
+  let view = winsaveview()
+  let start_col = 0
+  let [start_lnr, _] = searchpos('\<do\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
+  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
+
+  if view.lnum > end_lnr
+    exec view.lnum
+    let [start_lnr, _] = searchpos('\<do\>', 'W', 0, 0, {-> s:is_string_or_comment()})
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
+  endif
+
+  if a:inside
+    let start_lnr += 1
+    let start_col = 0
+    let end_lnr -= 1
+  else
+    let [start_lnr, start_col] = s:jump_to_function()
+  endif
+
+  let end_col = len(getline(end_lnr)) + 1
+
+  echom [start_lnr, end_lnr]
+
+  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  normal! gv
+endfunction
+
+function! F()
+  call s:jump_to_function()
+endfunction!
+
+
 function! s:jump_to_function()
   let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
 
@@ -305,45 +343,14 @@ function! s:jump_to_function()
     "
     let has_assignment = search('\%(\%(=\|->\)\s\+\)', 'W', line('.'), 0, Skip)
     if has_assignment
-      let [start_lnr, start_col] = searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
+      return searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
     else
       return [line('.'), 0]
     endif
   end
 endfunction
 
-function! T()
-  return s:is_string_or_comment()
-endfunction
-
-function! s:textobj_block(inside) abort
-  let view = winsaveview()
-  let start_col = 0
-  let [start_lnr, _] = searchpos('\<do\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
-  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
-
-  if view.lnum > end_lnr
-    exec view.lnum
-    let [start_lnr, _] = searchpos('\<do\>', 'W', 0, 0, {-> s:is_string_or_comment()})
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
-  endif
-
-  if a:inside
-    let start_lnr += 1
-    let start_col = 0
-    let end_lnr -= 1
-    let end_col = len(getline(end_lnr)) + 1
-  else
-    let [start_lnr, start_col] = s:jump_to_function()
-    let end_col = len(getline(end_lnr)) + 1
-  endif
-
-  echom [start_lnr, end_lnr]
-
-  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-  normal! gv
-endfunction
+" -- textobj_def {{{1
 
 function! s:textobj_def(keyword, inside, ignore_meta) abort
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
@@ -461,6 +468,8 @@ endif
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
   normal! gv
 endfunction
+
+" -- textobj_comment {{{1
 
 function! s:textobj_comment(inside)
   let view = winsaveview()
