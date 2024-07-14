@@ -355,11 +355,15 @@ function! s:jump_to_function()
 
     return [line('.'), 0]
   else
-    " There could be matching.  We're going to find the last `=` or `->`, skipping
-    " any language constructs.  This should cover cases like:
+    " There could be matching.  We're going to find the first `=` or `->`, skipping
+    " any language constructs.  This means that in the following case:
     " 
-    "     let foo = bar = if true do
+    "     %User{} = bar = if true do
+    "       true
+    "     end
     "
+    " dae will grab the `bar =` as well.  I'm not going to worry about this
+    " right now (or probably ever).
     let has_assignment = search('\%(\%(=\|->\)\s\+\)', 'W', line('.'), 0, Skip)
     if has_assignment
       return searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
