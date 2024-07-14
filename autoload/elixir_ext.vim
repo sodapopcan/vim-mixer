@@ -62,10 +62,10 @@ function! elixir_ext#init() abort
   exec "onoremap <silent> <buffer> iF :call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
   exec "onoremap <silent> <buffer> aF :call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
-  exec "vnoremap <silent> <buffer> iq :\<c-u>call <sid>textobj_def('quote', 1, 1)\<cr>"
-  exec "vnoremap <silent> <buffer> aq :\<c-u>call <sid>textobj_def('quote', 0, 1)\<cr>"
-  exec "onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>"
-  exec "onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>"
+  vnoremap <silent> <buffer> iq :\<c-u>call <sid>textobj_def('quote', 1, 1)\<cr>
+  vnoremap <silent> <buffer> aq :\<c-u>call <sid>textobj_def('quote', 0, 1)\<cr>
+  onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>
+  onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>
 
   vnoremap <silent> <buffer> ie :<c-u>call <sid>textobj_block(1)<cr>
   vnoremap <silent> <buffer> ae :<c-u>call <sid>textobj_block(0)<cr>
