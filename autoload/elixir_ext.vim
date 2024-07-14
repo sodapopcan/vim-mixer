@@ -256,24 +256,83 @@ function! s:textobj_map(inside) abort
   normal! gv
 endfunction
 
+function! s:jump_to_function()
+  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
+
+  " With out cursor on the 'd' of a `do` block, we want to find its matching
+  " function without knowing its name.
+  "
+  " First we are going to check if we are multi-line.
+  " Thanks to Elixir's syntax rules, the only legal way we can have multi-line
+  " arguments to a `do` block is Thanks to Elixir's syntax rules, the only sane
+  " way we can have multi-line arguments to a `do` block is if they are wrapped
+  " in parens or a single map or list.  There is a third insane way involving an
+  " escape char but this plugin does not aim to cover this case.
+  " let maybe_leading_whitespace = '^\%(\s\+\)\?'
+  if search('^\%(\s\+\)\?\zs\%()\|]\|}\) \<do\>', 'Wb', line('.'))
+    " We're multiline which means we can skip right to the line that has our
+    " function call!  Again, this is thanks to Elixir's syntax rules that you
+    " cannot have whitespace between a function call and its opening paren.
+    let close_char = s:cursor_char()
+
+    if close_char == ')'
+      let open_char = '('
+    elseif close_char == ']' 
+      let open_char = '['
+    elseif close_char == '}' 
+      let open_char = '{'
+    else
+      return [0, 0]
+    endif
+    call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
+  endif
+
+  " Now we're going to jump to the start of the so we think forward.
+  normal! ^
+
+  if expand("<cword>") =~ '^def'
+    " We're on a def so we don't need to think about preceeding pattern matching
+    " (as in Elixir assignment), so we're just going to jump to the next token
+    " and we're done.
+    normal! w
+
+    return [line('.'), col('.')]
+  else
+    " There could be matching.  We're going to find the last `=` or `->`, skipping
+    " any language constructs.  This should cover cases like:
+    " 
+    "     let foo = bar = if true do
+    "
+    return searchpos('\%(\%(=\|->\)\s\+\)\@<=\w', 'Wc', line('.'), 0, Skip)
+  endif
+endfunction
+
+function! T()
+  return s:is_string_or_comment()
+endfunction
+
 function! s:textobj_block(inside) abort
   let view = winsaveview()
-  let [do_lnr, _] = searchpos('\<do\>', 'Wb', 0, 0, {-> s:is_string_or_comment()})
-  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
+  let start_col = 0
+  let [start_lnr, _] = searchpos('\<do\>', 'Wb', 0, 0, {-> s:is_string_or_comment()})
+  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
 
   if view.lnum > end_lnr
     exec view.lnum
-    let [do_lnr, _] = searchpos('\<do\>', 'W', 0, 0, {-> s:is_string_or_comment()})
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
+    let [start_lnr, _] = searchpos('\<do\>', 'W', 0, 0, {-> s:is_string_or_comment()})
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
   endif
 
   if a:inside
-    let do_lnr += 1
+    let start_lnr += 1
     let end_lnr -= 1
+  else
+    let [start_lnr, start_col] = s:jump_to_function()
+    let end_col = len(getline(end_lnr)) + 2
   endif
 
-  call setpos("'<", [bufnr('%'), do_lnr, 0, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, len(getline(end_lnr)), 0])
+  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
   normal! gv
 endfunction
 
@@ -291,7 +350,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   """ start
   if s:cursor_in_gutter()
     normal! ^
-  endif
+endif
 
   if s:cursor_function_metadata()
     while s:cursor_function_metadata()
