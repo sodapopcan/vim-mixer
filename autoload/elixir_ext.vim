@@ -306,13 +306,13 @@ function! s:textobj_block(inside) abort
     let start_lnr += 1
     let start_col = 0
     let end_lnr -= 1
+    let view.lnum = start_lnr - 1
   else
     let [start_lnr, start_col] = s:jump_to_function()
+    let view.lnum = start_lnr
   endif
 
   let end_col = len(getline(end_lnr)) + 1
-
-  echom [start_lnr, end_lnr]
 
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
