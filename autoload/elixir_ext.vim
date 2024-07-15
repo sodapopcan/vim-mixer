@@ -205,15 +205,25 @@ endfunction
 
 " -- helpers {{{1
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-  let b:elixir_ext_view = a:view
+  let g:elixir_ext_view = a:view
 
   call setpos("'<", [bufnr('%'), a:start_lnr, a:start_col, 0])
   call setpos("'>", [bufnr('%'), a:end_lnr, a:end_col, 0])
 
   normal! gv
 
-  call feedkeys(":silent call winrestview(b:elixir_ext_view)\<cr>:silent call setpos('.', b:elixir_ext_view.lnum)\<cr>:silent unlet b:elixir_ext_view\<cr>:normal! ^\<cr>", "n")
+  if v:operator == 'c'
+    call feedkeys("\<c-o>\<Plug>(ElixirExtRestoreView)")
+  else
+    call feedkeys("\<Plug>(ElixirExtRestoreView)")
+  endif
 endfunction!
+
+nnoremap <silent> <Plug>(ElixirExtRestoreView)
+      \ :silent call winrestview(g:elixir_ext_view)<bar>
+      \ :silent call setpos('.', g:elixir_ext_view.lnum)<bar>
+      \ :silent unlet g:elixir_ext_view<bar>
+      \ :normal! ^<cr>
 
 " -- textobj_map {{{1
 
