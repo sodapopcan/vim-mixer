@@ -47,7 +47,7 @@ endfunction
 " Init {{{1
 
 function! elixir_ext#init() abort
-  let defregex = 'def\|defp\|defmacro\|defmacrop'
+  let defregex = 'def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl'
   let macros = [[defregex, 'f'], ['defmodule', 'M'], ['quote', 'q']]
 
   for [macro, obj] in macros
@@ -329,7 +329,7 @@ function! s:jump_to_function()
   " function without knowing its name.
 
   " First lets check if we have a builtin as that is simple.
-  if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
+  if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
   " We're not going to do anything here
   "
   " If not we're going to check if we have either a paren block or a single
