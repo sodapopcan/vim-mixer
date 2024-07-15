@@ -3,6 +3,8 @@
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
+This plugin depends on elixir.vim
+                       <https://github.com/elixir-editors/vim-elixir>
 
 TABLE OF CONTENTS                           *elixir-ext*
 
@@ -19,54 +21,65 @@ COMMANDS....................................|elixir-ext-commands|
 
 INTRODUCTION                                *elixir-ext-introduction*
 
-Provides extra utilities for working with Elixir outside of elixir.vim.
-
-This plugin currently exists for me to work on Elixir stuff in one place.  In
-the future, some of this functionality may get broken out into its own plugins
-and perhaps some will get merged into elixir.vim.
-
-This plugin makes no guarantees around NeoVim compatibility.  Reasonable
-patches will be accepted to improve this situation but some of elixir-ext's
-functionality depends on elixir.vim which is an unnecessary plugin for NeoVim.
-NeoVim users are encouraged to checkout elixir-tools.nvim which has many of
-the same features available here.
+Provides extra utilities on top of elixir.vim for working with the
+Elixir programming language <https://elixir-lang.org>.
 
 
 TEXT OBJECTS                                *elixir-ext-text-objects*
                                             *elixir-ext-text-object*
                                             *elixir-ext-textobj*
 
-Text objects are defined for function/macro/module defintions, conditionals,
-sigils, maps, with, and list comprehensions
+Text objects are defined for general Elixir blocks (do/end, fn/end), as well
+as maps, sigils, and comments/docstrings.  There are some specialized objects
+for the def* family of macros where the 'a' versions include meta like
+specs, docstrings, etc.
 
-      Elixir construct             | Text Object Key
-      -----------------------------+-------------------
-      block (between do/end)       | e
+Here is an overview:
+
+
+      Elixir construct             | Text Object  (mneumonic/notes)
+      -----------------------------+----------------------------
+      block (between any do/end)   | e  (elixir/everything)
       def/defp/defmacro/defmacrop  | f
       def/etc. without meta        | F
       defmodule                    | M
       %{}                          | m
-      ~s""/etc.                    | S (note: uppercase)
-      pipeline                     | |
-      #/@doc """/etc               | c (comment)
+      ~s""/etc.                    | S  (note it's uppercase)
+      #/@doc """/etc               | c  (comment)
+
 
 
 ie                                          *elixir-ext-ie* *elixir-ext-ae*
-ae                  A do/end block.  Includes else.
+ae                  A do/end block.  Currently brings "else" along with it.
+
+                    These target all the builtin macros/special forms and work
+                    well with them.  They are also designed to be general, so
+                    should work with most custom macros.
+
+                    Currently, with code written like so:
+>
+                      let foo = if condition? do
+                        bar()
+                      end
+<
+                    the "let foo = " will be included in "ae".
 
 
 if                                          *elixir-ext-if* *elixir-ext-af*
 af                                          *elixir-ext-iF* *elixir-ext-aF*
 iF
-aF                  A function including def, defp, defmacro, and defmacrop to
-                    their respective end.  Useful for not having to worry
+aF                  A def macro including def, defp, defmacro, defmacrop,
+                    defprotocol, and defimpl.  Useful for not having to worry
                     about being inside another block.
 
-                    "if" and "af" will include docstrings, specs, comments,
-                    and other meta.  This will only work so long as there are
-                    no blank lines with the excpetion of docstrings.  The "aF"
+                    "af" will include docstrings, specs, comments, and other
+                    meta.  This will only work so long as there are no blank
+                    lines with the excpetion of within a docstring.  The "aF"
                     variant will only include the function itself.  "iF" is
-                    included for convenience but is identical to "aF"
+                    included for convenience but is identical to "aF".
+
+                    Additionally, "af"/"aF" will include either its trailing
+                    blank line or its leading blank line in that order.
 
 
 iM                                          *elixir-ext-iM* *elixir-ext-aM*
@@ -75,9 +88,11 @@ aM                  A module, ie, defmodule/end.  Useful for not
 
 
 ic                                          *elixir-ext-ic* *elixir-ext-ac*
-ac                  A comment or docstring.  "ic" is identical to "ac" when
-                    operating on a comment.
+ac                  A comment or docstring.  It will target whichever your
+                    cursor is on or ahead of.
 
+im                                          *elixir-ext-im* *elixir-ext-am*
+im                  An map.
 
 EDITING                                     *elixir-ext-editing*
 
