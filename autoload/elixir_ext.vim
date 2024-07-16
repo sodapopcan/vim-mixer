@@ -232,7 +232,7 @@ nnoremap <silent> <Plug>(ElixirExtRestoreView)
 " -- textobj_map {{{1
 
 function! s:textobj_map(inside) abort
-  let view = winsavestate()
+  let view = winsaveview()
   let char = s:cursor_char()
   let current_pos = getpos('.')
 
