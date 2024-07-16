@@ -94,8 +94,12 @@ endfunction
 
 " Syntax Helpers {{{1
 
-function! s:cursor_char()
-  return getline('.')[col('.') - 1]
+function! s:cursor_char(...)
+  if a:0
+    return getline('.')[a:1 - 1]
+  else
+    return getline('.')[col('.') - 1]
+  endif
 endfunction
 
 function! s:cursor_prev_char()
@@ -232,55 +236,55 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
 " -- textobj_map {{{1
 
 function! s:textobj_map(inside) abort
-  let view = winsaveview()
-  let char = s:cursor_char()
-  let current_pos = getpos('.')
+  let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment'}
 
-  let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
-  let SearchForward = {-> searchpairpos('%{', '', '}', 'W', Skip)}
-  let SearchBack = {-> searchpairpos('%{', '', '}', 'Wb', Skip)}
+  let cursor_origin = [line('.'), col('.')]
 
-  if char == "%"
+  if s:cursor_in_gutter()
+    normal! ^
+  endif
+
+  if s:cursor_char() == '%' && s:cursor_char(1) == '{'
     let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = SearchForward()
-
-    if a:inside
-      let start_col += 2
-    endif
-  elseif char == "{" && s:cursor_prev_char() == "%"
-    let [start_lnr, start_col] = [line('.'), col('.')]
-    let [end_lnr, end_col] = SearchForward()
-
-    if a:inside
-      let start_col += 1
-    else
-      let start_col -= 1
-    endif
   else
-    let [start_lnr, start_col] = SearchBack()
-    let [end_lnr, end_col] = SearchForward()
+    let [start_lnr, start_col] = searchpos('%{', 'Wcb', 0, 0, Skip)
+  endif
 
-    if a:inside
-      let start_col += 2
+  let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+
+  if cursor_origin[0] > end_lnr
+    call cursor(cursor_origin)
+
+    if s:cursor_char() ==# '}'
+      call searchpair('%{', '', '}', 'Wb', Skip)
     endif
+
+    let [start_lnr, start_col] = searchpos('%{', 'Wc', 0, 0, Skip)
+    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+  endif
+
+  if start_lnr == 0 || end_lnr == 0
+    return cursor(cursor_origin)
   endif
 
   if a:inside
-    let end_col -= 1
+    if getline(".") =~ '{$'
+      let start_col += 3 " %, {, and new line
+    else
+      let start_col += 2 " %, and {
+    endif
+
+    if end_col == 1
+      let end_lnr -= 1
+      let end_col = len(getline(end_lnr)) + 1
+    else
+      let end_col -= 1
+    endif
   endif
 
-  if getline(end_lnr)[0] ==# "}" && a:inside
-    let end_lnr -= 1
-    let end_col = len(end_lnr) + 2 " Grab the \n as well
-  endif
-
-  if reverse(getline(end_lnr))[0] ==# "}" && !a:inside
-    let end_lnr += 1
-  endif
-
-  call setpos('.', current_pos)
-
-  call s:textobj_select_obj(view, start_lnr, end_col, end_lnr, end_col)
+  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  normal! gv
 endfunction
 
 " -- textobj_block {{{1
