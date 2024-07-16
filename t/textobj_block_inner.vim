@@ -1,4 +1,4 @@
-runtime! plugin/elixir-ext.vim
+runtime! plugin/elixir-ex.vim
 source t/_helpers.vim
 
 silent filetype plugin indent on

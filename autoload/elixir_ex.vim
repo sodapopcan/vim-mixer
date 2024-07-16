@@ -1,4 +1,4 @@
-" Location:     autoload/elixir_ext.vim
+" Location:     autoload/elixir_ex.vim
 " Maintainer:   Andrew Haust <https://andrew.hau.st>
 
 " Utility {{{1
@@ -46,7 +46,7 @@ endfunction
 
 " Init {{{1
 
-function! elixir_ext#init() abort
+function! elixir_ex#init() abort
   let defregex = 'def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl'
   let macros = [[defregex, 'f'], ['defmodule', 'M'], ['quote', 'q']]
 
@@ -209,7 +209,7 @@ endfunction
 
 " -- helpers {{{1
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-  let g:elixir_ext_view = a:view
+  let g:elixir_ex_view = a:view
 
   call setpos("'<", [bufnr('%'), a:start_lnr, a:start_col, 0])
   call setpos("'>", [bufnr('%'), a:end_lnr, a:end_col, 0])
@@ -217,16 +217,16 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
   normal! gv
 
   if v:operator == 'c'
-    call feedkeys("\<c-o>\<Plug>(ElixirExtRestoreView)")
+    call feedkeys("\<c-o>\<Plug>(ElixirExRestoreView)")
   else
-    call feedkeys("\<Plug>(ElixirExtRestoreView)")
+    call feedkeys("\<Plug>(ElixirExRestoreView)")
   endif
 endfunction!
 
-nnoremap <silent> <Plug>(ElixirExtRestoreView)
-      \ :silent call winrestview(g:elixir_ext_view)<bar>
-      \ :silent call setpos('.', g:elixir_ext_view.lnum)<bar>
-      \ :silent unlet g:elixir_ext_view<bar>
+nnoremap <silent> <Plug>(ElixirExRestoreView)
+      \ :silent call winrestview(g:elixir_ex_view)<bar>
+      \ :silent call setpos('.', g:elixir_ex_view.lnum)<bar>
+      \ :silent unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
 
 " -- textobj_map {{{1

@@ -1,1 +1,1 @@
-call elixir_ext#init()
+call elixir_ex#init()

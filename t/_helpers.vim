@@ -1,6 +1,6 @@
 function! Append(code)
   call append(0, a:code)
-  normal! Gd_
+  normal! $d_
 
   return Join(a:code)
 endfunction
@@ -13,7 +13,7 @@ endfunction
 
 function! AppendAt(at, code)
   call append(a:at, a:code)
-  normal! Gd_
+  normal! $d_
 
   return Join(a:code)
 endfunction
@@ -29,5 +29,5 @@ function! Join(code)
 endfunction
 
 function! Setpos(lnr, col)
-  call setpos('.', [bufnr('%'), a:lnr, a:col, 0])
+  call setpos(".", [bufnr(), a:lnr, a:col, 0])
 endfunction

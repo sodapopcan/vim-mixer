@@ -1,4 +1,4 @@
-# elixir-ext.vim
+# elixir-ex.vim
 
 Extra goodies for developing Elixir applications and Mix projects.
 
@@ -32,7 +32,7 @@ NeoVim users: YMMV.  I recommend [elixir-tools.nvim](https://github.com/elixir-t
     whever your cursor was last at.  If called for the first time from a render
     function, it will take to you the first available callback.
 - [projectionist.vim](https://github.com/tpope/vim-projectionist) support\
-  I generally believe projectionist commands are very personal, so elixir-ext
+  I generally believe projectionist commands are very personal, so elixir-ex
   aims to provide something a little more special than a typical configuration.
   Elixir-ext will figure out a bunch of things about your
   project to define projections.  In a standard Phoenix directory structure,

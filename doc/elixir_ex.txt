@@ -1,4 +1,4 @@
-*elixir-ext.txt*  Extras and extensions for *elixir*
+*elixir-ex.txt*  Extras and extensions for *elixir*
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
@@ -6,28 +6,28 @@ License: Same terms as Vim itself (see |license|)
 This plugin depends on elixir.vim
                        <https://github.com/elixir-editors/vim-elixir>
 
-TABLE OF CONTENTS                           *elixir-ext*
+TABLE OF CONTENTS                           *elixir-ex*
 
-INTRODUCTION................................|elixir-ext-introduction|
-TEXT OBJECTS................................|elixir-ext-text-objects|
-  * Maps....................................|elixir-ext-maps|
-  * Functions...............................|elixir-ext-functions|
-  * Sigils..................................|elixir-ext-sigils|
-  * Comments................................*elixir-ext-comments*
-COMMANDS....................................|elixir-ext-commands|
- * Mix......................................|elixir-ext-commands-mix|
- * Editing..................................|elixir-ext-commands-editing|
+INTRODUCTION................................|elixir-ex-introduction|
+TEXT OBJECTS................................|elixir-ex-text-objects|
+  * Maps....................................|elixir-ex-maps|
+  * Functions...............................|elixir-ex-functions|
+  * Sigils..................................|elixir-ex-sigils|
+  * Comments................................*elixir-ex-comments*
+COMMANDS....................................|elixir-ex-commands|
+ * Mix......................................|elixir-ex-commands-mix|
+ * Editing..................................|elixir-ex-commands-editing|
 
 
-INTRODUCTION                                *elixir-ext-introduction*
+INTRODUCTION                                *elixir-ex-introduction*
 
 Provides extra utilities on top of elixir.vim for working with the
 Elixir programming language <https://elixir-lang.org>.
 
 
-TEXT OBJECTS                                *elixir-ext-text-objects*
-                                            *elixir-ext-text-object*
-                                            *elixir-ext-textobj*
+TEXT OBJECTS                                *elixir-ex-text-objects*
+                                            *elixir-ex-text-object*
+                                            *elixir-ex-textobj*
 
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
@@ -49,7 +49,7 @@ Here is an overview:
 
 
 
-id                                          *elixir-ext-ie* *elixir-ext-ae*
+id                                          *elixir-ex-ie* *elixir-ex-ae*
 ad                  A do/end block.  Currently brings "else" along with it.
 
                     These target all the builtin macros/special forms and work
@@ -65,8 +65,8 @@ ad                  A do/end block.  Currently brings "else" along with it.
                     the "let foo = " will be included in "ae".
 
 
-if                                          *elixir-ext-if* *elixir-ext-af*
-af                                          *elixir-ext-iF* *elixir-ext-aF*
+if                                          *elixir-ex-if* *elixir-ex-af*
+af                                          *elixir-ex-iF* *elixir-ex-aF*
 iF
 aF                  A def macro including def, defp, defmacro, defmacrop,
                     defprotocol, and defimpl.  Useful for not having to worry
@@ -82,21 +82,21 @@ aF                  A def macro including def, defp, defmacro, defmacrop,
                     blank line or its leading blank line in that order.
 
 
-iM                                          *elixir-ext-iM* *elixir-ext-aM*
+iM                                          *elixir-ex-iM* *elixir-ex-aM*
 aM                  A module, ie, defmodule/end.  Useful for not
                     having to worry about being inside another block.
 
 
-ic                                          *elixir-ext-ic* *elixir-ext-ac*
+ic                                          *elixir-ex-ic* *elixir-ex-ac*
 ac                  A comment or docstring.  It will target whichever your
                     cursor is on or ahead of.
 
-im                                          *elixir-ext-im* *elixir-ext-am*
+im                                          *elixir-ex-im* *elixir-ex-am*
 im                  An map.
 
-EDITING                                     *elixir-ext-editing*
+EDITING                                     *elixir-ex-editing*
 
-                                            *elixir-ext-pipes*
+                                            *elixir-ex-pipes*
                     NOTE: These commands depend on *elixir.vim*
 
                     NOTE: These commands only work for functions called with
@@ -134,16 +134,16 @@ EDITING                                     *elixir-ext-editing*
                       |> Kernel.+()
 <
 
-COMMANDS                                    *elixir-ext-commands*
+COMMANDS                                    *elixir-ex-commands*
 
 :FromPipe[!]        Moves a piped argument into function parens.
 
                     The bang version will attempt to format.
 
-                    See *elixir-ext-pipes* for more info.
+                    See *elixir-ex-pipes* for more info.
 
 
-                                            *:ToPipe* *elixir-ext-:ToPipe*
+                                            *:ToPipe* *elixir-ex-:ToPipe*
 :ToPipe[!]          Converts a function call to an inline pipe.
 
                     The bang version creates a multi-line pipe.  This is
@@ -160,6 +160,6 @@ COMMANDS                                    *elixir-ext-commands*
 <
                     even if you use the bang version.
 
-                    See *elixir-ext-pipes* for more info.
+                    See *elixir-ex-pipes* for more info.
 
   vim:tw=78:et:ft=help:norl:
