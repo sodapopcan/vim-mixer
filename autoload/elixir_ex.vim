@@ -305,16 +305,16 @@ function! s:textobj_block(inside) abort
     let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, {-> s:is_string_or_comment() || s:is_lambda()})
     let func_pos = s:jump_to_function()
     let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment() || s:is_lambda()})
-endif
+  endif
 
-if a:inside
-  let start_lnr = do_pos[0] + 1
-  let start_col = 0
-  let end_lnr -= 1
-  let view.lnum = start_lnr - 1
-else
-  let [start_lnr, start_col] = func_pos
-  let view.lnum = start_lnr
+  if a:inside
+    let start_lnr = do_pos[0] + 1
+    let start_col = 0
+    let end_lnr -= 1
+    let view.lnum = start_lnr - 1
+  else
+    let [start_lnr, start_col] = func_pos
+    let view.lnum = start_lnr
   endif
 
   let end_col = len(getline(end_lnr)) + 1
