@@ -119,12 +119,20 @@ endfunction
 
 function! s:cursor_outer_syn_name()
   let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
-
   let terms = filter(terms, 'v:val !=# "elixirBlock"')
 
   if empty(terms) | return '' | endif
 
   return s:sub(s:sub(terms[0], 'elixir', ''), 'Delimiter', '')
+endfunction
+
+function! s:is_lambda()
+  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+  let terms = filter(terms, 'v:val =~ "Lambda"')
+
+  if empty(terms) | return '' | endif
+
+  return terms[0] ==# 'elixirLambda'
 endfunction
 
 function! s:cursor_function_metadata()
@@ -139,12 +147,8 @@ function! s:cursor_on_comment_or_blank_line()
   return s:cursor_on_comment() || s:is_blank(getline('.'))
 endfunction
 
-fun! S()
-  return s:cursor_on_comment_or_blank_line()
-endfun
-
 function! s:is_string_or_comment()
-  return s:cursor_term() =~ '\%(String\|Comment\|CharList\)'
+  return s:cursor_term() =~ '\%(String\|Comment\|CharList\|Atom\)'
 endfunction
 
 function! s:starts_with_pipe(line)
@@ -281,45 +285,36 @@ endfunction
 
 " -- textobj_block {{{1
 
-function! D()
-  return searchpos('\<\%(do\|end\)\>', 'Wc', 0, 0, {-> s:is_string_or_comment()})
-endfunction
-
 function! s:textobj_block(inside) abort
   let view = winsaveview()
   let start_col = 0
 
   normal! wb
 
-  let matchpos1 = searchpos('\<\%(do\|end\)\>', 'Wc', 0, 0, {-> s:is_string_or_comment()})
-  let match = expand('<cword>')
+  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+  let do_pos = searchpos('\<do\>', 'Wc', 0, 0, {-> s:is_string_or_comment() || s:is_lambda()})
+  let func_pos = s:jump_to_function()
 
-  if match ==# 'do'
-    let flag = 'n'
+  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos)
+    call setpos('.', [bufnr('%'), do_pos[0], do_pos[1]])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment() || s:is_lambda()})
   else
-    let flag = 'b'
-  endif
+    call winrestview(view)
+    normal! wb
 
-  let matchpos2 = searchpairpos('\<do\>', '', '\<end\>', 'W'.flag, {-> s:is_string_or_comment()})
+    let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, {-> s:is_string_or_comment() || s:is_lambda()})
+    let func_pos = s:jump_to_function()
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment() || s:is_lambda()})
+endif
 
-  echom [matchpos1, matchpos2]
-
-  if match ==# 'do'
-    let [start_lnr, start_col] = matchpos1
-    let [end_lnr, end_col] = matchpos2
-  else
-    let [start_lnr, start_col] = matchpos2
-    let [end_lnr, end_col] = matchpos1
-  endif
-
-  if a:inside
-    let start_lnr += 1
-    let start_col = 0
-    let end_lnr -= 1
-    let view.lnum = start_lnr - 1
-  else
-    let [start_lnr, start_col] = s:jump_to_function()
-    let view.lnum = start_lnr
+if a:inside
+  let start_lnr = do_pos[0] + 1
+  let start_col = 0
+  let end_lnr -= 1
+  let view.lnum = start_lnr - 1
+else
+  let [start_lnr, start_col] = func_pos
+  let view.lnum = start_lnr
   endif
 
   let end_col = len(getline(end_lnr)) + 1
