@@ -238,6 +238,7 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
 function! s:textobj_map(inside) abort
   let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment'}
 
+  let view = winsaveview()
   let cursor_origin = [line('.'), col('.')]
 
   if s:cursor_in_gutter()
@@ -264,7 +265,7 @@ function! s:textobj_map(inside) abort
   endif
 
   if start_lnr == 0 || end_lnr == 0
-    return cursor(cursor_origin)
+    return winrestview(view)
   endif
 
   if a:inside
@@ -282,9 +283,7 @@ function! s:textobj_map(inside) abort
     endif
   endif
 
-  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-  normal! gv
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
 " -- textobj_block {{{1
