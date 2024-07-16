@@ -39,7 +39,7 @@ Here is an overview:
 
       Elixir construct             | Text Object  (mneumonic/notes)
       -----------------------------+----------------------------
-      block (between any do/end)   | e  (elixir/everything)
+      do/end blocks                | d  (as in "do")
       def/defp/defmacro/defmacrop  | f
       def/etc. without meta        | F
       defmodule                    | M
@@ -49,8 +49,8 @@ Here is an overview:
 
 
 
-ie                                          *elixir-ext-ie* *elixir-ext-ae*
-ae                  A do/end block.  Currently brings "else" along with it.
+id                                          *elixir-ext-ie* *elixir-ext-ae*
+ad                  A do/end block.  Currently brings "else" along with it.
 
                     These target all the builtin macros/special forms and work
                     well with them.  They are also designed to be general, so

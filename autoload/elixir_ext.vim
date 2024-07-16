@@ -67,10 +67,10 @@ function! elixir_ext#init() abort
   onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>
   onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>
 
-  vnoremap <silent> <buffer> ie :<c-u>call <sid>textobj_block(1)<cr>
-  vnoremap <silent> <buffer> ae :<c-u>call <sid>textobj_block(0)<cr>
-  onoremap <silent> <buffer> ie :call <sid>textobj_block(1)<cr>
-  onoremap <silent> <buffer> ae :call <sid>textobj_block(0)<cr>
+  vnoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1)<cr>
+  vnoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0)<cr>
+  onoremap <silent> <buffer> id :call <sid>textobj_block(1)<cr>
+  onoremap <silent> <buffer> ad :call <sid>textobj_block(0)<cr>
 
   vnoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
   vnoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
