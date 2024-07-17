@@ -267,16 +267,14 @@ function! s:textobj_map(inside) abort
 
   let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
 
-  if cursor_origin[0] > end_lnr
-    call cursor(cursor_origin)
-
+  while cursor_origin[0] > end_lnr
     if s:cursor_char() ==# '}'
       call searchpair('%{', '', '}', 'Wb', Skip)
     endif
 
-    let [start_lnr, start_col] = searchpos('%{', 'Wc', 0, 0, Skip)
+    let [start_lnr, start_col] = searchpos('%{', 'Wb', 0, 0, Skip)
     let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
-  endif
+  endwhile
 
   if start_lnr == 0 || end_lnr == 0
     return winrestview(view)
