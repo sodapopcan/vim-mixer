@@ -267,7 +267,7 @@ function! s:textobj_map(inside) abort
 
   let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
 
-  while cursor_origin[0] > end_lnr
+  while cursor_origin[0] > end_lnr || cursor_origin[0] == end_lnr && cursor_origin[1] > end_col
     if s:cursor_char() ==# '}'
       call searchpair('%{', '', '}', 'Wb', Skip)
     endif
