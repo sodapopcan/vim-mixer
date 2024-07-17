@@ -297,7 +297,10 @@ function! s:textobj_map(inside) abort
     endif
   endif
 
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
+  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+
+  normal! gv
 endfunction
 
 " -- textobj_block {{{1
