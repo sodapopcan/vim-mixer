@@ -121,6 +121,10 @@ function! s:cursor_move_forward()
   exec "normal! 1\<space>"
 endfunction
 
+function! s:cursor_move_back()
+  exec "normal! 1\<bs>"
+endfunction
+
 function! s:cursor_outer_syn_name()
   let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
   let terms = filter(terms, 'v:val !=# "elixirBlock"')
@@ -128,6 +132,13 @@ function! s:cursor_outer_syn_name()
   if empty(terms) | return '' | endif
 
   return s:sub(s:sub(terms[0], 'elixir', ''), 'Delimiter', '')
+endfunction
+
+function! s:cursor_synstack_str()
+  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+  let terms = filter(terms, 'v:val !=# "elixirBlock"')
+
+  return join(terms, ',')
 endfunction
 
 function! s:is_lambda()
@@ -245,10 +256,14 @@ function! s:textobj_map(inside) abort
     normal! ^
   endif
 
-  if s:cursor_char() == '%' && s:cursor_char(1) == '{'
-    let [start_lnr, start_col] = [line('.'), col('.')]
-  else
+  if s:cursor_synstack_str() =~ 'Map'
     let [start_lnr, start_col] = searchpos('%{', 'Wcb', 0, 0, Skip)
+  else
+    let [start_lnr, start_col] = searchpos('%{', 'Wc', 0, 0, Skip)
+  endif
+
+  if [start_lnr, start_col] == [0, 0]
+    return winrestview(view)
   endif
 
   let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
