@@ -38,13 +38,13 @@ Here is an overview:
 
 
       Elixir construct             | Text Object  (mneumonic/notes)
-      -----------------------------+----------------------------
+      -----------------------------+-----------------------------------------
       do/end blocks                | d  (do)
-      def/defp/defmarco/defmacrop/ | f  (function, includes @doc +)
-          defprotocol/defimpl      | F  (does not include @doc +)
+      def/defp/defmarco/defmacrop/ | f  (function, includes @doc, @spec etc.)
+          defprotocol/defimpl      | F  (does not include @doc, @spec etc.)
       defmodule                    | M
       %{}/%Foo{}                   | m  (map)
-      ~s""/etc.                    | S  (note the uppercase)
+      ~s""/etc.                    | ~  (note the uppercase)
       #/@doc """/etc               | c  (comment)
 
 
@@ -93,6 +93,9 @@ ac                  A comment or docstring.  It will target whichever your
 
 im                                          *elixir-ex-im* *elixir-ex-am*
 im                  A map or struct.
+
+i~                                          *elixir-ex-i~* *elixir-ex-a~*
+a~                  A sigil.  Works regardless of the delimiter.
 
 EDITING                                     *elixir-ex-editing*
 
