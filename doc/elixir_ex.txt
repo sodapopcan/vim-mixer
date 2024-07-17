@@ -39,12 +39,12 @@ Here is an overview:
 
       Elixir construct             | Text Object  (mneumonic/notes)
       -----------------------------+----------------------------
-      do/end blocks                | d  (as in "do")
-      def/defp/defmacro/defmacrop  | f
-      def/etc. without meta        | F
+      do/end blocks                | d  (do)
+      def/defp/defmarco/defmacrop/ | f  (function, includes @doc +)
+          defprotocol/defimpl      | F  (does not include @doc +)
       defmodule                    | M
-      %{}                          | m
-      ~s""/etc.                    | S  (note it's uppercase)
+      %{}/%Foo{}                   | m  (map)
+      ~s""/etc.                    | S  (note the uppercase)
       #/@doc """/etc               | c  (comment)
 
 
@@ -62,7 +62,7 @@ ad                  A do/end block.  Currently brings "else" along with it.
                         bar()
                       end
 <
-                    the "let foo = " will be included in "ae".
+                    the "let foo = " will be included in "ad".
 
 
 if                                          *elixir-ex-if* *elixir-ex-af*
@@ -92,7 +92,7 @@ ac                  A comment or docstring.  It will target whichever your
                     cursor is on or ahead of.
 
 im                                          *elixir-ex-im* *elixir-ex-am*
-im                  An map.
+im                  A map or struct.
 
 EDITING                                     *elixir-ex-editing*
 
