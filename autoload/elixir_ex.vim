@@ -260,7 +260,7 @@ function! s:textobj_map(inside) abort
     normal! ^
   endif
 
-  if s:cursor_synstack_str() =~ 'Map\|ExStruct'
+  if s:cursor_synstack_str() =~ 'Map\|Struct'
     let [start_lnr, start_col] = searchpos(open_regex, 'Wcb', 0, 0, Skip)
   else
     let [start_lnr, start_col] = searchpos(open_regex, 'Wc', 0, 0, Skip)
