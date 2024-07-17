@@ -245,35 +245,40 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
 
 " -- textobj_map {{{1
 
+fu! T()
+  call searchpairpos('%\%([a-zA-Z.]\+\)\?{', '', '}', 'W', {-> s:cursor_term() =~ 'Tuple\|String\|Comment'})
+endfu
+
 function! s:textobj_map(inside) abort
   let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment'}
 
   let view = winsaveview()
   let cursor_origin = [line('.'), col('.')]
+  let open_regex = '%\%([a-zA-Z.]\+\)\?{'
 
   if s:cursor_in_gutter()
     normal! ^
   endif
 
-  if s:cursor_synstack_str() =~ 'Map'
-    let [start_lnr, start_col] = searchpos('%{', 'Wcb', 0, 0, Skip)
+  if s:cursor_synstack_str() =~ 'Map\|ExStruct'
+    let [start_lnr, start_col] = searchpos(open_regex, 'Wcb', 0, 0, Skip)
   else
-    let [start_lnr, start_col] = searchpos('%{', 'Wc', 0, 0, Skip)
+    let [start_lnr, start_col] = searchpos(open_regex, 'Wc', 0, 0, Skip)
   endif
 
   if [start_lnr, start_col] == [0, 0]
     return winrestview(view)
   endif
 
-  let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+  let [end_lnr, end_col] = searchpairpos(open_regex, '', '}', 'W', Skip)
 
   while cursor_origin[0] > end_lnr || cursor_origin[0] == end_lnr && cursor_origin[1] > end_col
     if s:cursor_char() ==# '}'
-      call searchpair('%{', '', '}', 'Wb', Skip)
+      call searchpair(open_regex, '', '}', 'Wb', Skip)
     endif
 
-    let [start_lnr, start_col] = searchpos('%{', 'Wb', 0, 0, Skip)
-    let [end_lnr, end_col] = searchpairpos('%{', '', '}', 'W', Skip)
+    let [start_lnr, start_col] = searchpos(open_regex, 'Wb', 0, 0, Skip)
+    let [end_lnr, end_col] = searchpairpos(open_regex, '', '}', 'W', Skip)
   endwhile
 
   if start_lnr == 0 || end_lnr == 0
@@ -281,10 +286,12 @@ function! s:textobj_map(inside) abort
   endif
 
   if a:inside
+    call cursor(start_lnr, start_col)
+    normal! f{
+    let start_col = col('.')
+
     if getline(".") =~ '{$'
-      let start_col += 3 " %, {, and new line
-    else
-      let start_col += 2 " %, and {
+      let start_col += 1 " %, {, and new line
     endif
 
     if end_col == 1
