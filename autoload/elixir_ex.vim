@@ -240,7 +240,6 @@ endfunction!
 
 nnoremap <silent> <Plug>(ElixirExRestoreView)
       \ :silent call winrestview(g:elixir_ex_view)<bar>
-      \ :silent call setpos('.', g:elixir_ex_view.lnum)<bar>
       \ :silent unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
 
