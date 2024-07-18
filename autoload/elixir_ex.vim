@@ -287,17 +287,19 @@ function! s:textobj_map(inside) abort
 
   if a:inside
     call cursor(start_lnr, start_col)
-    normal! f{
+    normal f{
+
+    let is_multiline = getline(".") =~ '{$'
+
     let start_col = col('.')
 
-    if getline(".") =~ '{$'
-      let start_col += 1 " %, {, and new line
-    endif
-
-    if end_col == 1
+    if is_multiline
+      let start_lnr += 1
+      let start_col = 0
       let end_lnr -= 1
-      let end_col = len(getline(end_lnr)) + 1
+      let end_col = len(getline(end_lnr))
     else
+      let start_col += 1
       let end_col -= 1
     endif
   endif
@@ -306,6 +308,12 @@ function! s:textobj_map(inside) abort
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
 
   normal! gv
+
+  if v:operator ==# 'c' && is_multiline
+    for i in range(indent(start_lnr - 1) / &shiftwidth + 1)
+      call feedkeys("\<c-t>")
+    endfor
+  endif
 endfunction
 
 " -- textobj_block {{{1
