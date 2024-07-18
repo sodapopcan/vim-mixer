@@ -316,16 +316,38 @@ function! s:textobj_map(inside) abort
         let end_col += 1
       endif
     else
-      let start_col += 1
-      let end_col -= 1
+      if start_col == end_col - 1
+        let b:elixir_ex_start_col = start_col
+        let b:elixir_ex_operator = v:operator
+      else
+        let start_col += 1
+        let end_col -= 1
+      endif
     endif
   endif
 
-  call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-  call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
+  if !exists("b:elixir_ex_start_col")
+    call setpos("'<", [0, start_lnr, start_col, 0])
+    call setpos("'>", [0, end_lnr, end_col, 0])
 
-  normal! gv
+    normal! gv
+  else
+    call winrestview(view)
+
+    if v:operator ==# 'c'
+      call feedkeys("\<esc>")
+    endif
+    call feedkeys("\<Plug>(ElixirExHandleEmpty)")
+    if v:operator ==# 'c'
+      call feedkeys("i")
+    endif
+  endif
 endfunction
+
+nnoremap <silent> <Plug>(ElixirExHandleEmpty)
+      \ :call cursor([line('.'), b:elixir_ex_start_col + 1])<bar>
+      \ :unlet b:elixir_ex_operator<bar>
+      \ :unlet b:elixir_ex_start_col<cr>
 
 " -- textobj_block {{{1
 
