@@ -392,11 +392,6 @@ function! s:textobj_block(inside) abort
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-function! F()
-  call s:jump_to_function()
-endfunction!
-
-
 function! s:jump_to_function()
   let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
 
