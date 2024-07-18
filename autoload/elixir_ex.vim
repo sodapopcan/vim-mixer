@@ -231,9 +231,7 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 
   normal! gv
 
-  if v:operator == 'c'
-    call feedkeys("\<c-o>\<Plug>(ElixirExRestoreView)")
-  else
+  if v:operator !=# 'c'
     call feedkeys("\<Plug>(ElixirExRestoreView)")
   endif
 endfunction!
@@ -242,10 +240,6 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
       \ :silent call winrestview(g:elixir_ex_view)<bar>
       \ :silent unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
-
-function! s:is_destructive_op()
-  return v:operator ==# 'c' || v:operator ==# 'd'
-endfunction
 
 " -- textobj_map {{{1
 
@@ -296,6 +290,8 @@ function! s:textobj_map(inside) abort
     return winrestview(view)
   endif
 
+  let handle_empty_map = 0
+
   if a:inside
     call cursor(start_lnr, start_col)
     normal f{
@@ -317,6 +313,7 @@ function! s:textobj_map(inside) abort
       endif
     else
       if start_col == end_col - 1
+        let handle_empty_map = 1
         let b:elixir_ex_start_col = start_col
         let b:elixir_ex_operator = v:operator
       else
@@ -326,7 +323,7 @@ function! s:textobj_map(inside) abort
     endif
   endif
 
-  if !exists("b:elixir_ex_start_col")
+  if !handle_empty_map
     call setpos("'<", [0, start_lnr, start_col, 0])
     call setpos("'>", [0, end_lnr, end_col, 0])
 
@@ -337,14 +334,14 @@ function! s:textobj_map(inside) abort
     if v:operator ==# 'c'
       call feedkeys("\<esc>")
     endif
-    call feedkeys("\<Plug>(ElixirExHandleEmpty)")
+    call feedkeys("\<Plug>(ElixirExHandleEmptyMap)")
     if v:operator ==# 'c'
       call feedkeys("i")
     endif
   endif
 endfunction
 
-nnoremap <silent> <Plug>(ElixirExHandleEmpty)
+nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
       \ :call cursor([line('.'), b:elixir_ex_start_col + 1])<bar>
       \ :unlet b:elixir_ex_operator<bar>
       \ :unlet b:elixir_ex_start_col<cr>
@@ -511,15 +508,24 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   if a:inside
     let start_lnr += 1
     let end_lnr -= 1
+
+    if v:operator ==# 'c'
+      let start_col = indent(start_lnr) + 1
+      exec start_lnr + 1
+      let end_col = len(getline(end_lnr))
+    else
+      let end_col = len(getline(end_lnr)) + 1 " Include \n
+      exec start_lnr
+    endif
+  else
+    exec start_lnr
   endif
 
-  let end_col = len(getline(end_lnr)) + 1 " Include \n
-
-  exec start_lnr
   normal! ^
 
   if !a:inside && !s:is_blank(getline(line('.') - 1)) && !a:ignore_meta
     normal! k^
+
     while s:cursor_function_metadata()
       normal! k^
     endwhile

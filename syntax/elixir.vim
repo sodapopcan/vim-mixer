@@ -1,6 +1,5 @@
-" syn match elixirStructName '%\%([A-Z][a-zA-Z.]\+\)\?{' contains=elixirAlias
-" syn region elixirStructBody start="%\%([A-Z][a-zA-Z.]\+\)\?{" end="}" contains=elixirMap
-" This cluster is copied from elixir.vim
-" syn match elixirExStructDelimiter '%' contained containedin=elixirStruct
-syn region elixirExStruct  matchgroup=NONE start="%[A-Z][A-Za-z.]\+{" end="}" contains=ALLBUT,@elixirNotTop fold
 syn region elixirLambda start="\<fn\>" end="\<end\>" contains=elixirAnonymousFunction keepend
+syn region elixirMap matchgroup=elixirMapDelimiter start="%{" end="}" contains=ALLBUT,@elixirNotTop fold
+syn region elixirExStruct matchgroup=elixirExDelimiters start="%\%(\w\|\.\)\+"hs=s+1 end="}"he=e-1 contains=ALLBUT,@elixirNotTop fold
+hi link elixirExDelimiters Type
+syn clear elixirArguments
