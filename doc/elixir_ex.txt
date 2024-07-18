@@ -24,6 +24,10 @@ INTRODUCTION                                *elixir-ex-introduction*
 Provides extra utilities on top of elixir.vim for working with the
 Elixir programming language <https://elixir-lang.org>.
 
+This plugin's focus is on Vim users - All features must be available to them.
+Nvim compatibility isn't a non-goal and any reasonable patches for
+nvim-support will be accepted, however, this is a Lua-free zone.
+
 
 TEXT OBJECTS                                *elixir-ex-text-objects*
                                             *elixir-ex-text-object*
