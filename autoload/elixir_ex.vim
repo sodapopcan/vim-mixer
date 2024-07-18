@@ -245,12 +245,8 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
 
 " -- textobj_map {{{1
 
-fu! T()
-  call searchpairpos('%\%([a-zA-Z.]\+\)\?{', '', '}', 'W', {-> s:cursor_term() =~ 'Tuple\|String\|Comment'})
-endfu
-
 function! s:textobj_map(inside) abort
-  let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment'}
+  let Skip = {-> s:is_string_or_comment()}
 
   let view = winsaveview()
   let cursor_origin = [line('.'), col('.')]
@@ -270,15 +266,26 @@ function! s:textobj_map(inside) abort
     return winrestview(view)
   endif
 
-  let [end_lnr, end_col] = searchpairpos(open_regex, '', '}', 'W', Skip)
+  normal! f{
+  let [end_lnr, end_col] = searchpairpos('{', '', '}', 'W', Skip)
 
-  while cursor_origin[0] > end_lnr || cursor_origin[0] == end_lnr && cursor_origin[1] > end_col
+  if s:cursor_char() ==# '}'
+    call searchpair(open_regex, '', '}', 'Wb', Skip)
+  endif
+
+  while s:cursor_synstack_str() =~ 'Map\|Struct' && cursor_origin[0] > end_lnr
     if s:cursor_char() ==# '}'
       call searchpair(open_regex, '', '}', 'Wb', Skip)
     endif
 
     let [start_lnr, start_col] = searchpos(open_regex, 'Wb', 0, 0, Skip)
-    let [end_lnr, end_col] = searchpairpos(open_regex, '', '}', 'W', Skip)
+    normal! f{
+
+    if s:cursor_char() ==# '{'
+      let [end_lnr, end_col] = searchpairpos('{', '', '}', 'W', Skip)
+    else
+      return winrestview(view)
+    end
   endwhile
 
   if start_lnr == 0 || end_lnr == 0
