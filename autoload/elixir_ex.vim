@@ -231,8 +231,8 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
     unlet g:elixir_ex_view.col
   endif
 
-  call setpos("'<", [bufnr('%'), a:start_lnr, a:start_col, 0])
-  call setpos("'>", [bufnr('%'), a:end_lnr, a:end_col, 0])
+  call setpos("'<", [0, a:start_lnr, a:start_col, 0])
+  call setpos("'>", [0, a:end_lnr, a:end_col, 0])
 
   normal! gv
 
@@ -356,38 +356,59 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 " -- textobj_block {{{1
 
 function! s:textobj_block(inside) abort
+  let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"]) || s:is_lambda()}
   let view = winsaveview()
-  let start_col = 0
 
-  normal! wb
+  normal! ^
 
   let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
-  let do_pos = searchpos('\<do\>', 'Wc', 0, 0, {-> s:is_string_or_comment() || s:is_lambda()})
+  let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
   let func_pos = s:jump_to_function()
 
   if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos)
-    call setpos('.', [bufnr('%'), do_pos[0], do_pos[1]])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment() || s:is_lambda()})
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   else
     call winrestview(view)
     normal! wb
 
-    let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, {-> s:is_string_or_comment() || s:is_lambda()})
+    let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, Skip)
     let func_pos = s:jump_to_function()
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment() || s:is_lambda()})
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   endif
+
+  let start_col = 1
 
   if a:inside
     let start_lnr = do_pos[0] + 1
-    let start_col = 0
     let end_lnr -= 1
-    let view.lnum = start_lnr - 1
+
+    if v:operator ==# 'c'
+      let start_col = indent(start_lnr) + 1
+      exec start_lnr + 1
+      let end_col = len(getline(end_lnr))
+    else
+      let end_col = len(getline(end_lnr)) + 1 " Include \n
+      exec start_lnr
+    endif
   else
     let [start_lnr, start_col] = func_pos
-    let view.lnum = start_lnr
+
+    if s:is_blank(getline(end_lnr + 1))
+      let end_lnr += 1
+      let end_col = 1
+    elseif s:is_blank(getline(start_lnr - 1))
+      let start_lnr -=1
+      let start_col = 1
+    endif
+
+    let end_col = len(getline(end_lnr)) + 1
+
+    exec start_lnr
   endif
 
-  let end_col = len(getline(end_lnr)) + 1
+  let view.lnum = start_lnr
 
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
@@ -521,6 +542,14 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     endif
   else
     exec start_lnr
+
+    if s:is_blank(getline(end_lnr + 1))
+      let end_lnr += 1
+      let end_col = 1
+    elseif s:is_blank(getline(start_lnr - 1))
+      let start_lnr -=1
+      let start_col = 1
+    endif
   endif
 
   normal! ^
@@ -543,11 +572,6 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     return winrestview(view)
   elseif a:inside && !s:in_range(origin_lnr, origin_col, [keyword_lnr, 0], [end_lnr + 1, end_col])
     return winrestview(view)
-  endif
-
-  " If the previous line is just whitespace, grab it as well
-  if start_lnr - 1 != 0 && !a:inside && s:is_blank(getline(start_lnr - 1))
-    let start_lnr -= 1
   endif
 
   let view.lnum = keyword_lnr
