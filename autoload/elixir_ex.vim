@@ -293,7 +293,7 @@ function! s:textobj_map(inside) abort
 
     let start_col = col('.')
 
-    if is_multiline
+    if is_multiline && v:operator ==# 'c'
       let start_lnr += 1
       let start_col = 0
       let end_lnr -= 1
