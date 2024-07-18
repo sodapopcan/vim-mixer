@@ -243,6 +243,10 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
       \ :silent unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
 
+function! s:is_destructive_op()
+  return v:operator ==# 'c' || v:operator ==# 'd'
+endfunction
+
 " -- textobj_map {{{1
 
 function! s:textobj_map(inside) abort
@@ -300,11 +304,17 @@ function! s:textobj_map(inside) abort
 
     let start_col = col('.')
 
-    if is_multiline && v:operator ==# 'c'
+    if is_multiline
       let start_lnr += 1
-      let start_col = 0
       let end_lnr -= 1
       let end_col = len(getline(end_lnr))
+
+      if v:operator ==# 'c'
+        let start_col = indent(start_lnr) + 1
+      else
+        let start_col = 0
+        let end_col += 1
+      endif
     else
       let start_col += 1
       let end_col -= 1
@@ -315,12 +325,6 @@ function! s:textobj_map(inside) abort
   call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
 
   normal! gv
-
-  if v:operator ==# 'c' && is_multiline
-    for i in range(indent(start_lnr - 1) / &shiftwidth + 1)
-      call feedkeys("\<c-t>")
-    endfor
-  endif
 endfunction
 
 " -- textobj_block {{{1
