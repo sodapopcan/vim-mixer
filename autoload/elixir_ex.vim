@@ -226,19 +226,26 @@ endfunction
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
   let g:elixir_ex_view = a:view
 
+  if v:operator ==# 'c'
+    unlet g:elixir_ex_view.lnum
+    unlet g:elixir_ex_view.col
+  endif
+
   call setpos("'<", [bufnr('%'), a:start_lnr, a:start_col, 0])
   call setpos("'>", [bufnr('%'), a:end_lnr, a:end_col, 0])
 
   normal! gv
 
-  if v:operator !=# 'c'
+  if v:operator ==# 'c'
+    call feedkeys("\<c-o>\<Plug>(ElixirExRestoreView)\<right>")
+  else
     call feedkeys("\<Plug>(ElixirExRestoreView)")
   endif
 endfunction!
 
 nnoremap <silent> <Plug>(ElixirExRestoreView)
-      \ :silent call winrestview(g:elixir_ex_view)<bar>
-      \ :silent unlet g:elixir_ex_view<bar>
+      \ :call winrestview(g:elixir_ex_view)<bar>
+      \ :unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
 
 " -- textobj_map {{{1
