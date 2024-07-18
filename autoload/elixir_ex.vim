@@ -219,7 +219,6 @@ function! s:get_outer_term()
   endif
 endfunction
 
-
 " Text Objects {{{1
 
 " -- helpers {{{1
@@ -395,10 +394,7 @@ function! s:textobj_block(inside) abort
   else
     let [start_lnr, start_col] = func_pos
 
-    if s:is_blank(getline(end_lnr + 1))
-      let end_lnr += 1
-      let end_col = 1
-    elseif s:is_blank(getline(start_lnr - 1))
+    if s:is_blank(getline(start_lnr - 1))
       let start_lnr -=1
       let start_col = 1
     endif
@@ -543,10 +539,9 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   else
     exec start_lnr
 
-    if s:is_blank(getline(end_lnr + 1))
-      let end_lnr += 1
-      let end_col = 1
-    elseif s:is_blank(getline(start_lnr - 1))
+    let end_col = len(getline(end_lnr)) + 1 " Include \n
+
+    if s:is_blank(getline(start_lnr - 1))
       let start_lnr -=1
       let start_col = 1
     endif
