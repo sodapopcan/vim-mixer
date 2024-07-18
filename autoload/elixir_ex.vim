@@ -600,6 +600,8 @@ function! s:textobj_comment(inside)
   endif
 
   let start_lnr = line('.')
+  normal ^
+  let start_col = col('.')
 
   call setpos('.', cursor_origin)
 
