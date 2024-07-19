@@ -19,79 +19,61 @@ describe 'a do/end block text object'
 
   context "outside a module"
     it 'deletes a block with the cursor before the do'
-      let code =
-      \ Append(['if condition? do',
-      \         '  "true"',
-      \         'end'])
+      let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
       call Setpos(1, 1)
 
       normal dad
 
-      Expect @" == code
+      Expect @" == f.reg."\n"
     end
 
-    it 'deletes a block with the cursor inside'
-      let code =
-      \ Append(['if condition? do',
-      \         '  "true"',
-      \         'end'])
+    it 'deletes a block with the cursor in the body'
+      let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
       call Setpos(2, 3)
 
       normal dad
 
-      Expect @" == code
+      Expect @" == f.reg."\n"
+    end
+
+    it 'deletes a block with the cursor on `end`'
+      let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
+      call Setpos(3, 3)
+
+      normal dad
+
+      Expect @" == f.reg."\n"
     end
   end
 
   context "multiline function heads"
     it 'deletes when block'
-      let code =
-      \ Append(['some_fun(',
-      \         '  %{hi: "hi!"},',
-      \         '  %{eq: "="},',
-      \         '  another_arg',
-      \         ') do',
-      \         '  some("body")',
-      \         'end'])
+      let f = Fixture('fixtures/textobj_ad__multiline_function_head.ex')
       call Setpos(5, 3)
 
       normal dad
 
-      Expect @" == code
+      Expect @" == f.reg."\n"
     end
 
-    it 'deletes multi-line map'
-      let code =
-      \ Append(['hello %{',
-      \         '  hi: "hi"',
-      \         '} do',
-      \         '  "true"',
-      \         'end'])
+    it 'deletes a single multi-line map argument'
+      let f = Fixture('fixtures/textobj_ad__multiline_single_map_arg.ex')
       call Setpos(3, 3)
 
       normal dad
 
-      Expect @" == code
+      Expect @" == f.reg."\n"
     end
   end
 
   context "with"
     it 'deletes a single-clause with'
-      let code =
-      \ Append(['defmodule Foo do(',
-      \         '  def foo do',
-      \         '    with {:ok, foo} <- foo() do',
-      \         '      foo',
-      \         '    end',
-      \         '  end',
-      \         'end'])
+      let f = Fixture('fixtures/textobj_ad__with_single_line.ex')
       call Setpos(3, 5)
 
       normal dad
 
-      Expect @" == JoinNL(['    with {:ok, foo} <- foo() do',
-      \                    '      foo',
-      \                    '    end'])
+      Expect @" == f.reg."\n"
     end
   end
 end

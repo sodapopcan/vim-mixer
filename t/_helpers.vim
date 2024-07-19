@@ -1,3 +1,13 @@
+function! Fixture(file)
+  let fname = "t/".a:file
+  let code = join(readfile(fname), "\n")
+  let [code, buffer, reg] = split(code, '#.#\n')
+
+  call append(0, split(code, "\n"))
+
+  return {"code": code, "buffer": buffer, "reg": reg}
+endfunction
+
 function! Append(code)
   call append(0, a:code)
   normal! $d_
