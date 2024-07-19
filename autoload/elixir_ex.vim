@@ -247,6 +247,35 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
       \ :unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
 
+function! s:adjust_block_region(inside, start_lnr, start_col, end_lnr, end_col) abort
+  let [start_lnr, start_col, end_lnr, end_col] = [a:start_lnr, a:start_col, a:end_lnr, a:end_col]
+
+  if a:inside
+    let start_lnr += 1
+    let end_lnr -= 1
+
+    if v:operator ==# 'c'
+      let start_col = indent(start_lnr) + 1
+      exec start_lnr + 1
+      let end_col = len(getline(end_lnr))
+    else
+      let end_col = len(getline(end_lnr)) + 1 " Include \n
+      exec start_lnr
+    endif
+  else
+    if s:is_blank(getline(start_lnr - 1))
+      let start_lnr -=1
+      let start_col = 1
+    endif
+
+    let end_col = len(getline(end_lnr)) + 1 " Include \n
+
+    exec start_lnr
+  endif
+
+  return [start_lnr, start_col, end_lnr, end_col]
+endfunction
+
 " -- textobj_map {{{1
 
 function! s:textobj_map(inside) abort
@@ -385,28 +414,7 @@ function! s:textobj_block(inside) abort
     let [start_lnr, start_col] = func_pos
   endif
 
-  if a:inside
-    let start_lnr += 1
-    let end_lnr -= 1
-
-    if v:operator ==# 'c'
-      let start_col = indent(start_lnr) + 1
-      exec start_lnr + 1
-      let end_col = len(getline(end_lnr))
-    else
-      let end_col = len(getline(end_lnr)) + 1 " Include \n
-      exec start_lnr
-    endif
-  else
-    if s:is_blank(getline(start_lnr - 1))
-      let start_lnr -=1
-      let start_col = 1
-    endif
-
-    let end_col = len(getline(end_lnr)) + 1 " Include \n
-
-    exec start_lnr
-  endif
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
 
   let view.lnum = start_lnr
 
@@ -528,28 +536,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   let start_col = 1
 
-  if a:inside
-    let start_lnr += 1
-    let end_lnr -= 1
-
-    if v:operator ==# 'c'
-      let start_col = indent(start_lnr) + 1
-      exec start_lnr + 1
-      let end_col = len(getline(end_lnr))
-    else
-      let end_col = len(getline(end_lnr)) + 1 " Include \n
-      exec start_lnr
-    endif
-  else
-    if s:is_blank(getline(start_lnr - 1))
-      let start_lnr -=1
-      let start_col = 1
-    endif
-
-    let end_col = len(getline(end_lnr)) + 1 " Include \n
-
-    exec start_lnr
-  endif
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
 
   normal! ^
 
