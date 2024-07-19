@@ -21,7 +21,7 @@ describe "def textobj"
 
     normal daf
 
-    Expect @1 == join(code, "\n")."\n"
+    Expect @" == join(code, "\n")."\n"
   end
 
   it 'delete an indented empty function with the cursor on d'
@@ -33,7 +33,7 @@ describe "def textobj"
 
     normal daf
 
-    Expect @1 == join(code, "\n")."\n"
+    Expect @" == join(code, "\n")."\n"
   end
 
   it 'delete an indented empty function with the cursor outside d'
@@ -45,6 +45,6 @@ describe "def textobj"
 
     normal daf
 
-    Expect @1 == join(code, "\n")."\n"
+    Expect @" == join(code, "\n")."\n"
   end
 end

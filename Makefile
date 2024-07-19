@@ -6,7 +6,8 @@
 # make vimball          Creates a Vimball archive
 # make clean            Removes all archives
 
+DIR?=t
 test:
-	vim-flavor test
+	prove-vspec -d $(PWD) $(DIR)
 
 .PHONY: test

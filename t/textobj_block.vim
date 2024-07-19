@@ -24,9 +24,9 @@ describe 'single line blocks'
     1
     normal! ^
 
-    normal dae
+    normal dad
 
-    Expect @@ == code
+    Expect @" == code
   end
 end
 
@@ -42,9 +42,9 @@ describe 'multi-line blocks'
     \         'end'])
     call Setpos(5, 3)
 
-    normal dae
+    normal dad
 
-    Expect @@ == code
+    Expect @" == code
   end
 
   it 'deletes multi-line map'
@@ -56,8 +56,8 @@ describe 'multi-line blocks'
     \         'end'])
     call Setpos(3, 3)
 
-    normal dae
+    normal dad
 
-    Expect @@ == code
+    Expect @" == code
   end
 end
