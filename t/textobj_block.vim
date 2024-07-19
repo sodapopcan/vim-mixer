@@ -16,7 +16,6 @@ describe 'a do/end block text object'
     let @" = ""
   end
 
-
   context "outside a module"
     it 'deletes a block with the cursor before the do'
       let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
