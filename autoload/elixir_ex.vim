@@ -380,7 +380,13 @@ function! s:textobj_block(inside) abort
   let start_col = 1
 
   if a:inside
-    let start_lnr = do_pos[0] + 1
+    let start_lnr = do_pos[0]
+  else
+    let [start_lnr, start_col] = func_pos
+  endif
+
+  if a:inside
+    let start_lnr += 1
     let end_lnr -= 1
 
     if v:operator ==# 'c'
@@ -392,14 +398,12 @@ function! s:textobj_block(inside) abort
       exec start_lnr
     endif
   else
-    let [start_lnr, start_col] = func_pos
-
     if s:is_blank(getline(start_lnr - 1))
       let start_lnr -=1
       let start_col = 1
     endif
 
-    let end_col = len(getline(end_lnr)) + 1
+    let end_col = len(getline(end_lnr)) + 1 " Include \n
 
     exec start_lnr
   endif
@@ -537,14 +541,14 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
       exec start_lnr
     endif
   else
-    exec start_lnr
-
-    let end_col = len(getline(end_lnr)) + 1 " Include \n
-
     if s:is_blank(getline(start_lnr - 1))
       let start_lnr -=1
       let start_col = 1
     endif
+
+    let end_col = len(getline(end_lnr)) + 1 " Include \n
+
+    exec start_lnr
   endif
 
   normal! ^
