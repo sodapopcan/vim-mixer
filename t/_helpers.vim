@@ -1,5 +1,7 @@
-function! TestTextObject(fname)
-  let fname = "t/".a:fname
+command! -nargs=1 TestTextObject call TestTextObject(<f-args>)
+
+function! TestTextObject(...)
+  let fname = "t/".a:1
   let file = join(readfile(fname), "\n")
   let testdata = split(file, '#_')
 
