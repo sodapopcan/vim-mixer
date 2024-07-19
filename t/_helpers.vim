@@ -49,3 +49,9 @@ endfunction
 function! Buffer()
   return join(getline(1, '$'), "\n")
 endfunction
+
+command! -nargs=* Cursor call Cursor(<f-args>)
+
+function! Cursor(...)
+  call setpos(".", [0, a:1, a:2, 0])
+endfunction

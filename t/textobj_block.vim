@@ -20,7 +20,7 @@ describe 'a do/end block text object'
   context "outside a module"
     it 'deletes a block with the cursor before the do'
       let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
-      call Setpos(1, 1)
+      Cursor 1 1
 
       normal dad
 
@@ -30,7 +30,7 @@ describe 'a do/end block text object'
 
     it 'deletes a block with the cursor in the body'
       let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
-      call Setpos(2, 3)
+      Cursor 2 3
 
       normal dad
 
@@ -40,7 +40,7 @@ describe 'a do/end block text object'
 
     it 'deletes a block with the cursor on `end`'
       let f = Fixture('fixtures/textobj_ad__single_line_block_no_module.ex')
-      call Setpos(3, 3)
+      Cursor 3 3
 
       normal dad
 
@@ -52,7 +52,7 @@ describe 'a do/end block text object'
   context "multiline function heads"
     it 'deletes when block'
       let f = Fixture('fixtures/textobj_ad__multiline_function_head.ex')
-      call Setpos(5, 3)
+      Cursor 5 3
 
       normal dad
 
@@ -62,7 +62,7 @@ describe 'a do/end block text object'
 
     it 'deletes a single multi-line map argument'
       let f = Fixture('fixtures/textobj_ad__multiline_single_map_arg.ex')
-      call Setpos(3, 3)
+      Cursor 3 3
 
       normal dad
 
@@ -74,7 +74,7 @@ describe 'a do/end block text object'
   context "with"
     it 'deletes a single-clause with'
       let f = Fixture('fixtures/textobj_ad__with_single_line.ex')
-      call Setpos(3, 5)
+      Cursor 3 5
 
       normal dad
 
