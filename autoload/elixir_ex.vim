@@ -532,7 +532,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     call searchpos('\<do\>', 'W', 0, 0, Skip)
   endif
 
-  let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
+  let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'W', Skip)
 
   let start_col = 1
 
