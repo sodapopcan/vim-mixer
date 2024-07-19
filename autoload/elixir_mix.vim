@@ -1,4 +1,4 @@
-" Location:     autoload/elixir_ex.vim
+" Location:     autoload/elixir_mix.vim
 " Maintainer:   Andrew Haust <https://andrew.hau.st>
 
 " Utility {{{1
@@ -46,7 +46,7 @@ endfunction
 
 " Init {{{1
 
-function! elixir_ex#init() abort
+function! elixir_mix#init() abort
   let defregex = 'def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl'
   let macros = [[defregex, 'f'], ['defmodule', 'M'], ['quote', 'q']]
 
@@ -223,11 +223,11 @@ endfunction
 
 " -- helpers {{{1
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-  let g:elixir_ex_view = a:view
+  let g:elixir_mix_view = a:view
 
   if v:operator ==# 'c'
-    unlet g:elixir_ex_view.lnum
-    unlet g:elixir_ex_view.col
+    unlet g:elixir_mix_view.lnum
+    unlet g:elixir_mix_view.col
   endif
 
   call setpos("'<", [0, a:start_lnr, a:start_col, 0])
@@ -243,8 +243,8 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction!
 
 nnoremap <silent> <Plug>(ElixirExRestoreView)
-      \ :call winrestview(g:elixir_ex_view)<bar>
-      \ :unlet g:elixir_ex_view<bar>
+      \ :call winrestview(g:elixir_mix_view)<bar>
+      \ :unlet g:elixir_mix_view<bar>
       \ :normal! ^<cr>
 
 function! s:adjust_whitespace(start_lnr, start_col)
@@ -357,8 +357,8 @@ function! s:textobj_map(inside) abort
     else
       if start_col == end_col - 1
         let handle_empty_map = 1
-        let b:elixir_ex_start_col = start_col
-        let b:elixir_ex_operator = v:operator
+        let b:elixir_mix_start_col = start_col
+        let b:elixir_mix_operator = v:operator
       else
         let start_col += 1
         let end_col -= 1
@@ -385,9 +385,9 @@ function! s:textobj_map(inside) abort
 endfunction
 
 nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
-      \ :call cursor([line('.'), b:elixir_ex_start_col + 1])<bar>
-      \ :unlet b:elixir_ex_operator<bar>
-      \ :unlet b:elixir_ex_start_col<cr>
+      \ :call cursor([line('.'), b:elixir_mix_start_col + 1])<bar>
+      \ :unlet b:elixir_mix_operator<bar>
+      \ :unlet b:elixir_mix_start_col<cr>
 
 " -- textobj_block {{{1
 

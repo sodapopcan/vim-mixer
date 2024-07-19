@@ -1,4 +1,4 @@
-*elixir-ex.txt*  Extras and extensions for *elixir*
+*elixir-mix.txt*  Extras and extensions for *elixir*
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
@@ -6,20 +6,20 @@ License: Same terms as Vim itself (see |license|)
 This plugin depends on elixir.vim
                        <https://github.com/elixir-editors/vim-elixir>
 
-TABLE OF CONTENTS                           *elixir-ex*
+TABLE OF CONTENTS                           *elixir-mix*
 
-INTRODUCTION................................|elixir-ex-introduction|
-TEXT OBJECTS................................|elixir-ex-text-objects|
-  * Maps....................................|elixir-ex-maps|
-  * Functions...............................|elixir-ex-functions|
-  * Sigils..................................|elixir-ex-sigils|
-  * Comments................................*elixir-ex-comments*
-COMMANDS....................................|elixir-ex-commands|
- * Mix......................................|elixir-ex-commands-mix|
- * Editing..................................|elixir-ex-commands-editing|
+INTRODUCTION................................|elixir-mix-introduction|
+TEXT OBJECTS................................|elixir-mix-text-objects|
+  * Maps....................................|elixir-mix-maps|
+  * Functions...............................|elixir-mix-functions|
+  * Sigils..................................|elixir-mix-sigils|
+  * Comments................................*elixir-mix-comments*
+COMMANDS....................................|elixir-mix-commands|
+ * Mix......................................|elixir-mix-commands-mix|
+ * Editing..................................|elixir-mix-commands-editing|
 
 
-INTRODUCTION                                *elixir-ex-introduction*
+INTRODUCTION                                *elixir-mix-introduction*
 
 Provides extra utilities on top of elixir.vim for working with the
 Elixir programming language <https://elixir-lang.org>.
@@ -29,9 +29,9 @@ Nvim compatibility isn't a non-goal and any reasonable patches for
 nvim-support will be accepted, however, this is a Lua-free zone.
 
 
-TEXT OBJECTS                                *elixir-ex-text-objects*
-                                            *elixir-ex-text-object*
-                                            *elixir-ex-textobj*
+TEXT OBJECTS                                *elixir-mix-text-objects*
+                                            *elixir-mix-text-object*
+                                            *elixir-mix-textobj*
 
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
@@ -53,7 +53,7 @@ Here is an overview:
 
 
 
-id                                          *elixir-ex-ie* *elixir-ex-ae*
+id                                          *elixir-mix-ie* *elixir-mix-ae*
 ad                  A do/end block.  Currently brings "else" along with it.
 
                     These target all the builtin macros/special forms and work
@@ -69,8 +69,8 @@ ad                  A do/end block.  Currently brings "else" along with it.
                     the "let foo = " will be included in "ad".
 
 
-if                                          *elixir-ex-if* *elixir-ex-af*
-af                                          *elixir-ex-iF* *elixir-ex-aF*
+if                                          *elixir-mix-if* *elixir-mix-af*
+af                                          *elixir-mix-iF* *elixir-mix-aF*
 iF
 aF                  A def macro including def, defp, defmacro, defmacrop,
                     defprotocol, and defimpl.  Useful for not having to worry
@@ -86,24 +86,24 @@ aF                  A def macro including def, defp, defmacro, defmacrop,
                     blank line or its leading blank line in that order.
 
 
-iM                                          *elixir-ex-iM* *elixir-ex-aM*
+iM                                          *elixir-mix-iM* *elixir-mix-aM*
 aM                  A module, ie, defmodule/end.  Useful for not
                     having to worry about being inside another block.
 
 
-ic                                          *elixir-ex-ic* *elixir-ex-ac*
+ic                                          *elixir-mix-ic* *elixir-mix-ac*
 ac                  A comment or docstring.  It will target whichever your
                     cursor is on or ahead of.
 
-im                                          *elixir-ex-im* *elixir-ex-am*
+im                                          *elixir-mix-im* *elixir-mix-am*
 im                  A map or struct.
 
-i~                                          *elixir-ex-i~* *elixir-ex-a~*
+i~                                          *elixir-mix-i~* *elixir-mix-a~*
 a~                  A sigil.  Works regardless of the delimiter.
 
-EDITING                                     *elixir-ex-editing*
+EDITING                                     *elixir-mix-editing*
 
-                                            *elixir-ex-pipes*
+                                            *elixir-mix-pipes*
                     NOTE: These commands depend on *elixir.vim*
 
                     NOTE: These commands only work for functions called with
@@ -141,16 +141,16 @@ EDITING                                     *elixir-ex-editing*
                       |> Kernel.+()
 <
 
-COMMANDS                                    *elixir-ex-commands*
+COMMANDS                                    *elixir-mix-commands*
 
 :FromPipe[!]        Moves a piped argument into function parens.
 
                     The bang version will attempt to format.
 
-                    See *elixir-ex-pipes* for more info.
+                    See *elixir-mix-pipes* for more info.
 
 
-                                            *:ToPipe* *elixir-ex-:ToPipe*
+                                            *:ToPipe* *elixir-mix-:ToPipe*
 :ToPipe[!]          Converts a function call to an inline pipe.
 
                     The bang version creates a multi-line pipe.  This is
@@ -167,6 +167,6 @@ COMMANDS                                    *elixir-ex-commands*
 <
                     even if you use the bang version.
 
-                    See *elixir-ex-pipes* for more info.
+                    See *elixir-mix-pipes* for more info.
 
   vim:tw=78:et:ft=help:norl:

@@ -1,4 +1,4 @@
-runtime! plugin/elixir-ex.vim
+runtime! plugin/elixir-mix.vim
 source t/_helpers.vim
 
 silent filetype plugin indent on
@@ -22,7 +22,7 @@ describe "function call with do block"
     1
     $
 
-    call elixir_ex#test_search_call_from_do('hello')
+    call elixir_mix#test_search_call_from_do('hello')
     Expect [line('.'), col('.')] == [1, 1]
   end
 
@@ -38,7 +38,7 @@ describe "function call with do block"
     4
     3
 
-    call elixir_ex#test_search_call_from_do('some_var')
+    call elixir_mix#test_search_call_from_do('some_var')
     Expect [line('.'), col('.')] == [1, 1]
   end
 end
