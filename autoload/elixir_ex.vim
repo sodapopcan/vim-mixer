@@ -247,6 +247,17 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
       \ :unlet g:elixir_ex_view<bar>
       \ :normal! ^<cr>
 
+function! s:adjust_whitespace(start_lnr, start_col)
+  let [start_lnr, start_col] = [a:start_lnr, a:start_col]
+
+  if s:is_blank(getline(a:start_lnr - 1))
+    let start_lnr -=1
+    let start_col = 1
+  endif
+
+  return [start_lnr, start_col]
+endfunction
+
 function! s:adjust_block_region(inside, start_lnr, start_col, end_lnr, end_col) abort
   let [start_lnr, start_col, end_lnr, end_col] = [a:start_lnr, a:start_col, a:end_lnr, a:end_col]
 
@@ -263,10 +274,7 @@ function! s:adjust_block_region(inside, start_lnr, start_col, end_lnr, end_col) 
       exec start_lnr
     endif
   else
-    if s:is_blank(getline(start_lnr - 1))
-      let start_lnr -=1
-      let start_col = 1
-    endif
+    let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, start_col)
 
     let end_col = len(getline(end_lnr)) + 1 " Include \n
 
