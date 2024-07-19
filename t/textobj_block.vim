@@ -26,7 +26,7 @@ describe 'a do/end block text object'
 
       ExpectCursor 1 1
       Expect Buffer() == f.buffer
-      Expect @" == f.reg."\n"
+      Expect @" == f.reg
     end
 
     it 'deletes a block with the cursor in the body'
@@ -37,7 +37,7 @@ describe 'a do/end block text object'
 
       ExpectCursor 1 1
       Expect Buffer() == f.buffer
-      Expect @" == f.reg."\n"
+      Expect @" == f.reg
     end
 
     it 'deletes a block with the cursor on `end`'
@@ -48,7 +48,7 @@ describe 'a do/end block text object'
 
       ExpectCursor 1 1
       Expect Buffer() == f.buffer
-      Expect @" == f.reg."\n"
+      Expect @" == f.reg
     end
   end
 
@@ -61,7 +61,7 @@ describe 'a do/end block text object'
 
       ExpectCursor 1 1
       Expect Buffer() == f.buffer
-      Expect @" == f.reg."\n"
+      Expect @" == f.reg
     end
 
     it 'deletes a single multi-line map argument'
@@ -72,7 +72,7 @@ describe 'a do/end block text object'
 
       ExpectCursor 1 1
       Expect Buffer() == f.buffer
-      Expect @" == f.reg."\n"
+      Expect @" == f.reg
     end
   end
 
@@ -85,7 +85,7 @@ describe 'a do/end block text object'
 
       ExpectCursor 3 3
       Expect Buffer() == f.buffer
-      Expect @" == f.reg."\n"
+      Expect @" == f.reg
     end
   end
 end

@@ -5,6 +5,14 @@ function! Fixture(file)
 
   call append(0, split(code, "\n"))
 
+  let reg = split(reg, "\n")
+
+  if reg[-1] =~ "^#nl"
+    let reg[-1] = ""
+  endif
+
+  let reg = join(reg, "\n")
+
   return {"code": code, "buffer": buffer, "reg": reg}
 endfunction
 
@@ -61,3 +69,5 @@ command! -nargs=* ExpectCursor call ExpectCursor(<f-args>)
 function! ExpectCursor(...)
   Expect [str2nr(a:1), str2nr(a:2)] == [line('.'), col('.')]
 endfunction
+
+
