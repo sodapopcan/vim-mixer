@@ -70,4 +70,13 @@ function! ExpectCursor(...)
   Expect [str2nr(a:1), str2nr(a:2)] == [line('.'), col('.')]
 endfunction
 
+command! -nargs=0 Setup call Setup()
 
+function! Setup()
+  source t/_helpers.vim
+
+  silent filetype plugin indent on
+  syntax enable
+
+  set cpo&vim
+endfunction

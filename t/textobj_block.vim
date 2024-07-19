@@ -1,9 +1,4 @@
-source t/_helpers.vim
-
-silent filetype plugin indent on
-syntax enable
-
-set cpo&vim
+Setup
 
 describe 'a do/end block text object'
   before
