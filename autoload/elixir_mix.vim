@@ -147,7 +147,7 @@ function! s:is_lambda()
 
   if empty(terms) | return '' | endif
 
-  return terms[0] ==# 'elixirLambda'
+  return terms[0] ==# 'elixirMixLambda'
 endfunction
 
 function! s:cursor_function_metadata()
