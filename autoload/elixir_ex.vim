@@ -558,6 +558,8 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     if start_lnr !=# line('.')
       let start_lnr = line('.') + 1
     endif
+
+    let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, end_lnr)
   endif
 
   " echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
@@ -568,7 +570,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     return winrestview(view)
   endif
 
-  let view.lnum = keyword_lnr
+  let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
