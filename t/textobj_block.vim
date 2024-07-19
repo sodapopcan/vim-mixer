@@ -35,6 +35,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      ExpectCursor 1 1
       Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
@@ -45,6 +46,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      ExpectCursor 1 1
       Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
@@ -57,6 +59,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      ExpectCursor 1 1
       Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
@@ -67,6 +70,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      ExpectCursor 1 1
       Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
@@ -79,6 +83,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      ExpectCursor 3 3
       Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
