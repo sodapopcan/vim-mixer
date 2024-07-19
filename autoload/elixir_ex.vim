@@ -628,6 +628,9 @@ function! s:textobj_comment(inside)
   if a:inside && comment_type ==# 'DocString'
     let start_lnr += 1
     let end_lnr -= 1
+    let end_col = len(getline(end_lnr))
+  else
+    let end_col = len(getline(end_lnr)) + 1
   endif
 
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
