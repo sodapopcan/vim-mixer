@@ -619,8 +619,6 @@ function! s:textobj_comment(inside)
     normal j$
   endwhile
 
-  echom line('.')
-
   if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
     normal k$
   endif
