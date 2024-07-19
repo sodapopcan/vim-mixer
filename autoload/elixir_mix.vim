@@ -250,7 +250,7 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
 function! s:adjust_whitespace(start_lnr, start_col)
   let [start_lnr, start_col] = [a:start_lnr, a:start_col]
 
-  if s:is_blank(getline(a:start_lnr - 1))
+  if s:is_blank(getline(a:start_lnr - 1)) && line('.') != 1
     let start_lnr -=1
     let start_col = 1
   endif
