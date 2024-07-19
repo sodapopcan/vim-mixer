@@ -4,11 +4,12 @@
 " (https://github.com/elixir-editors/vim-elixir).
 
 " Unavailable in elixir.vim
-syn region elixirMixLambda start="\<fn\>" end="\<end\>" keepend
+syn region elixirMixLambda start="\<fn\>" end="\<end\>" keepend transparent
 " syn region elixirMap matchgroup=elixirMapDelimiter start="%{" end="}" contains=ALLBUT,@elixirNotTop fold
-syn region elixirMixStruct matchgroup=elixirMixDelimiters start="%\%(\w\|\.\)\+"hs=s+1 end="}"he=e-1 contains=ALLBUT,@elixirNotTop fold
+syn region elixirMixStruct matchgroup=NONE start="%\%(\w\|\.\)\+" end="}" transparent
 hi link elixirMixDelimiters Type
 syn region elixirArguments start="(" end=")" contained contains=elixirMixStruct,elixirMap
+syn region elixirMixTuple matchgroup=NONE start="\(\w\|#\)\@<!{" end="}" transparent
 
 " Fix elixir.vim's sigils
 " TODO: Remove this when it's fixed in elixir.vim
@@ -40,10 +41,6 @@ if !hlexists('elixirAtom')
   syn match elixirMixAtom '\(:\)\@<!:\%([a-zA-Z_*]\w*\%([?!]\|=[>=]\@!\)\?\|<>\|===\?\|>=\?\|<=\?\)' transparent
   syn match elixirMixAtom '\(:\)\@<!:\%(<=>\|&&\?\|%\(()\|\[\]\|{}\)\|++\?\|--\?\|||\?\|!\|//\|[%&`/|]\)' transparent
   syn match elixirMixAtom "\%([a-zA-Z_]\w*[?!]\?\):\(:\)\@!" transparent
-endif
-
-if !hlexists('elixirTuple')
-  syn region elixirMixTuple matchgroup=NONE start="\(\w\|#\)\@<!{" end="}" transparent
 endif
 
 if !hlexists('elixirComment')
