@@ -250,7 +250,7 @@ nnoremap <silent> <Plug>(ElixirExRestoreView)
 function! s:adjust_whitespace(start_lnr, start_col)
   let [start_lnr, start_col] = [a:start_lnr, a:start_col]
 
-  if s:is_blank(getline(a:start_lnr - 1)) && line('.') != 1
+  if a:start_lnr > 1 && s:is_blank(getline(a:start_lnr - 1))
     let start_lnr -=1
     let start_col = 1
   endif
@@ -275,6 +275,10 @@ function! s:adjust_block_region(inside, start_lnr, start_col, end_lnr, end_col) 
     endif
   else
     let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, start_col)
+
+    if start_col == 0
+      let start_col = 1
+    endif
 
     let end_col = len(getline(end_lnr)) + 1 " Include \n
 
@@ -399,9 +403,10 @@ function! s:textobj_block(inside) abort
 
   let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
   let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
+
   let func_pos = s:jump_to_function()
 
-  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos)
+  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos) && do_pos != [0, 0]
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
     let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   else
@@ -437,8 +442,8 @@ function! s:jump_to_function()
 
   " First lets check if we have a builtin as that is simple.
   if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
-  " We're not going to do anything here
-  "
+    " We're not going to do anything here
+    "
   " If not we're going to check if we have either a paren block or a single
   " argument list, tuple, or map.  This is the only other case like we will
   " cover for now.

@@ -28,6 +28,10 @@ function! Join(code)
   return join(a:code, "\n")
 endfunction
 
+function! JoinNL(code)
+  return Join(a:code)."\n"
+endfunction
+
 function! Setpos(lnr, col)
-  call setpos(".", [bufnr(), a:lnr, a:col, 0])
+  call setpos(".", [0, a:lnr, a:col, 0])
 endfunction

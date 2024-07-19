@@ -6,8 +6,8 @@
 # make vimball          Creates a Vimball archive
 # make clean            Removes all archives
 
-DIR?=t
+t?=t
 test:
-	prove-vspec -d $(PWD) $(DIR)
+	prove-vspec -d $(PWD) $(t)
 
 .PHONY: test
