@@ -8,8 +8,8 @@ function! TestTextObject(...)
   let setup = split(testdata[0], "\n")
 
   let cursor_pos = split(testdata[1], "\n")
-  let cursor_pos = map(cursor_pos, "substitute(v:val, '# ', '', '')")
-  let cursor_pos = map(cursor_pos, 'map(split(v:val, " "), "str2nr(v:val)")')
+  let cursor_pos = map(cursor_pos, {-> substitute(v:val, '# ', '', '')})
+  let cursor_pos = map(cursor_pos, {-> map(split(v:val, " "), {-> str2nr(v:val)})})
 
   for test in testdata[2:]
     let lines = split(test, "\n")
