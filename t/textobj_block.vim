@@ -24,6 +24,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
 
@@ -33,6 +34,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
 
@@ -42,6 +44,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
   end
@@ -53,6 +56,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
 
@@ -62,6 +66,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
   end
@@ -73,6 +78,7 @@ describe 'a do/end block text object'
 
       normal dad
 
+      Expect Buffer() == f.buffer
       Expect @" == f.reg."\n"
     end
   end

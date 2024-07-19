@@ -45,3 +45,7 @@ endfunction
 function! Setpos(lnr, col)
   call setpos(".", [0, a:lnr, a:col, 0])
 endfunction
+
+function! Buffer()
+  return join(getline(1, '$'), "\n")
+endfunction
