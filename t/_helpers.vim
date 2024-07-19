@@ -1,7 +1,47 @@
+function! TestTextObject(fname)
+  let fname = "t/".a:fname
+  let file = join(readfile(fname), "\n")
+  let testdata = split(file, '#_')
+
+  let setup = split(testdata[0], "\n")
+
+  let cursor_pos = split(testdata[1], "\n")
+  let cursor_pos = map(cursor_pos, "substitute(v:val, '# ', '', '')")
+  let cursor_pos = map(cursor_pos, 'map(split(v:val, " "), "str2nr(v:val)")')
+
+  for test in testdata[2:]
+    let lines = split(test, "\n")
+    let cmd = lines[0][2:]
+    let cases = split(join(lines[1:], "\n"), "#\"\n")
+
+    let n = 0
+
+    for case in cases
+      for [lnr, col] in cursor_pos
+        new
+        set ft=elixir
+        call append(0, setup)
+        call setpos('.', [0, lnr, col, 0])
+        exec "normal" cmd
+
+        if n == 0
+          Expect Buffer() == cases[0]
+        else
+          Expect @" == cases[1]."\n"
+        endif
+
+        close!
+      endfor
+
+      let n = 1
+    endfor
+  endfor
+endfunction
+
 function! Fixture(file)
   let fname = "t/".a:file
   let code = join(readfile(fname), "\n")
-  let [code, buffer, reg] = split(code, '#.#\n')
+  let [code, buf_a, buf_i, reg_a, reg_i] = split(code, '#..#\n')
 
   call append(0, split(code, "\n"))
 
@@ -13,7 +53,7 @@ function! Fixture(file)
 
   let reg = join(reg, "\n")
 
-  return {"code": code, "buffer": buffer, "reg": reg}
+  return {"code": code, "a": a, "i", i, "reg": reg}
 endfunction
 
 function! Append(code)
@@ -70,13 +110,7 @@ function! ExpectCursor(...)
   Expect [str2nr(a:1), str2nr(a:2)] == [line('.'), col('.')]
 endfunction
 
-command! -nargs=0 Setup call Setup()
+" command! -nargs=0 Setup call Setup()
 
-function! Setup()
-  source t/_helpers.vim
-
-  silent filetype plugin indent on
-  syntax enable
-
-  set cpo&vim
-endfunction
+" function! Setup()
+" endfunction
