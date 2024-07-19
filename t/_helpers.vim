@@ -55,3 +55,9 @@ command! -nargs=* Cursor call Cursor(<f-args>)
 function! Cursor(...)
   call setpos(".", [0, a:1, a:2, 0])
 endfunction
+
+command! -nargs=* ExpectCursor call ExpectCursor(<f-args>)
+
+function! ExpectCursor(...)
+  Expect [str2nr(a:1), str2nr(a:2)] == [line('.'), col('.')]
+endfunction
