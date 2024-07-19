@@ -601,8 +601,7 @@ function! s:textobj_comment(inside)
   endif
 
   let start_lnr = line('.')
-  normal ^
-  let start_col = col('.')
+  let start_col = 0
 
   call setpos('.', cursor_origin)
 
@@ -630,6 +629,7 @@ function! s:textobj_comment(inside)
     let end_col = len(getline(end_lnr)) + 1
   endif
 
+  let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
