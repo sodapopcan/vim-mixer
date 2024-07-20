@@ -38,9 +38,13 @@ describe "text objects"
     " end
   end
 
-  context "sigils"
-    it "targets inline sigils"
-      TestTextObject textobj/sigil/inline.ex
+  context "sigils - inline"
+    it "targets double quotes"
+      TestTextObject textobj/sigil/inline_double_quotes.ex
+    end
+
+    it "targets single quotes"
+      TestTextObject textobj/sigil/inline_single_quotes.ex
     end
   end
 end

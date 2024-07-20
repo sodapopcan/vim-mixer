@@ -25,7 +25,7 @@ end
   def bar do
     "hi there"
   end
-#empty
+#nl
 #_
 #%dif
 defmodule Foo do
@@ -38,4 +38,4 @@ defmodule Foo do
 end
 #"
     "hi there"
-#empty
+#nl

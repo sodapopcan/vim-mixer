@@ -20,7 +20,7 @@ end
     with {:ok, foo} <- foo() do
       foo
     end
-#empty
+#nl
 #_
 #%did
 defmodule Foo do
@@ -31,4 +31,4 @@ defmodule Foo do
 end
 #"
       foo
-#empty
+#nl

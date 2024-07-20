@@ -32,7 +32,7 @@ end
 
     baz.(foo)
   end
-#empty
+#nl
 #_
 #%dif
 defmodule Foo do
@@ -48,4 +48,4 @@ end
     baz = fn n -> n + 1 end
 
     baz.(foo)
-#empty
+#nl

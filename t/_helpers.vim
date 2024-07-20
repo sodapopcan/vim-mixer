@@ -14,7 +14,9 @@ function! TestTextObject(...)
   for test in testdata[2:]
     let lines = split(test, "\n")
     let cmd = lines[0][2:]
-    let lines = map(lines[1:], {-> substitute(v:val, "^#empty", '', '')})
+    let lines = lines[1:]
+    let lines = map(lines, {-> substitute(v:val, '^#nl', '', '')})
+    let lines = map(lines, {-> substitute(v:val, '^#keep\s', '', '')})
     let cases = split(join(lines, "\n"), "#\"\n")
     " let cases = map(cases, {-> v:val == "" ? v:val."\n" : v:val})
 

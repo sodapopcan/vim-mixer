@@ -24,7 +24,7 @@ end
   def foo do
     "foo"
   end
-#empty
+#nl
 #_
 #%dif
 defmodule Foo do
@@ -37,4 +37,4 @@ defmodule Foo do
 end
 #"
     "foo"
-#empty
+#nl

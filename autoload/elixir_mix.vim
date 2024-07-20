@@ -611,9 +611,9 @@ fun! V()
 endfun
 
 function! s:textobj_sigil(inner)
-  let Skip = {-> s:cursor_term() ==# 'Sigil' || s:cursor_term() ==# 'MixSigil'}
+  let Skip = {-> index(['Sigil', 'MixSigil', 'DelimEscape', 'MixDelimEscape'], s:cursor_term()) >= 0}
   let view = winsaveview()
-  let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|''\|\%("""\)\|\%(''''''\)'
+  let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
   if s:cursor_term() =~ 'Sigil'
     let [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
