@@ -5,11 +5,11 @@
 
 " Unavailable in elixir.vim
 syn region elixirMixLambda start="\<fn\>" end="\<end\>" keepend transparent
-" syn region elixirMap matchgroup=elixirMapDelimiter start="%{" end="}" contains=ALLBUT,@elixirNotTop fold
-syn region elixirMixStruct matchgroup=NONE start="%\%(\w\|\.\)\+" end="}" transparent
-hi link elixirMixDelimiters Type
-syn region elixirArguments start="(" end=")" contained contains=elixirMixStruct,elixirMap
-syn region elixirMixTuple matchgroup=NONE start="\(\w\|#\)\@<!{" end="}" transparent
+syn region elixirMixMap matchgroup=elixirMapDelimiter start="%{" end="}" transparent
+syn region elixirMixStruct matchgroup=elixirMixStructDelimiters start="%\%(\w\|\.\)\+"hs=s+1 end="}"he=e-1 transparent contains=elixirStruct
+hi link elixirMixStructDelimiters Type
+syn region elixirArguments start="(" end=")" contained contains=elixirMixStruct,elixirMixMap transparent
+" syn region elixirMixTuple matchgroup=NONE start="\(\w\|#\)\@<!{" end="}" transparent
 
 " Fix elixir.vim's sigils
 " TODO: Remove this when it's fixed in elixir.vim
