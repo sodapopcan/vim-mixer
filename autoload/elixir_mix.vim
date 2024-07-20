@@ -151,7 +151,7 @@ function! s:is_lambda()
 endfunction
 
 function! s:cursor_function_metadata()
-  return index(['Comment', 'DocString', 'DocStringDelimiter', 'Variable'], s:cursor_outer_syn_name()) > -1
+  return s:cursor_synstack_str() =~ 'Comment\|DocString\|Variable'
 endfunction
 
 function! s:cursor_on_comment()
@@ -478,6 +478,10 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   normal! ^
 
+  if s:cursor_function_metadata() || s:is_blank(getline('.'))
+    call search(keyword, 'Wc', 0, 0, Skip)
+  endif
+
   let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
   let func_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
   let do_pos = searchpos('\<do\>', 'W', 0, 0, Skip)
@@ -496,6 +500,10 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   endif
 
+  if func_pos == [0, 0]
+    return winrestview(view)
+  endif
+
   let start_col = 1
 
   if a:inside
@@ -507,31 +515,31 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
 
   call setpos('.', [0, start_lnr, start_col, 0])
-  normal k
+  let last_meta_lnr = start_lnr
 
   let start_col = 0
 
-"   if !a:inside && !s:is_blank(getline(line('.') - 1)) && !a:ignore_meta
-"     normal! k^
+  if !a:inside && !a:ignore_meta
+    if !s:is_blank(getline('.'))
+      normal! k^
+    endif
 
-"     while s:cursor_function_metadata()
-"       normal! k^
-"     endwhile
+    while s:cursor_function_metadata() || s:is_blank(getline('.'))
+      " call writefile([s:cursor_synstack_str()], 'foo.vim', 'a')
 
-"     if start_lnr !=# line('.')
-"       let start_lnr = line('.') + 1
-"     endif
+      if s:cursor_function_metadata()
+        let last_meta_lnr = line('.')
+      endif
 
-"     let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, end_lnr)
-"   endif
+      normal! k^
+    endwhile
+
+    let start_lnr = last_meta_lnr
+  endif
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
-
-fu! T()
-  return s:cursor_function_metadata()
-endfu
 
 " -- textobj_comment {{{1
 

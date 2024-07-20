@@ -26,6 +26,8 @@ function! TestTextObject(...)
         call setpos('.', [0, lnr, col, 0])
         exec "normal" cmd
 
+        " Debug join([a:1, cmd, 'iter:', n, 'lnr:', lnr, 'col:', col], ' ')
+
         if n == 0
           Expect Buffer() == cases[0]
         else

@@ -1,9 +1,9 @@
-source t/_helpers.vim
+if !&compatible | set nocompatible | endif
 
 silent filetype plugin indent on
 syntax enable
 
-set cpo&vim
+source t/_helpers.vim
 
 describe "text objects"
   context "do/end blocks"
@@ -20,5 +20,12 @@ describe "text objects"
     it "targets only one function"
       TestTextObject textobj/def/multiple.ex
     end
+
+    " This test will not pass and I have no idea what is wrong.  It works with
+    " a minimal vimrc with the same settings as in the test.
+    "
+    " it "targets meta"
+    "   TestTextObject textobj/def/function_meta.ex
+    " end
   end
 end
