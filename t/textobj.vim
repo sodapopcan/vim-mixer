@@ -24,6 +24,11 @@ describe "text objects"
     it "targets the second function"
       TestTextObject textobj/def/multiple_second.ex
     end
+
+    it "targets the second function"
+      TestTextObject textobj/def/fn.ex
+    end
+
     " This test will not pass and I have no idea what is wrong.  It works with
     " a minimal vimrc with the same settings as in the test.
     "
@@ -32,3 +37,5 @@ describe "text objects"
     " end
   end
 end
+
+
