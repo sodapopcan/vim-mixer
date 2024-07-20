@@ -44,8 +44,8 @@ Here is an overview:
   Elixir construct                 | Text Object  (mneumonic/notes)
   ---------------------------------+-----------------------------------------
   do/end blocks                    | d  (do)
-  def/defmarco/defprotocol/defimpl | f  (function, includes @doc, @spec etc.)
-                                   | F  (does not include @doc, @spec etc.)
+  def[p]/defmarco[p]               | f
+  def[p]/defmacro[p]               | F  (includes meta and function heads)
   defmodule                        | M
   %{}/%Foo{}                       | m  (map)
   ~s""/etc.                        | ~  (note the uppercase)
