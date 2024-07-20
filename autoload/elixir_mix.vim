@@ -512,8 +512,6 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     let [start_lnr, start_col] = func_pos
   endif
 
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
-
   call setpos('.', [0, start_lnr, start_col, 0])
   let last_meta_lnr = start_lnr
 
@@ -536,6 +534,8 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
     let start_lnr = last_meta_lnr
   endif
+
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
@@ -600,7 +600,7 @@ function! s:textobj_comment(inside)
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-" :FromPipe and :ToPipe {{{1
+" :ToPipe {{{1
 
 function! s:to_pipe() abort
   let cursor_origin = getcurpos('.')
@@ -700,6 +700,9 @@ function! s:to_pipe() abort
     return s:reset(cursor_origin)
   endif
 endfunction
+
+
+" :FromPipe {{{1
 
 function! s:from_pipe() abort
   let curr_line = getline(".")
