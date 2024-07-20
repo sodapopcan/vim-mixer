@@ -396,7 +396,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 " -- textobj_block {{{1
 
 function! s:textobj_block(inside) abort
-  let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"]) || s:is_lambda()}
+  let Skip = {-> s:skip_terms('Tuple\|String\|Comment') || s:is_lambda()}
   let view = winsaveview()
 
   normal! ^
@@ -472,112 +472,66 @@ endfunction
 " -- textobj_def {{{1
 
 function! s:textobj_def(keyword, inside, ignore_meta) abort
-  let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
-
-  " helpers
-  let Skip = {-> s:skip_terms(["Tuple", "String", "Comment"])}
-
-  " init
+  let Skip = {-> s:skip_terms('Tuple\|String\|Comment') || s:is_lambda()}
   let view = winsaveview()
-  let cursor_origin = getcurpos('.')
-  let [_, origin_lnr, origin_col, _, _] = cursor_origin
-
-  """ start
-  if s:cursor_in_gutter()
-    normal! ^
-  endif
-
-  if s:cursor_function_metadata()
-    while s:cursor_function_metadata()
-      normal! j^
-    endwhile
-
-    if match(expand("<cword>"), keyword) >= 0
-      let cursor_origin = getcurpos('.')
-      let [_, origin_lnr, origin_col, _, _] = cursor_origin
-    endif
-  endif
-
-  let cursor_on_keyword = match(expand("<cword>"), keyword) >= 0
-  let on_first_char_of_keyword = cursor_on_keyword && expand("<cword>")[0] ==# s:cursor_char()
-
-  if cursor_on_keyword && !on_first_char_of_keyword
-    normal! b
-  elseif cursor_on_keyword
-    " cursor is on the first character of the keyword or not in a function...
-    " though this needs further investigation.
-  elseif !cursor_on_keyword
-    call search(keyword, 'Wb', 0, 0, Skip)
-  else
-    call search(keyword, 'W', 0, 0, Skip)
-  endif
-
-  if match(expand("<cword>"), keyword) == -1
-    return winrestview(view)
-  endif
-
-  let keyword_lnr = line('.')
-
-  let dokw = searchpairpos(keyword, '', '\<do\>\:', 'W', Skip, line('.') + 1)
-
-  if dokw != [0, 0]
-    " We're dealing with keyword syntax so we're going to bail for now
-
-    return winrestview(view)
-    " call search('(', 'W', line('.'))
-    " if s:cursor_char() ==# '('
-    "   normal! vib
-    " else
-    "   normal! Wv$
-    " endif
-
-    " return 0
-    " call setpos("'<", [bufnr('%'), start_lnr, start_col, 0])
-    " call setpos("'>", [bufnr('%'), end_lnr, end_col, 0])
-    " normal! gv
-    " return winrestview(view)
-  endif
-
-  if a:inside
-    let [start_lnr, _start_col] = searchpairpos(keyword, '', '\<do\>', 'W', Skip)
-  else
-    let start_lnr = line('.')
-    call searchpos('\<do\>', 'W', 0, 0, Skip)
-  endif
-
-  let [end_lnr, end_col] = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
-
-  let start_col = 1
-
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
+  let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
   normal! ^
 
-  if !a:inside && !s:is_blank(getline(line('.') - 1)) && !a:ignore_meta
-    normal! k^
+  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+  let func_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
+  let do_pos = searchpos('\<do\>', 'W', 0, 0, Skip)
+  let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
 
-    while s:cursor_function_metadata()
-      normal! k^
-    endwhile
+  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, end_pos) && do_pos != [0, 0]
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = end_pos
+  else
+    call winrestview(view)
+    normal! wb
 
-    if start_lnr !=# line('.')
-      let start_lnr = line('.') + 1
-    endif
-
-    let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, end_lnr)
+    let func_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
+    let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   endif
 
-  " echom [origin_lnr, origin_col, start_lnr, start_col, end_lnr, end_col]
+  let start_col = 1
 
-  if !a:inside && !s:in_range(origin_lnr, origin_col, [start_lnr, 0], [end_lnr, end_col])
-    return winrestview(view)
-  elseif a:inside && !s:in_range(origin_lnr, origin_col, [keyword_lnr, 0], [end_lnr + 1, end_col])
-    return winrestview(view)
+  if a:inside
+    let start_lnr = do_pos[0]
+  else
+    let [start_lnr, start_col] = func_pos
   endif
+
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
+
+  call setpos('.', [0, start_lnr, start_col, 0])
+  normal k
+
+  let start_col = 0
+
+"   if !a:inside && !s:is_blank(getline(line('.') - 1)) && !a:ignore_meta
+"     normal! k^
+
+"     while s:cursor_function_metadata()
+"       normal! k^
+"     endwhile
+
+"     if start_lnr !=# line('.')
+"       let start_lnr = line('.') + 1
+"     endif
+
+"     let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, end_lnr)
+"   endif
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
+
+fu! T()
+  return s:cursor_function_metadata()
+endfu
 
 " -- textobj_comment {{{1
 
@@ -828,10 +782,8 @@ function! s:skip()
   return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%(String\|Comment\|CharList\|List\|Map\|Tuple\)'
 endfunction
 
-function! s:skip_terms(terms)
-  let terms = join(a:terms, '\|')
-
-  return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%('.terms.'\)'
+function! s:skip_terms(str)
+  return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%('.a:str.'\)'
 endfunction
 
 function! s:reset(pos)
