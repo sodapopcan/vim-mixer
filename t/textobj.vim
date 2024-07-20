@@ -18,9 +18,12 @@ describe "text objects"
 
   context "def*"
     it "targets only one function"
-      TestTextObject textobj/def/multiple.ex
+      TestTextObject textobj/def/multiple_first.ex
     end
 
+    it "targets the second function"
+      TestTextObject textobj/def/multiple_second.ex
+    end
     " This test will not pass and I have no idea what is wrong.  It works with
     " a minimal vimrc with the same settings as in the test.
     "
