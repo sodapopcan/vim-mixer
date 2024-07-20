@@ -4,6 +4,7 @@ silent filetype plugin indent on
 syntax enable
 
 source t/_helpers.vim
+source syntax/elixir.vim
 
 describe "text objects"
   context "do/end blocks"
@@ -35,6 +36,12 @@ describe "text objects"
     " it "targets meta"
     "   TestTextObject textobj/def/function_meta.ex
     " end
+  end
+
+  context "sigils"
+    it "targets inline sigils"
+      TestTextObject textobj/sigil/inline.ex
+    end
   end
 end
 

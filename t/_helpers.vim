@@ -14,7 +14,9 @@ function! TestTextObject(...)
   for test in testdata[2:]
     let lines = split(test, "\n")
     let cmd = lines[0][2:]
-    let cases = split(join(lines[1:], "\n"), "#\"\n")
+    let lines = map(lines[1:], {-> substitute(v:val, "^#empty", '', '')})
+    let cases = split(join(lines, "\n"), "#\"\n")
+    " let cases = map(cases, {-> v:val == "" ? v:val."\n" : v:val})
 
     let n = 0
 
@@ -26,12 +28,14 @@ function! TestTextObject(...)
         call setpos('.', [0, lnr, col, 0])
         exec "normal" cmd
 
-        " Debug join([a:1, cmd, 'iter:', n, 'lnr:', lnr, 'col:', col], ' ')
+        if $DEBUG
+          Debug join([a:1, cmd, 'iter:', n, 'lnr:', lnr, 'col:', col], ' ')
+        endif
 
         if n == 0
           Expect Buffer() == cases[0]
         else
-          Expect @" == cases[1]."\n"
+          Expect @" == cases[1]
         endif
 
         close!

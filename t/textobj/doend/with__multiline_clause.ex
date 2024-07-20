@@ -28,6 +28,7 @@ end
       foo = long_variable_name
       foo
     end
+#empty
 #_
 #%did
 defmodule Foo do
@@ -42,3 +43,4 @@ end
 #"
       foo = long_variable_name
       foo
+#empty

@@ -82,6 +82,11 @@ function! elixir_mix#init() abort
   onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
   onoremap <silent> <buffer> am :call <sid>textobj_map(0)<cr>
 
+  vnoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
+  vnoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
+  onoremap <silent> <buffer> iS :call <sid>textobj_sigil(1)<cr>
+  onoremap <silent> <buffer> aS :call <sid>textobj_sigil(0)<cr>
+
   if !s:command_exists("ToPipe")
     command -buffer -nargs=0 ToPipe call s:to_pipe()
   endif
@@ -107,7 +112,7 @@ function! s:cursor_prev_char()
 endfunction
 
 function! s:cursor_term()
-  return s:sub((synIDattr(synID(line('.'), col('.'), 1), "name")), '^elixir', '')
+  return s:sub((synIDattr(synID(line('.'), col('.'), 0), "name")), '^elixir', '')
 endfunction
 
 function! s:cursor_in_gutter()
@@ -600,6 +605,47 @@ function! s:textobj_comment(inside)
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
+" -- textobj_sigil {{{1
+fun! V()
+  return s:cursor_term()
+endfun
+
+function! s:textobj_sigil(inner)
+  let Skip = {-> s:cursor_term() ==# 'Sigil' || s:cursor_term() ==# 'MixSigil'}
+  let view = winsaveview()
+  let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|''\|\%("""\)\|\%(''''''\)'
+
+  if s:cursor_term() =~ 'Sigil'
+    let [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
+  else
+    let [start_lnr, start_col] = searchpos('\~', 'Wc', 0, 0, Skip)
+  endif
+
+  let line = getline('.')[col('.') - 1:]
+  let delim = matchstr(line, regex)
+
+  if a:inner
+    call search(regex, 'W', 0, 0, Skip)
+    exec "normal! ".(len(delim))."\<space>"
+    let [start_lnr, start_col] = [line('.'), col('.')]
+    call search(regex, 'W', 0, 0, Skip)
+    exec "normal! 1\<left>"
+  else
+    call search(regex, 'W', 0, 0, Skip)
+    call search(regex, 'W', 0, 0, Skip)
+    if len(delim) == 3
+      normal! ll
+    endif
+  endif
+
+  let [end_lnr, end_col] = [line('.'), col('.')]
+
+  call setpos("'<", [0, start_lnr, start_col, 0])
+  call setpos("'>", [0, end_lnr, end_col, 0])
+
+  normal! gv
+endfunction
+
 " :ToPipe {{{1
 
 function! s:to_pipe() abort
@@ -790,11 +836,11 @@ function! s:from_pipe() abort
 endfunction
 
 function! s:skip()
-  return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%(String\|Comment\|CharList\|List\|Map\|Tuple\)'
+  return synIDattr(synID(line('.'), col('.'), 0), "name") =~ '\%(String\|Comment\|CharList\|List\|Map\|Tuple\)'
 endfunction
 
 function! s:skip_terms(str)
-  return synIDattr(synID(line('.'), col('.'), 1), "name") =~ '\%('.a:str.'\)'
+  return synIDattr(synID(line('.'), col('.'), 0), "name") =~ '\%('.a:str.'\)'
 endfunction
 
 function! s:reset(pos)
