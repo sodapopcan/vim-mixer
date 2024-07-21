@@ -281,6 +281,10 @@ function! s:init_mix_project() abort
     return 0
   endif
 
+  if !exists("g:elixir_mix_projects")
+    let g:elixir_mix_projects = {}
+  endif
+
   if !exists("b:mix_project")
     let b:mix_project = {}
   endif
@@ -299,9 +303,18 @@ function! s:init_mix_project() abort
     let project_name = ""
   endtry
 
-  let b:mix_project["root"] = project_root
-  let b:mix_project["name"] = project_name
-  let b:mix_project["alias"] = s:to_elixir_alias(b:mix_project.name)
+  if !has_key(g:elixir_mix_projects, project_root)
+    let g:elixir_mix_projects[project_root] = {
+          \   "root": project_root,
+          \   "name": project_name,
+          \   "alias": s:to_elixir_alias(project_name),
+          \   "tasks": ""
+          \ }
+
+    call s:populate_mix_tasks()
+  endif
+
+  let b:mix_project = g:elixir_mix_projects[project_root]
 
   autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
@@ -380,6 +393,35 @@ function! s:init_mix_project() abort
   endif
 endfunction
 
+function! s:populate_mix_tasks()
+  " Thanks @mhandberg for the awk stuff
+  let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
+
+  if exists("*job_start")
+    call job_start(["sh", "-c", mix_help], {
+          \   "out_cb": function("s:gather_mix_tasks"),
+          \   "exit_cb": function("s:set_mix_tasks"),
+          \   "mode": "nl"
+          \ })
+  elseif exists("*jobstart")
+    call jobstart(["sh", "-c", mix_help], {
+          \   "on_stdout": function("s:gather_mix_tasks"),
+          \   "on_exit": function("s:set_mix_tasks"),
+          \   "mode": "nl"
+          \ })
+  endif
+endfunction
+
+function! s:gather_mix_tasks(_channel, result)
+  let b:elixir_mix_tasks = get(b:, "elixir_mix_tasks", [])
+  let b:elixir_mix_tasks = add(b:elixir_mix_tasks, a:result)
+endfunction
+
+function! s:set_mix_tasks(_id, _status)
+  let b:mix_project.tasks = join(b:elixir_mix_tasks, "\n")
+  unlet b:elixir_mix_tasks
+endfunction
+
 function! s:Mix(...) abort
   if s:command_exists("Dispatch")
     exec "Dispatch mix ".join(a:000, " ")
@@ -403,7 +445,7 @@ function! s:Deps(range, ...) abort
 endfunction
 
 function! ElixirExtMixComplete(A, L, P) abort
-  return system("ls -1 ".s:root("deps/**/*/mix/tasks/*.ex | xargs basename | sed s/\.ex$//"))
+  return b:mix_project.tasks
 endfunction
 
 let g:elixir_mix_generators = {
