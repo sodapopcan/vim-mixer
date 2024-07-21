@@ -264,7 +264,7 @@ function! s:get_outer_term()
 endfunction
 
 
-" Mix {{{1
+" Mix - helpers {{{1
 
 function! s:root(path) abort
   return b:elixir_mix_project.root.'/'.a:path
@@ -273,6 +273,8 @@ endfunction
 function! s:is_mix_project() abort
   return exists("b:elixir_mix_project")
 endfunction
+
+" Mix - project {{{1
 
 function! s:init_mix_project() abort
   let mix_file = findfile("mix.exs", ".;")
@@ -319,79 +321,88 @@ function! s:init_mix_project() abort
   autocmd! DirChanged * let b:elixir_mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
   if g:elixir_mix_define_projections
-    let g:projectionist_heuristics["mix.exs"] = {
-          \   'lib/'.b:elixir_mix_project.name.'.ex': {
-          \     'type': 'domain'
-          \   },
-          \   'lib/'.b:elixir_mix_project.name.'/*.ex': {
-          \     'type': 'domain',
-          \     'alternate': 'test/'.b:elixir_mix_project.name.'/{}_test.exs',
-          \     'template': [
-          \       'defmodule '.b:elixir_mix_project.alias.'.{camelcase|capitalize|dot} do',
-          \       'end'
-          \     ]
-          \   },
-          \   'lib/'.b:elixir_mix_project.name.'_web.ex': {
-          \     'type': 'web'
-          \   },
-          \   'lib/'.b:elixir_mix_project.name.'_web/*.ex': {
-          \     'type': 'web',
-          \     'alternate': 'test/'.b:elixir_mix_project.name.'_web/{}_test.exs'
-          \   },
-          \   'test/'.b:elixir_mix_project.name.'/*_test.exs': {
-          \     'type': 'test',
-          \     'alternate': 'lib/'.b:elixir_mix_project.name.'/{}.ex',
-          \     'template': [
-          \       'defmodule '.b:elixir_mix_project.alias.'.{camelcase|capitalize|dot}Test do',
-          \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
-          \       'end'
-          \     ],
-          \   },
-          \   'mix.exs': {
-          \     'type': 'mix',
-          \     'alternate': 'mix.lock',
-          \     'dispatch': 'mix do deps.unlock --all, deps.update --all'
-          \   },
-          \   'mix.lock': {
-          \     'type': 'lock',
-          \     'alternate': 'mix.exs',
-          \     'dispatch': 'mix deps.get'
-          \   },
-          \   'config/*.exs': {
-          \     'type': 'config',
-          \     'related': 'config/config.exs'
-          \   },
-          \   'lib/'.b:elixir_mix_project.name.'_web/router.ex': {
-          \     'type': 'router',
-          \     'alternate': 'lib/'.b:elixir_mix_project.name.'_web/endpoint.ex'
-          \   },
-          \   'lib/'.b:elixir_mix_project.name.'_web/endpoint.ex': {
-          \     'type': 'endpoint',
-          \     'alternate': 'lib/'.b:elixir_mix_project.name.'_web/router.ex'
-          \   },
-          \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
-          \ }
-
-    let application_file = ""
-    let application_files = [
-          \   "lib/".b:elixir_mix_project.name."/application.ex",
-          \   "lib/".b:elixir_mix_project.name."/app.ex",
-          \   "lib/".b:elixir_mix_project.name."_application.ex",
-          \   "lib/".b:elixir_mix_project.name."_app.ex"
-          \ ]
-
-    for file in application_files
-      if filereadable(s:root(file))
-        let application_file = s:sub(s:root(file), b:elixir_mix_project.root, '')
-        break
-      endif
-    endfor
-
-    if !empty(application_file)
-      let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
-    endif
+    call s:define_projections()
   endif
 endfunction
+
+" Mix - projections {{{1
+
+function s:define_projections() abort
+  let g:projectionist_heuristics["mix.exs"] = {
+        \   'lib/'.b:elixir_mix_project.name.'.ex': {
+        \     'type': 'domain'
+        \   },
+        \   'lib/'.b:elixir_mix_project.name.'/*.ex': {
+        \     'type': 'domain',
+        \     'alternate': 'test/'.b:elixir_mix_project.name.'/{}_test.exs',
+        \     'template': [
+        \       'defmodule '.b:elixir_mix_project.alias.'.{camelcase|capitalize|dot} do',
+        \       'end'
+        \     ]
+        \   },
+        \   'lib/'.b:elixir_mix_project.name.'_web.ex': {
+        \     'type': 'web'
+        \   },
+        \   'lib/'.b:elixir_mix_project.name.'_web/*.ex': {
+        \     'type': 'web',
+        \     'alternate': 'test/'.b:elixir_mix_project.name.'_web/{}_test.exs'
+        \   },
+        \   'test/'.b:elixir_mix_project.name.'/*_test.exs': {
+        \     'type': 'test',
+        \     'alternate': 'lib/'.b:elixir_mix_project.name.'/{}.ex',
+        \     'template': [
+        \       'defmodule '.b:elixir_mix_project.alias.'.{camelcase|capitalize|dot}Test do',
+        \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
+        \       'end'
+        \     ],
+        \   },
+        \   'mix.exs': {
+        \     'type': 'mix',
+        \     'alternate': 'mix.lock',
+        \     'dispatch': 'mix do deps.unlock --all, deps.update --all'
+        \   },
+        \   'mix.lock': {
+        \     'type': 'lock',
+        \     'alternate': 'mix.exs',
+        \     'dispatch': 'mix deps.get'
+        \   },
+        \   'config/*.exs': {
+        \     'type': 'config',
+        \     'related': 'config/config.exs'
+        \   },
+        \   'lib/'.b:elixir_mix_project.name.'_web/router.ex': {
+        \     'type': 'router',
+        \     'alternate': 'lib/'.b:elixir_mix_project.name.'_web/endpoint.ex'
+        \   },
+        \   'lib/'.b:elixir_mix_project.name.'_web/endpoint.ex': {
+        \     'type': 'endpoint',
+        \     'alternate': 'lib/'.b:elixir_mix_project.name.'_web/router.ex'
+        \   },
+        \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
+        \ }
+
+  let application_file = ""
+  let application_files = [
+        \   "lib/".b:elixir_mix_project.name."/application.ex",
+        \   "lib/".b:elixir_mix_project.name."/app.ex",
+        \   "lib/".b:elixir_mix_project.name."_application.ex",
+        \   "lib/".b:elixir_mix_project.name."_app.ex"
+        \ ]
+
+  for file in application_files
+    if filereadable(s:root(file))
+      let application_file = s:sub(s:root(file), b:elixir_mix_project.root, '')
+      break
+    endif
+  endfor
+
+  if !empty(application_file)
+    let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
+  endif
+endfunction
+
+
+" Mix - tasks {{{1
 
 function! s:populate_mix_tasks()
   " Thanks @mhandberg for the awk stuff
@@ -422,6 +433,8 @@ function! s:set_mix_tasks(_id, _status)
   unlet b:elixir_mix_tasks
 endfunction
 
+" Mix - :Mix {{{1
+
 function! s:Mix(...) abort
   if s:command_exists("Dispatch")
     exec "Dispatch mix ".join(a:000, " ")
@@ -429,6 +442,8 @@ function! s:Mix(...) abort
     call system("mix ".join(a:000, " "))
   endif
 endfunction
+
+" Mix - :Deps {{{1
 
 function! s:Deps(range, ...) abort
   let args = join(a:000, " ")
@@ -447,6 +462,8 @@ endfunction
 function! ElixirExtMixComplete(A, L, P) abort
   return b:elixir_mix_project.tasks
 endfunction
+
+" Mix - :Generate {{{1
 
 let g:elixir_mix_generators = {
       \   'repo': 'ecto.gen.repo',
