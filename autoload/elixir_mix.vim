@@ -611,7 +611,16 @@ fun! V()
 endfun
 
 function! s:textobj_sigil(inner)
-  let Skip = {-> index(['Sigil', 'MixSigil', 'DelimEscape', 'MixDelimEscape', 'RegexEscapePunctuation', 'MixRegexEscapePunctuation'], s:cursor_term()) >= 0}
+  let Skip = {->
+        \ index([
+        \   'Sigil',
+        \   'MixSigil',
+        \   'DelimEscape',
+        \   'MixDelimEscape',
+        \   'RegexEscapePunctuation',
+        \   'MixRegexEscapePunctuation'
+        \ ], s:cursor_term()) >= 0}
+
   let view = winsaveview()
   let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
