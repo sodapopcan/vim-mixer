@@ -320,15 +320,10 @@ function! s:init_mix_project() abort
 
   autocmd! DirChanged * let b:elixir_mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
-  let g:elixir_mix_define_projections = get(g:, "elixir_mix_define_projections", 1)
-  let g:elixir_mix_projections_style = get(g:, "elixir_mix_projections_style", "standard")
+  let g:elixir_mix_projections = get(g:, "elixir_mix_projections", "replace")
 
-  if g:elixir_mix_define_projections
-    if g:elixir_mix_projections_style == "standard"
-      call s:define_projection_standard()
-    elseif g:elixir_mix_projections_style == "domain"
-      call s:define_projections_domain()
-    endif
+  if g:elixir_mix_projections !=# "disable"
+    call s:define_projections()
   endif
 endfunction
 
@@ -1143,8 +1138,12 @@ function! s:reset(pos)
 endfunction
 " Projections - standard {{{1
 
-function! s:define_projection_standard()
-  let g:projectionist_heuristics["mix.exs"] = {
+function! s:define_projections()
+  let name = b:elixir_mix_project.name
+  " These projections comes straight from elixir-tools.nvim
+  " Thanks, @mhanberg
+
+  let projectionist_heuristics = {
         \   "lib/**/views/*_view.ex": {
         \     "type": "view",
         \     "alternate": "test/{dirname}/views/{basename}_view_test.exs",
@@ -1313,9 +1312,9 @@ function! s:define_projection_standard()
         \     ]
         \   },
         \   "lib/*.ex": {
-        \     "type": "source",
+        \     "type": "domain",
         \     "alternate": "test/{}_test.exs",
-        \     "template": ["defmodule {camelcase|capitalize|dot} do", "end"]
+        \     "template": ["defmodule {camelcase|capitalize|dot} do", "end"],
         \   },
         \   "test/*_test.exs": {
         \     "type": "test",
@@ -1348,41 +1347,6 @@ function! s:define_projection_standard()
         \       "  end",
         \       "end"
         \     ]
-        \   }
-        \ }
-endfunction
-
-
-" Projections - domain {{{1
-
-function s:define_projections_domain() abort
-  let name = b:elixir_mix_project.name
-  let alias = b:elixir_mix_project.alias
-
-  let g:projectionist_heuristics["mix.exs"] = {
-        \   'lib/'.name.'/*.ex': {
-        \     'type': 'domain',
-        \     'alternate': 'test/'.name.'/{}_test.exs',
-        \     'template': [
-        \       'defmodule '.alias.'.{camelcase|capitalize|dot} do',
-        \       'end'
-        \     ]
-        \   },
-        \   'lib/'.name.'_web.ex': {
-        \     'type': 'web'
-        \   },
-        \   'lib/'.name.'_web/*.ex': {
-        \     'type': 'web',
-        \     'alternate': 'test/'.name.'_web/{}_test.exs'
-        \   },
-        \   'test/'.name.'/*_test.exs': {
-        \     'type': 'test',
-        \     'alternate': 'lib/'.name.'/{}.ex',
-        \     'template': [
-        \       'defmodule '.alias.'.{camelcase|capitalize|dot}Test do',
-        \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
-        \       'end'
-        \     ],
         \   },
         \   'mix.exs': {
         \     'type': 'mix',
@@ -1398,35 +1362,31 @@ function s:define_projections_domain() abort
         \     'type': 'config',
         \     'related': 'config/config.exs'
         \   },
+        \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
+        \ }
+
+  if !empty(b:elixir_mix_project.name)
+    let projectionist_heuristics['lib/*.ex']['related'] = ["lib/".name.".ex"]
+
+    call extend(projectionist_heuristics, {
+        \   'lib/'.name.'_web.ex': {
+        \     'type': 'web',
+        \   },
         \   'lib/'.name.'_web/router.ex': {
         \     'type': 'router',
-        \     'alternate': 'lib/'.name.'_web/endpoint.ex'
+        \     'alternate': 'lib/'.name.'_web/endpoint.ex',
         \   },
         \   'lib/'.name.'_web/endpoint.ex': {
         \     'type': 'endpoint',
         \     'alternate': 'lib/'.name.'_web/router.ex'
-        \   },
-        \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
-        \ }
+        \   }
+        \ })
+  endif
 
-  let application_file = ""
-  let application_files = [
-        \   "lib/".name."/application.ex",
-        \   "lib/".name."/app.ex",
-        \   "lib/".name."_application.ex",
-        \   "lib/".name."_app.ex"
-        \ ]
 
-  for file in application_files
-    if filereadable(s:root(file))
-      let application_file = s:sub(s:root(file), b:elixir_mix_project.root, '')
-      break
-    endif
-  endfor
-
-  if !empty(application_file)
-    let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
+  if g:elixir_mix_projections ==# 'replace'
+    let g:projectionist_heuristics['mix.exs'] = projectionist_heuristics
+  elseif g:elixir_mix_projections ==# 'merge'
+    call extend(g:projectionist_heuristics['mix.exs'], projectionist_heuristics)
   endif
 endfunction
-
-
