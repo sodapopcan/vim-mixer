@@ -75,7 +75,7 @@ function! elixir_mix#init() abort
   endif
 
   if !s:command_exists("Mix")
-    command -buffer -complete=custom,ElixirExtMixComplete -nargs=* Mix call s:Mix(<f-args>)
+    command -buffer -complete=custom,ElixirMixMixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 
   if !s:command_exists("Deps")
@@ -83,7 +83,7 @@ function! elixir_mix#init() abort
   endif
 
   if !s:command_exists("Generate")
-    command -buffer -complete=custom,ElixirExtGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
+    command -buffer -complete=custom,ElixirMixGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
 
   if !s:command_exists("ToPipe")
@@ -459,7 +459,7 @@ function! s:Deps(range, ...) abort
   endif
 endfunction
 
-function! ElixirExtMixComplete(A, L, P) abort
+function! ElixirMixMixComplete(A, L, P) abort
   return b:elixir_mix_project.tasks
 endfunction
 
@@ -495,7 +495,7 @@ function! s:Generate(...) abort
   endif
 endfunction
 
-function! ElixirExtGenerateComplete(A, L, P) abort
+function! ElixirMixGenerateComplete(A, L, P) abort
   return join(keys(g:elixir_mix_generators), "\n")
 endfunction
 
