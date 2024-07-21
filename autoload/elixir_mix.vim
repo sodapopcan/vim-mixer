@@ -624,7 +624,15 @@ function! s:textobj_sigil(inner)
   let view = winsaveview()
   let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
-  if s:cursor_term() =~ 'Sigil'
+  let on_modifier = 0
+  if s:cursor_term() !~ 'Sigil' && expand('<cWORD>') =~ '\%('.regex.'\)\w\+$'
+    normal! b
+    if s:cursor_term() =~ 'Sigil'
+      let on_modifer = 1
+    endif
+  endif
+
+  if s:cursor_term() =~ 'Sigil' || on_modifier
     let [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
   else
     let [start_lnr, start_col] = searchpos('\~', 'Wc', 0, 0, Skip)
