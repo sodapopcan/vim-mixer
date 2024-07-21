@@ -109,30 +109,30 @@ function! elixir_mix#init() abort
   exec "onoremap <silent> <buffer> iF :call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
   exec "onoremap <silent> <buffer> aF :call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
-  vnoremap <silent> <buffer> iq :\<c-u>call <sid>textobj_def('quote', 1, 1)\<cr>
-  vnoremap <silent> <buffer> aq :\<c-u>call <sid>textobj_def('quote', 0, 1)\<cr>
-  onoremap <silent> <buffer> iq :call <sid>textobj_def('quote', 1, 1)\<cr>
-  onoremap <silent> <buffer> aq :call <sid>textobj_def('quote', 0, 1)\<cr>
+  vnoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
+  vnoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
+  onoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
+  onoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
 
   vnoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1)<cr>
   vnoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0)<cr>
-  onoremap <silent> <buffer> id :call <sid>textobj_block(1)<cr>
-  onoremap <silent> <buffer> ad :call <sid>textobj_block(0)<cr>
+  onoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1)<cr>
+  onoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0)<cr>
 
   vnoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
   vnoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
-  onoremap <silent> <buffer> ic :call <sid>textobj_comment(1)<cr>
-  onoremap <silent> <buffer> ac :call <sid>textobj_comment(0)<cr>
+  onoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
+  onoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
 
   vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
   vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
-  onoremap <silent> <buffer> im :call <sid>textobj_map(1)<cr>
-  onoremap <silent> <buffer> am :call <sid>textobj_map(0)<cr>
+  onoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
+  onoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
 
   vnoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
   vnoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
-  onoremap <silent> <buffer> iS :call <sid>textobj_sigil(1)<cr>
-  onoremap <silent> <buffer> aS :call <sid>textobj_sigil(0)<cr>
+  onoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
+  onoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
 endfunction
 
 
