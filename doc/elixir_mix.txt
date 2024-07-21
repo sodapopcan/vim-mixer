@@ -16,7 +16,7 @@ TEXT OBJECTS................................|elixir-mix-text-objects|
   * Maps....................................|elixir-mix-maps|
   * Functions...............................|elixir-mix-functions|
   * Sigils..................................|elixir-mix-sigils|
-  * Comments................................*elixir-mix-comments*
+  * Comments................................|elixir-mix-comments|
 
 
 INTRODUCTION                                *elixir-mix-introduction*
@@ -155,14 +155,13 @@ ac                  A comment or docstring.  It will target whichever your
 im                                          *elixir-mix-im* *elixir-mix-am*
 im                  A map or struct.
 
-i~                                          *elixir-mix-i~* *elixir-mix-a~*
-a~                  A sigil.  Works regardless of the delimiter.
+iS                                          *elixir-mix-i~* *elixir-mix-a~*
+aS                  A sigil.  Works regardless of the delimiter.
+
 
 EDITING                                     *elixir-mix-editing*
 
                                             *elixir-mix-pipes*
-                    NOTE: These commands depend on *elixir.vim*
-
                     NOTE: These commands only work for functions called with
                     parens.  A special case is made for `case`.
 
