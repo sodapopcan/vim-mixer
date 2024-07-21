@@ -3,15 +3,14 @@
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
-This plugin depends on elixir.vim
-                       <https://github.com/elixir-editors/vim-elixir>
 
 TABLE OF CONTENTS                           *elixir-mix*
 
 INTRODUCTION................................|elixir-mix-introduction|
 COMMANDS....................................|elixir-mix-commands|
- * Mix......................................|elixir-mix-commands-mix|
- * Editing..................................|elixir-mix-commands-editing|
+  * Mix.....................................|elixir-mix-commands-mix|
+  * Editing.................................|elixir-mix-commands-editing|
+  * Navigation..............................|elixir-mix-navigation|
 TEXT OBJECTS................................|elixir-mix-text-objects|
   * Maps....................................|elixir-mix-maps|
   * Functions...............................|elixir-mix-functions|
@@ -21,12 +20,12 @@ TEXT OBJECTS................................|elixir-mix-text-objects|
 
 INTRODUCTION                                *elixir-mix-introduction*
 
-Provides extra utilities on top of elixir.vim for working with the
-Elixir programming language <https://elixir-lang.org>.
-
-This plugin's focus is on Vim users - All features must be available to them.
-Nvim compatibility isn't a non-goal and any reasonable patches for
-nvim-support will be accepted, however, this is a Lua-free zone.
+Provides utilities for working with the Elixir programming language
+<https://elixir-lang.org>.  For Vim users, this compliments elixir.vim
+<https://github.com/elixir-lang/vim-elixir>.  This library is designed to work
+with nvim as well, though nvim users may also want to evaluate
+elixir-tools.nvim <https://github.com/elixir-tools/elixir-tools.nvim>.  This
+library can be used along-side it.
 
 
 COMMANDS                                    *elixir-mix-commands*
@@ -35,11 +34,9 @@ Mix                                         *elixir-mix-commands-mix*
                                             *elixir-mix-:Mix*
                                             *:Mix*
 
-:{range}Mix[!] [args]
-                    Run a mix command.  Uses |dispatch| if available.
-
-                    Completion is available for tasks whose packages follow
-                    the `mix/tasks/task.name.ex` file naming convention.
+:Mix [args]
+                    Run a mix command with autocomplete.  Uses |dispatch| if
+                    available.
 
                     You can specifify the environment like so:
 >
@@ -51,24 +48,43 @@ Mix                                         *elixir-mix-commands-mix*
                     envs.
 
 
-:{range}Deps [task] [args]
+:{range}Deps [task] {args}
                     A wrapper around `mix deps` with some added functionality.
 
-                    The standard tasks are available as well as an `add` task.
+                    The standard tasks are available as well as a special
+                    `-add` task.  This allows you to add deps to your mix.exs
+                    by placing your cursor above where you would like to add
+                    it and invoking:
 >
-                      :Deps add live_view
+                      :Deps -add live_view
 <
-                    With a range, it will operate on the current line.  This
-                    can have different effects in different contexts.  For
-                    now, this only works with deps.  For example, with you
-                    cursor on the following line:
+                    This is only available if the current buffer is `mix.exs`,
+                    though it will not check to see if your cursor is in the
+                    right place.
+
+                    Given a {range}, it will operate on those lines.  For
+                    example, given this line:
 >
                       {:live_view, "~> 0.20"},
 <
-                    You could upgrade LiveView like so:
+                    You could call `mix update live_view` like so:
       >
-                      :.Deps unlock
                       :.Deps update
+<
+                    The following lines visually selected:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_test, "~> 1.7"},
+                      {:pathex, "~> 2.5"},
+                      {:image, "~> 0.5"}
+<
+                    Running
+>
+                      :.Deps update
+<
+                    will result in:
+>
+                      mix deps update floki phoenix_test pathex image
 <
 
 :Generate           Unified generator command, aware of Phoenix and Ecto:
@@ -83,7 +99,6 @@ Mix                                         *elixir-mix-commands-mix*
 >
                       let g:elixir_mix_generators['custom'] = 'my_app.gen.custom'
 <
-                    PRs for other libraries are welcome!
 
 
 TEXT OBJECTS                                *elixir-mix-text-objects*
@@ -98,15 +113,15 @@ specs, docstrings, etc.
 Here is an overview:
 
 
-  Elixir construct                 | Text Object  (mneumonic/notes)
-  ---------------------------------+-----------------------------------------
-  do/end blocks                    | d  (do)
-  def[p]/defmarco[p]               | f
-  def[p]/defmacro[p]               | F  (includes meta and function heads)
-  defmodule                        | M
-  %{}/%Foo{}                       | m  (map)
-  ~s""/etc.                        | ~  (note the uppercase)
-  #/@doc """/etc                   | c  (comment)
+  Elixir construct    | Text Object  (mneumonic/notes)
+  --------------------+------------------------------------------
+  do/end blocks       | d  (do)
+  def[p]/defmarco[p]  | f
+  def[p]/defmacro[p]  | F  (includes meta and all function heads)
+  defmodule           | M
+  %{}/%Foo{}          | m  (map)
+  ~s""/etc.           | ~  (note the uppercase)
+  #/@doc """/etc      | c  (comment)
 
 
 
@@ -129,34 +144,30 @@ ad                  A do/end block.  Currently brings "else" along with it.
 if                                          *elixir-mix-if* *elixir-mix-af*
 af                                          *elixir-mix-iF* *elixir-mix-aF*
 iF
-aF                  A def macro including def, defp, defmacro, defmacrop,
-                    defprotocol, and defimpl.  Useful for not having to worry
-                    about being inside another block.
+aF                  A function including `def`, `defp`, `defmacro`, and  `defmacrop`.
 
-                    "af" will include docstrings, specs, comments, and other
-                    meta.  This will only work so long as there are no blank
-                    lines with the excpetion of within a docstring.  The "aF"
-                    variant will only include the function itself.  "iF" is
-                    included for convenience but is identical to "aF".
-
-                    Additionally, "af"/"aF" will include either its trailing
-                    blank line or its leading blank line in that order.
+                    "aF" will include docstrings, specs, comments, and other
+                    meta as well as all function heads.  "af" only targets the
+                    function itself.  There is no difference between "if" and
+                    "aF" though the latter exists for convenience.
 
 
 iM                                          *elixir-mix-iM* *elixir-mix-aM*
-aM                  A module, ie, defmodule/end.  Useful for not
-                    having to worry about being inside another block.
+aM                  A module definition.
 
-
-ic                                          *elixir-mix-ic* *elixir-mix-ac*
-ac                  A comment or docstring.  It will target whichever your
-                    cursor is on or ahead of.
 
 im                                          *elixir-mix-im* *elixir-mix-am*
-im                  A map or struct.
+am
+Im
+Am                  A map or struct.  The rather unconvention "Im" and "Am"
+                    versions will target the most outer map or struct.
 
 iS                                          *elixir-mix-i~* *elixir-mix-a~*
 aS                  A sigil.  Works regardless of the delimiter.
+
+ic                                          *elixir-mix-ic* *elixir-mix-ac*
+ac                  A comment.  Mostly just useful for formatting when
+                    a comment is touching some code.
 
 
 EDITING                                     *elixir-mix-editing*
