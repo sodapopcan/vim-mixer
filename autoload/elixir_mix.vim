@@ -633,23 +633,16 @@ function! s:textobj_sigil(inner)
   let line = getline('.')[col('.') - 1:]
   let open = matchstr(line, regex)
 
-  if open == "/"
-    let close = "/"
-  elseif open == '|'
-    let close = '|'
-  elseif open == "'"
-    let close = "'"
-  elseif open == '"'
-    let close = '"'
-  elseif open == '('
-    let close = ')'
-  elseif open == '['
-    let close = ']'
-  elseif open == '{'
-    let close = '}'
-  elseif open == '<'
-    let close = '>'
-  endif
+  let close = {
+        \   "\/": "\/",
+        \   "|": "|",
+        \   "'": "'",
+        \   '"': '"',
+        \   "(": ")",
+        \   "[": "]",
+        \   "{": "}",
+        \   "<": ">"
+        \ }[open]
 
   if a:inner
     call search(open, 'W', 0, 0, Skip)
