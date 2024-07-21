@@ -22,15 +22,19 @@ if !hlexists('elixirSigil')
   syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\u\+("                end=")"   skip="\\\\\|\\)"   contains=elixirMixDelimEscape transparent
 
   syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"                                                              transparent
-  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l{"                end="}"   skip="\\\\\|\\}"   transparent
-  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l<"                end=">"   skip="\\\\\|\\>"   transparent
-  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l\["               end="\]"  skip="\\\\\|\\\]"  transparent
-  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l("                end=")"   skip="\\\\\|\\)"   transparent
-  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l\/"               end="\/"  skip="\\\\\|\\\/"  transparent
+  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l{"                end="}"   skip="\\\\\|\\}"   contains=elixirMixRegexEscapePunctuation transparent
+  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l<"                end=">"   skip="\\\\\|\\>"   contains=elixirMixRegexEscapePunctuation transparent
+  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirMixRegexEscapePunctuation transparent
+  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l("                end=")"   skip="\\\\\|\\)"   contains=elixirMixRegexEscapePunctuation transparent
+  syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start="\~\l\/"               end="\/"  skip="\\\\\|\\\/"  contains=elixirMixRegexEscapePunctuation transparent
 
   " Sigils surrounded with heredoc
   syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start=+\~\a\z("""\)+ end=+^\s*\z1+ skip=+\\"+  transparent
   syn region elixirMixSigil matchgroup=elixirMixSigilDelimiter start=+\~\a\z('''\)+ end=+^\s*\z1+ skip=+\\'+  transparent
+endif
+
+if !hlexists('elixirRegexEscapePunctuation')
+  syn match elixirMixRegexEscapePunctuation "?\|\\.\|*\|\\\[\|\\\]\|+\|\\^\|\\\$\|\\|\|\\(\|\\)\|\\{\|\\}" contained transparent
 endif
 
 if !hlexists('elixirAtom')

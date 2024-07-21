@@ -46,6 +46,26 @@ describe "text objects"
     it "targets single quotes"
       TestTextObject textobj/sigil/inline_single_quotes.ex
     end
+
+    it "targets chevrons"
+      TestTextObject textobj/sigil/inline_chevrons.ex
+    end
+
+    it "targets brackets"
+      TestTextObject textobj/sigil/inline_brackets.ex
+    end
+
+    it "targets braces"
+      TestTextObject textobj/sigil/inline_braces.ex
+    end
+
+    it "targets parens"
+      TestTextObject textobj/sigil/inline_parens.ex
+    end
+
+    it "targets parens"
+      TestTextObject textobj/sigil/inline_slashes.ex
+    end
   end
 end
 

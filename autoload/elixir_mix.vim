@@ -611,7 +611,7 @@ fun! V()
 endfun
 
 function! s:textobj_sigil(inner)
-  let Skip = {-> index(['Sigil', 'MixSigil', 'DelimEscape', 'MixDelimEscape'], s:cursor_term()) >= 0}
+  let Skip = {-> index(['Sigil', 'MixSigil', 'DelimEscape', 'MixDelimEscape', 'RegexEscapePunctuation', 'MixRegexEscapePunctuation'], s:cursor_term()) >= 0}
   let view = winsaveview()
   let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
@@ -622,20 +622,41 @@ function! s:textobj_sigil(inner)
   endif
 
   let line = getline('.')[col('.') - 1:]
-  let delim = matchstr(line, regex)
+  let open = matchstr(line, regex)
+
+  if open == "'"
+    let close = "'"
+  elseif open == '"'
+    let close = '"'
+  elseif open == '<'
+    let close = '>'
+  elseif open == '{'
+    let close = '}'
+  elseif open == '['
+    let close = ']'
+  elseif open == '('
+    let close = ')'
+  elseif open == '|'
+    let close = '|'
+  elseif open == "/"
+    let close = "/"
+  endif
 
   if a:inner
-    call search(regex, 'W', 0, 0, Skip)
-    exec "normal! ".(len(delim))."\<space>"
+    call search(open, 'W', 0, 0, Skip)
+    exec "normal! ".(len(open))."\<space>"
     let [start_lnr, start_col] = [line('.'), col('.')]
-    call search(regex, 'W', 0, 0, Skip)
+    call search(close, 'W', 0, 0, Skip)
     exec "normal! 1\<left>"
   else
-    call search(regex, 'W', 0, 0, Skip)
-    call search(regex, 'W', 0, 0, Skip)
-    if len(delim) == 3
+    call search(open, 'W', 0, 0, Skip)
+    call search(close, 'W', 0, 0, Skip)
+
+    if len(open) == 3
       normal! ll
     endif
+
+    call search('\a\+', 'We')
   endif
 
   let [end_lnr, end_col] = [line('.'), col('.')]
