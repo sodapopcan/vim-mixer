@@ -328,30 +328,33 @@ endfunction
 " Mix - projections {{{1
 
 function s:define_projections() abort
+  let name = b:elixir_mix_project.name
+  let alias = b:elixir_mix_project.alias
+
   let g:projectionist_heuristics["mix.exs"] = {
-        \   'lib/'.b:elixir_mix_project.name.'.ex': {
+        \   'lib/'.name.'.ex': {
         \     'type': 'domain'
         \   },
-        \   'lib/'.b:elixir_mix_project.name.'/*.ex': {
+        \   'lib/'.name.'/*.ex': {
         \     'type': 'domain',
-        \     'alternate': 'test/'.b:elixir_mix_project.name.'/{}_test.exs',
+        \     'alternate': 'test/'.name.'/{}_test.exs',
         \     'template': [
-        \       'defmodule '.b:elixir_mix_project.alias.'.{camelcase|capitalize|dot} do',
+        \       'defmodule '.alias.'.{camelcase|capitalize|dot} do',
         \       'end'
         \     ]
         \   },
-        \   'lib/'.b:elixir_mix_project.name.'_web.ex': {
+        \   'lib/'.name.'_web.ex': {
         \     'type': 'web'
         \   },
-        \   'lib/'.b:elixir_mix_project.name.'_web/*.ex': {
+        \   'lib/'.name.'_web/*.ex': {
         \     'type': 'web',
-        \     'alternate': 'test/'.b:elixir_mix_project.name.'_web/{}_test.exs'
+        \     'alternate': 'test/'.name.'_web/{}_test.exs'
         \   },
-        \   'test/'.b:elixir_mix_project.name.'/*_test.exs': {
+        \   'test/'.name.'/*_test.exs': {
         \     'type': 'test',
-        \     'alternate': 'lib/'.b:elixir_mix_project.name.'/{}.ex',
+        \     'alternate': 'lib/'.name.'/{}.ex',
         \     'template': [
-        \       'defmodule '.b:elixir_mix_project.alias.'.{camelcase|capitalize|dot}Test do',
+        \       'defmodule '.alias.'.{camelcase|capitalize|dot}Test do',
         \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
         \       'end'
         \     ],
@@ -370,23 +373,23 @@ function s:define_projections() abort
         \     'type': 'config',
         \     'related': 'config/config.exs'
         \   },
-        \   'lib/'.b:elixir_mix_project.name.'_web/router.ex': {
+        \   'lib/'.name.'_web/router.ex': {
         \     'type': 'router',
-        \     'alternate': 'lib/'.b:elixir_mix_project.name.'_web/endpoint.ex'
+        \     'alternate': 'lib/'.name.'_web/endpoint.ex'
         \   },
-        \   'lib/'.b:elixir_mix_project.name.'_web/endpoint.ex': {
+        \   'lib/'.name.'_web/endpoint.ex': {
         \     'type': 'endpoint',
-        \     'alternate': 'lib/'.b:elixir_mix_project.name.'_web/router.ex'
+        \     'alternate': 'lib/'.name.'_web/router.ex'
         \   },
         \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
         \ }
 
   let application_file = ""
   let application_files = [
-        \   "lib/".b:elixir_mix_project.name."/application.ex",
-        \   "lib/".b:elixir_mix_project.name."/app.ex",
-        \   "lib/".b:elixir_mix_project.name."_application.ex",
-        \   "lib/".b:elixir_mix_project.name."_app.ex"
+        \   "lib/".name."/application.ex",
+        \   "lib/".name."/app.ex",
+        \   "lib/".name."_application.ex",
+        \   "lib/".name."_app.ex"
         \ ]
 
   for file in application_files
