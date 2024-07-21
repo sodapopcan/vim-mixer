@@ -320,90 +320,17 @@ function! s:init_mix_project() abort
 
   autocmd! DirChanged * let b:elixir_mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
+  let g:elixir_mix_define_projections = get(g:, "elixir_mix_define_projections", 1)
+  let g:elixir_mix_projections_style = get(g:, "elixir_mix_projections_style", "standard")
+
   if g:elixir_mix_define_projections
-    call s:define_projections()
-  endif
-endfunction
-
-" Mix - projections {{{1
-
-function s:define_projections() abort
-  let name = b:elixir_mix_project.name
-  let alias = b:elixir_mix_project.alias
-
-  let g:projectionist_heuristics["mix.exs"] = {
-        \   'lib/'.name.'.ex': {
-        \     'type': 'domain'
-        \   },
-        \   'lib/'.name.'/*.ex': {
-        \     'type': 'domain',
-        \     'alternate': 'test/'.name.'/{}_test.exs',
-        \     'template': [
-        \       'defmodule '.alias.'.{camelcase|capitalize|dot} do',
-        \       'end'
-        \     ]
-        \   },
-        \   'lib/'.name.'_web.ex': {
-        \     'type': 'web'
-        \   },
-        \   'lib/'.name.'_web/*.ex': {
-        \     'type': 'web',
-        \     'alternate': 'test/'.name.'_web/{}_test.exs'
-        \   },
-        \   'test/'.name.'/*_test.exs': {
-        \     'type': 'test',
-        \     'alternate': 'lib/'.name.'/{}.ex',
-        \     'template': [
-        \       'defmodule '.alias.'.{camelcase|capitalize|dot}Test do',
-        \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
-        \       'end'
-        \     ],
-        \   },
-        \   'mix.exs': {
-        \     'type': 'mix',
-        \     'alternate': 'mix.lock',
-        \     'dispatch': 'mix do deps.unlock --all, deps.update --all'
-        \   },
-        \   'mix.lock': {
-        \     'type': 'lock',
-        \     'alternate': 'mix.exs',
-        \     'dispatch': 'mix deps.get'
-        \   },
-        \   'config/*.exs': {
-        \     'type': 'config',
-        \     'related': 'config/config.exs'
-        \   },
-        \   'lib/'.name.'_web/router.ex': {
-        \     'type': 'router',
-        \     'alternate': 'lib/'.name.'_web/endpoint.ex'
-        \   },
-        \   'lib/'.name.'_web/endpoint.ex': {
-        \     'type': 'endpoint',
-        \     'alternate': 'lib/'.name.'_web/router.ex'
-        \   },
-        \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
-        \ }
-
-  let application_file = ""
-  let application_files = [
-        \   "lib/".name."/application.ex",
-        \   "lib/".name."/app.ex",
-        \   "lib/".name."_application.ex",
-        \   "lib/".name."_app.ex"
-        \ ]
-
-  for file in application_files
-    if filereadable(s:root(file))
-      let application_file = s:sub(s:root(file), b:elixir_mix_project.root, '')
-      break
+    if g:elixir_mix_projections_style == "standard"
+      call s:define_projection_standard()
+    elseif g:elixir_mix_projections_style == "domain"
+      call s:define_projections_domain()
     endif
-  endfor
-
-  if !empty(application_file)
-    let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
   endif
 endfunction
-
 
 " Mix - tasks {{{1
 
@@ -1214,3 +1141,292 @@ function! s:reset(pos)
 
   return 0
 endfunction
+" Projections - standard {{{1
+
+function! s:define_projection_standard()
+  let g:projectionist_heuristics["mix.exs"] = {
+        \   "lib/**/views/*_view.ex": {
+        \     "type": "view",
+        \     "alternate": "test/{dirname}/views/{basename}_view_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}View do",
+        \       "  use {dirname|camelcase|capitalize}, :view",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/views/*_view_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/views/{basename}_view.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}ViewTest do",
+        \       "  use ExUnit.Case, async: true",
+        \       "",
+        \       "  alias {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}View",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/controllers/*_controller.ex": {
+        \     "type": "controller",
+        \     "alternate": "test/{dirname}/controllers/{basename}_controller_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Controller do",
+        \       "  use {dirname|camelcase|capitalize}, :controller",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/controllers/*_controller_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/controllers/{basename}_controller.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}ControllerTest do",
+        \       "  use {dirname|camelcase|capitalize}.ConnCase, async: true",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/controllers/*_html.ex": {
+        \     "type": "html",
+        \     "alternate": "test/{dirname}/controllers/{basename}_html_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}HTML do",
+        \       "  use {dirname|camelcase|capitalize}, :html",
+        \       "",
+        \       "  embed_templates \"{basename|snakecase}_html/*\"",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/controllers/*_html_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/controllers/{basename}_html.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}HTMLTest do",
+        \       "  use {dirname|camelcase|capitalize}.ConnCase, async: true",
+        \       "",
+        \       "  alias {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}HTML",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/controllers/*_json.ex": {
+        \     "type": "json",
+        \     "alternate": "test/{dirname}/controllers/{basename}_json_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}JSON do",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/controllers/*_json_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/controllers/{basename}_json.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}JSONTest do",
+        \       "  use {dirname|camelcase|capitalize}.ConnCase, async: true",
+        \       "",
+        \       "  alias {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}JSON",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/components/*.ex": {
+        \     "type": "component",
+        \     "alternate": "test/{dirname}/components/{basename}_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize} do",
+        \       "  use Phoenix.Component",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/components/*_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/components/{basename}.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Test do",
+        \       "  use {dirname|camelcase|capitalize}.ConnCase, async: true",
+        \       "",
+        \       "  alias {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/live/*_component.ex": {
+        \     "type": "livecomponent",
+        \     "alternate": "test/{dirname}/live/{basename}_component_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Component do",
+        \       "  use {dirname|camelcase|capitalize}, :live_component",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/live/*_component_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/live/{basename}_component.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}ComponentTest do",
+        \       "  use {dirname|camelcase|capitalize}.ConnCase",
+        \       "",
+        \       "  import Phoenix.LiveViewTest",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/live/*.ex": {
+        \     "type": "liveview",
+        \     "alternate": "test/{dirname}/live/{basename}_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize} do",
+        \       "  use {dirname|camelcase|capitalize}, :live_view",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/live/*_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/live/{basename}.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Test do",
+        \       "  use {dirname|camelcase|capitalize}.ConnCase",
+        \       "",
+        \       "  import Phoenix.LiveViewTest",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/**/channels/*_channel.ex": {
+        \     "type": "channel",
+        \     "alternate": "test/{dirname}/channels/{basename}_channel_test.exs",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Channel do",
+        \       "  use {dirname|camelcase|capitalize}, :channel",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/channels/*_channel_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{dirname}/channels/{basename}_channel.ex",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}ChannelTest do",
+        \       "  use {dirname|camelcase|capitalize}.ChannelCase, async: true",
+        \       "",
+        \       "  alias {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Channel",
+        \       "end"
+        \     ]
+        \   },
+        \   "test/**/features/*_test.exs": {
+        \     "type": "feature",
+        \     "template": [
+        \       "defmodule {dirname|camelcase|capitalize}.{basename|camelcase|capitalize}Test do",
+        \       "  use {dirname|camelcase|capitalize}.FeatureCase, async: true",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/*.ex": {
+        \     "type": "source",
+        \     "alternate": "test/{}_test.exs",
+        \     "template": ["defmodule {camelcase|capitalize|dot} do", "end"]
+        \   },
+        \   "test/*_test.exs": {
+        \     "type": "test",
+        \     "alternate": "lib/{}.ex",
+        \     "template": [
+        \       "defmodule {camelcase|capitalize|dot|elixir_module}Test do",
+        \       "  use ExUnit.Case, async: true",
+        \       "",
+        \       "  alias {camelcase|capitalize|dot|elixir_module}",
+        \       "end"
+        \     ]
+        \   },
+        \   "lib/mix/tasks/*.ex": {
+        \     "type": "task",
+        \     "alternate": "test/mix/tasks/{}_test.exs",
+        \     "template": [
+        \       "defmodule Mix.Tasks.{camelcase|capitalize|dot|elixir_module} do",
+        \       "   use Mix.Task",
+        \       "",
+        \       "  @shortdoc \"{}\"",
+        \       "",
+        \       "  @moduledoc \"\"\"",
+        \       "  {}",
+        \       "  \"\"\"",
+        \       "",
+        \       "  @impl true",
+        \       "  @doc false",
+        \       "  def run(argv) do",
+        \       "",
+        \       "  end",
+        \       "end"
+        \     ]
+        \   }
+        \ }
+endfunction
+
+
+" Projections - domain {{{1
+
+function s:define_projections_domain() abort
+  let name = b:elixir_mix_project.name
+  let alias = b:elixir_mix_project.alias
+
+  let g:projectionist_heuristics["mix.exs"] = {
+        \   'lib/'.name.'/*.ex': {
+        \     'type': 'domain',
+        \     'alternate': 'test/'.name.'/{}_test.exs',
+        \     'template': [
+        \       'defmodule '.alias.'.{camelcase|capitalize|dot} do',
+        \       'end'
+        \     ]
+        \   },
+        \   'lib/'.name.'_web.ex': {
+        \     'type': 'web'
+        \   },
+        \   'lib/'.name.'_web/*.ex': {
+        \     'type': 'web',
+        \     'alternate': 'test/'.name.'_web/{}_test.exs'
+        \   },
+        \   'test/'.name.'/*_test.exs': {
+        \     'type': 'test',
+        \     'alternate': 'lib/'.name.'/{}.ex',
+        \     'template': [
+        \       'defmodule '.alias.'.{camelcase|capitalize|dot}Test do',
+        \       '  use ExUnit.Case', '', '  @subject {camelcase|capitalize|dot}',
+        \       'end'
+        \     ],
+        \   },
+        \   'mix.exs': {
+        \     'type': 'mix',
+        \     'alternate': 'mix.lock',
+        \     'dispatch': 'mix do deps.unlock --all, deps.update --all'
+        \   },
+        \   'mix.lock': {
+        \     'type': 'lock',
+        \     'alternate': 'mix.exs',
+        \     'dispatch': 'mix deps.get'
+        \   },
+        \   'config/*.exs': {
+        \     'type': 'config',
+        \     'related': 'config/config.exs'
+        \   },
+        \   'lib/'.name.'_web/router.ex': {
+        \     'type': 'router',
+        \     'alternate': 'lib/'.name.'_web/endpoint.ex'
+        \   },
+        \   'lib/'.name.'_web/endpoint.ex': {
+        \     'type': 'endpoint',
+        \     'alternate': 'lib/'.name.'_web/router.ex'
+        \   },
+        \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
+        \ }
+
+  let application_file = ""
+  let application_files = [
+        \   "lib/".name."/application.ex",
+        \   "lib/".name."/app.ex",
+        \   "lib/".name."_application.ex",
+        \   "lib/".name."_app.ex"
+        \ ]
+
+  for file in application_files
+    if filereadable(s:root(file))
+      let application_file = s:sub(s:root(file), b:elixir_mix_project.root, '')
+      break
+    endif
+  endfor
+
+  if !empty(application_file)
+    let g:projectionist_heuristics["mix.exs"][application_file] = {'type': 'application'}
+  endif
+endfunction
+
+
