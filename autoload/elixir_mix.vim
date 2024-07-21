@@ -361,10 +361,18 @@ endfunction
 " Mix - :Mix {{{1
 
 function! s:Mix(...) abort
-  if s:command_exists("Dispatch")
-    exec "Dispatch mix ".join(a:000, " ")
+  if a:1 =~ '^-'
+    let env = 'MIX_ENV='.a:1[1:].' '
+    let args = a:000[1:]
   else
-    call system("mix ".join(a:000, " "))
+    let env = ''
+    let arg = a:000
+  endif
+
+  if s:command_exists("Dispatch")
+    exec "Dispatch ".env."mix ".join(args, " ")
+  else
+    call system(env."mix ".join(args, " "))
   endif
 endfunction
 
