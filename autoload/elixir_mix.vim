@@ -539,9 +539,8 @@ function! s:EditMigration(type, ...) abort
 
 endfunction
 
-" Text Objects {{{1
+" Text Objects - helpers {{{1
 
-" -- helpers {{{1
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
   let g:elixir_mix_view = a:view
 
@@ -608,7 +607,7 @@ function! s:adjust_block_region(inside, start_lnr, start_col, end_lnr, end_col) 
   return [start_lnr, start_col, end_lnr, end_col]
 endfunction
 
-" -- textobj_map {{{1
+" Text Objects - map {{{1
 
 function! s:textobj_map(inside) abort
   let Skip = {-> s:is_string_or_comment()}
@@ -713,7 +712,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
       \ :unlet b:elixir_mix_operator<bar>
       \ :unlet b:elixir_mix_start_col<cr>
 
-" -- textobj_block {{{1
+" Text Objects - block {{{1
 
 function! s:textobj_block(inside) abort
   let Skip = {-> s:skip_terms('Tuple\|String\|Comment') || s:is_lambda()}
@@ -789,7 +788,7 @@ function! s:jump_to_function()
   return [line('.'), 0]
 endfunction
 
-" -- textobj_def {{{1
+" Text Objects - def {{{1
 
 function! s:textobj_def(keyword, inside, ignore_meta) abort
   let Skip = {-> s:skip_terms('Tuple\|String\|Comment') || s:is_lambda()}
@@ -861,7 +860,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-" -- textobj_comment {{{1
+" Text Objects - comment {{{1
 
 function! s:textobj_comment(inside)
   let view = winsaveview()
@@ -920,7 +919,7 @@ function! s:textobj_comment(inside)
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-" -- textobj_sigil {{{1
+" Text Objects - sigil {{{1
 fun! V()
   return s:cursor_term()
 endfun
