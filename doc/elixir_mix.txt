@@ -9,14 +9,14 @@ This plugin depends on elixir.vim
 TABLE OF CONTENTS                           *elixir-mix*
 
 INTRODUCTION................................|elixir-mix-introduction|
+COMMANDS....................................|elixir-mix-commands|
+ * Mix......................................|elixir-mix-commands-mix|
+ * Editing..................................|elixir-mix-commands-editing|
 TEXT OBJECTS................................|elixir-mix-text-objects|
   * Maps....................................|elixir-mix-maps|
   * Functions...............................|elixir-mix-functions|
   * Sigils..................................|elixir-mix-sigils|
   * Comments................................*elixir-mix-comments*
-COMMANDS....................................|elixir-mix-commands|
- * Mix......................................|elixir-mix-commands-mix|
- * Editing..................................|elixir-mix-commands-editing|
 
 
 INTRODUCTION                                *elixir-mix-introduction*
@@ -27,6 +27,63 @@ Elixir programming language <https://elixir-lang.org>.
 This plugin's focus is on Vim users - All features must be available to them.
 Nvim compatibility isn't a non-goal and any reasonable patches for
 nvim-support will be accepted, however, this is a Lua-free zone.
+
+
+COMMANDS                                    *elixir-mix-commands*
+
+Mix                                         *elixir-mix-commands-mix*
+                                            *elixir-mix-:Mix*
+                                            *:Mix*
+
+:{range}Mix[!] [args]
+                    Run a mix command.  Uses |dispatch| if available.
+
+                    Completion is available for tasks whose packages follow
+                    the `mix/tasks/task.name.ex` file naming convention.
+
+                    You can specifify the environment like so:
+>
+                      :Mix -test mix compile
+<
+                    This works for any environment you have specified outside
+                    the standard "dev", "test", and "prod".  When called with
+                    a bang [!], it will run the task in both dev and test
+                    envs.
+
+
+:{range}Deps [task] [args]
+                    A wrapper around `mix deps` with some added functionality.
+
+                    The standard tasks are available as well as an `add` task.
+>
+                      :Deps add live_view
+<
+                    With a range, it will operate on the current line.  This
+                    can have different effects in different contexts.  For
+                    now, this only works with deps.  For example, with you
+                    cursor on the following line:
+>
+                      {:live_view, "~> 0.20"},
+<
+                    You could upgrade LiveView like so:
+      >
+                      :.Deps unlock
+                      :.Deps update
+<
+
+:Generate           Unified generator command, aware of Phoenix and Ecto:
+>
+                      :Generate migration add_name_to_users
+                      :Generate live Accounts User users name:string age:integer
+<
+                    These tasks are hardcoded to avoid possible naming
+                    conflicts if a dynamic way were to be used.
+
+                    You can add your own generators like so:
+>
+                      let g:elixir_mix_generators['custom'] = 'my_app.gen.custom'
+<
+                    PRs for other libraries are welcome!
 
 
 TEXT OBJECTS                                *elixir-mix-text-objects*
