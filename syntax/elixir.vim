@@ -9,8 +9,6 @@ syn region elixirMixLambda start="\<fn\>" end="\<end\>" keepend transparent
 syn region elixirMixStruct matchgroup=elixirMixStructDelimiters start="%\%(\w\|\.\)\+"hs=s+1 end="}"he=e-1 transparent
 hi link elixirMixStructDelimiters Type
 syn region elixirMixMap matchgroup=NONE start="%{" end="}" keepend transparent
-syn region elixirArguments start="(" end=")" contained contains=elixirMixStruct,elixirMixMap transparent
-" syn region elixirMixTuple matchgroup=NONE start="\(\w\|#\)\@<!{" end="}" transparent
 
 if !hlexists('elixirSigil')
   syn match elixirMixDelimEscape "\\[(<{\[)>}\]/\"'|]" transparent display contained contains=NONE
