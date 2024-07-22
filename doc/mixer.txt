@@ -1,24 +1,24 @@
-*elixir-mix.txt*  Extras and extensions for *elixir*
+*mixer.txt*  Extras and extensions for *elixir*
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
 
-TABLE OF CONTENTS                           *elixir-mix*
+TABLE OF CONTENTS                           *mixer*
 
-INTRODUCTION................................|elixir-mix-introduction|
-COMMANDS....................................|elixir-mix-commands|
-  * Mix.....................................|elixir-mix-commands-mix|
-  * Editing.................................|elixir-mix-commands-editing|
-  * Navigation..............................|elixir-mix-navigation|
-TEXT OBJECTS................................|elixir-mix-text-objects|
-  * Maps....................................|elixir-mix-maps|
-  * Functions...............................|elixir-mix-functions|
-  * Sigils..................................|elixir-mix-sigils|
-  * Comments................................|elixir-mix-comments|
+INTRODUCTION................................|mixer-introduction|
+COMMANDS....................................|mixer-commands|
+  * Mix.....................................|mixer-commands-mix|
+  * Editing.................................|mixer-commands-editing|
+  * Navigation..............................|mixer-navigation|
+TEXT OBJECTS................................|mixer-text-objects|
+  * Maps....................................|mixer-maps|
+  * Functions...............................|mixer-functions|
+  * Sigils..................................|mixer-sigils|
+  * Comments................................|mixer-comments|
 
 
-INTRODUCTION                                *elixir-mix-introduction*
+INTRODUCTION                                *mixer-introduction*
 
 Provides utilities for working with the Elixir programming language
 <https://elixir-lang.org>.  For Vim users, this compliments elixir.vim
@@ -28,10 +28,10 @@ elixir-tools.nvim <https://github.com/elixir-tools/elixir-tools.nvim>.  This
 library can be used along-side it.
 
 
-COMMANDS                                    *elixir-mix-commands*
+COMMANDS                                    *mixer-commands*
 
-Mix                                         *elixir-mix-commands-mix*
-                                            *elixir-mix-:Mix*
+Mix                                         *mixer-commands-mix*
+                                            *mixer-:Mix*
                                             *:Mix*
 
 :Mix [args]
@@ -97,13 +97,13 @@ Mix                                         *elixir-mix-commands-mix*
 
                     You can add your own generators like so:
 >
-                      let g:elixir_mix_generators['custom'] = 'my_app.gen.custom'
+                      let g:mixer_generators['custom'] = 'my_app.gen.custom'
 <
 
 
-TEXT OBJECTS                                *elixir-mix-text-objects*
-                                            *elixir-mix-text-object*
-                                            *elixir-mix-textobj*
+TEXT OBJECTS                                *mixer-text-objects*
+                                            *mixer-text-object*
+                                            *mixer-textobj*
 
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
@@ -125,7 +125,7 @@ Here is an overview:
 
 
 
-id                                          *elixir-mix-ie* *elixir-mix-ae*
+id                                          *mixer-ie* *mixer-ae*
 ad                  A do/end block.  Currently brings "else" along with it.
 
                     These target all the builtin macros/special forms and work
@@ -141,8 +141,8 @@ ad                  A do/end block.  Currently brings "else" along with it.
                     the "let foo = " will be included in "ad".
 
 
-if                                          *elixir-mix-if* *elixir-mix-af*
-af                                          *elixir-mix-iF* *elixir-mix-aF*
+if                                          *mixer-if* *mixer-af*
+af                                          *mixer-iF* *mixer-aF*
 iF
 aF                  A function including `def`, `defp`, `defmacro`, and  `defmacrop`.
 
@@ -152,27 +152,27 @@ aF                  A function including `def`, `defp`, `defmacro`, and  `defmac
                     "aF" though the latter exists for convenience.
 
 
-iM                                          *elixir-mix-iM* *elixir-mix-aM*
+iM                                          *mixer-iM* *mixer-aM*
 aM                  A module definition.
 
 
-im                                          *elixir-mix-im* *elixir-mix-am*
+im                                          *mixer-im* *mixer-am*
 am
 Im
 Am                  A map or struct.  The rather unconvention "Im" and "Am"
                     versions will target the most outer map or struct.
 
-iS                                          *elixir-mix-i~* *elixir-mix-a~*
+iS                                          *mixer-i~* *mixer-a~*
 aS                  A sigil.  Works regardless of the delimiter.
 
-ic                                          *elixir-mix-ic* *elixir-mix-ac*
+ic                                          *mixer-ic* *mixer-ac*
 ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
 
-EDITING                                     *elixir-mix-editing*
+EDITING                                     *mixer-editing*
 
-                                            *elixir-mix-pipes*
+                                            *mixer-pipes*
                     NOTE: These commands only work for functions called with
                     parens.  A special case is made for `case`.
 
@@ -208,16 +208,16 @@ EDITING                                     *elixir-mix-editing*
                       |> Kernel.+()
 <
 
-COMMANDS                                    *elixir-mix-commands*
+COMMANDS                                    *mixer-commands*
 
 :FromPipe[!]        Moves a piped argument into function parens.
 
                     The bang version will attempt to format.
 
-                    See *elixir-mix-pipes* for more info.
+                    See *mixer-pipes* for more info.
 
 
-                                            *:ToPipe* *elixir-mix-:ToPipe*
+                                            *:ToPipe* *mixer-:ToPipe*
 :ToPipe[!]          Converts a function call to an inline pipe.
 
                     The bang version creates a multi-line pipe.  This is
@@ -234,6 +234,6 @@ COMMANDS                                    *elixir-mix-commands*
 <
                     even if you use the bang version.
 
-                    See *elixir-mix-pipes* for more info.
+                    See *mixer-pipes* for more info.
 
   vim:tw=78:et:ft=help:norl:

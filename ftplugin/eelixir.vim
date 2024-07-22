@@ -1,1 +1,1 @@
-call elixir_mix#init()
+call mixer#init()

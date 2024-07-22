@@ -1,4 +1,4 @@
-" Location:     autoload/elixir_mix.vim
+" Location:     autoload/mixer.vim
 " Maintainer:   Andrew Haust <https://andrew.hau.st>
 
 " Utility {{{1
@@ -59,7 +59,7 @@ endfunction
 
 " Init {{{1
 
-function! elixir_mix#init() abort
+function! mixer#init() abort
   call s:init_mix_project()
 
   if !s:command_exists("R")
@@ -91,7 +91,7 @@ function! elixir_mix#init() abort
   endif
 
   if !s:command_exists("Mix")
-    command -buffer -complete=custom,ElixirMixMixComplete -nargs=* Mix call s:Mix(<f-args>)
+    command -buffer -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 
   if !s:command_exists("Deps")
@@ -99,7 +99,7 @@ function! elixir_mix#init() abort
   endif
 
   if !s:command_exists("Generate")
-    command -buffer -complete=custom,ElixirMixGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
+    command -buffer -complete=custom,MixerGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
 
   if !s:command_exists("ToPipe")
@@ -207,7 +207,7 @@ function! s:is_lambda()
 
   if empty(terms) | return '' | endif
 
-  return terms[0] ==# 'elixirMixLambda'
+  return terms[0] ==# 'elixirMixerLambda'
 endfunction
 
 function! s:cursor_function_metadata()
@@ -283,11 +283,11 @@ endfunction
 " Mix - helpers {{{1
 
 function! s:root(path) abort
-  return b:elixir_mix_project.root.'/'.a:path
+  return b:mixer_project.root.'/'.a:path
 endfunction
 
 function! s:is_mix_project() abort
-  return exists("b:elixir_mix_project")
+  return exists("b:mixer_project")
 endfunction
 
 " Mix - project {{{1
@@ -299,12 +299,12 @@ function! s:init_mix_project() abort
     return 0
   endif
 
-  if !exists("g:elixir_mix_projects")
-    let g:elixir_mix_projects = {}
+  if !exists("g:mixer_projects")
+    let g:mixer_projects = {}
   endif
 
-  if !exists("b:elixir_mix_project")
-    let b:elixir_mix_project = {}
+  if !exists("b:mixer_project")
+    let b:mixer_project = {}
   endif
 
   let b:impl_lnr = 0
@@ -321,8 +321,8 @@ function! s:init_mix_project() abort
     let project_name = ""
   endtry
 
-  if !has_key(g:elixir_mix_projects, project_root)
-    let g:elixir_mix_projects[project_root] = {
+  if !has_key(g:mixer_projects, project_root)
+    let g:mixer_projects[project_root] = {
           \   "root": project_root,
           \   "name": project_name,
           \   "alias": s:to_elixir_alias(project_name),
@@ -332,13 +332,13 @@ function! s:init_mix_project() abort
     call s:populate_mix_tasks()
   endif
 
-  let b:elixir_mix_project = g:elixir_mix_projects[project_root]
+  let b:mixer_project = g:mixer_projects[project_root]
 
-  autocmd! DirChanged * let b:elixir_mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
+  autocmd! DirChanged * let b:mixer_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
-  let g:elixir_mix_projections = get(g:, "elixir_mix_projections", "replace")
+  let g:mixer_projections = get(g:, "mixer_projections", "replace")
 
-  if g:elixir_mix_projections !=# "disable"
+  if g:mixer_projections !=# "disable"
     call s:define_projections()
   endif
 endfunction
@@ -365,13 +365,13 @@ function! s:populate_mix_tasks()
 endfunction
 
 function! s:gather_mix_tasks(_channel, result)
-  let g:elixir_mix_tasks = get(g:, "elixir_mix_tasks", [])
-  call add(g:elixir_mix_tasks, a:result)
+  let g:mixer_tasks = get(g:, "mixer_tasks", [])
+  call add(g:mixer_tasks, a:result)
 endfunction
 
 function! s:set_mix_tasks(_id, _status)
-  let b:elixir_mix_project.tasks = join(g:elixir_mix_tasks, "\n")
-  unlet g:elixir_mix_tasks
+  let b:mixer_project.tasks = join(g:mixer_tasks, "\n")
+  unlet g:mixer_tasks
 endfunction
 
 " Mix - :Mix {{{1
@@ -420,7 +420,7 @@ endfunction
 function! s:get_deps(dep) abort
   let cmd = 'mix hex.info '.a:dep
 
-  let g:elixir_mix_deps_add = {
+  let g:mixer_deps_add = {
         \   "dep": a:dep,
         \   "lnr": line("."),
         \   "output": []
@@ -442,33 +442,33 @@ function! s:get_deps(dep) abort
 endfunction
 
 function! s:gather_dep_output(_channel, line) abort
-  call add(g:elixir_mix_deps_add.output, a:line)
+  call add(g:mixer_deps_add.output, a:line)
 endfunction
 
 function! s:append_dep(_id, _status) abort
-  let output = join(g:elixir_mix_deps_add.output, "\n")
-  let dep = matchstr(output, "{:".g:elixir_mix_deps_add.dep.",.*}")
+  let output = join(g:mixer_deps_add.output, "\n")
+  let dep = matchstr(output, "{:".g:mixer_deps_add.dep.",.*}")
 
-  call append(g:elixir_mix_deps_add.lnr, [dep])
+  call append(g:mixer_deps_add.lnr, [dep])
 
-  if match(getline(g:elixir_mix_deps_add.lnr), "\]$") == -1
+  if match(getline(g:mixer_deps_add.lnr), "\]$") == -1
     exec "normal! A,\<esc>^"
   else
     exec "normal! kA,\<esc>j^"
   endif
 
-  unlet g:elixir_mix_deps_add
+  unlet g:mixer_deps_add
 
   write
 endfunction
 
-function! ElixirMixMixComplete(A, L, P) abort
-  return b:elixir_mix_project.tasks
+function! MixerMixComplete(A, L, P) abort
+  return b:mixer_project.tasks
 endfunction
 
 " Mix - :Generate {{{1
 
-let g:elixir_mix_generators = {
+let g:mixer_generators = {
       \   'repo': 'ecto.gen.repo',
       \   'migration': 'ecto.gen.migration',
       \   'auth': 'phx.gen.auth',
@@ -489,7 +489,7 @@ let g:elixir_mix_generators = {
       \ }
 
 function! s:Generate(...) abort
-  let task = g:elixir_mix_generators[a:1]
+  let task = g:mixer_generators[a:1]
 
   if s:command_exists("Dispatch")
     exec "Dispatch mix ".task." ".join(a:000[1:])
@@ -498,8 +498,8 @@ function! s:Generate(...) abort
   endif
 endfunction
 
-function! ElixirMixGenerateComplete(A, L, P) abort
-  return join(keys(g:elixir_mix_generators), "\n")
+function! MixerGenerateComplete(A, L, P) abort
+  return join(keys(g:mixer_generators), "\n")
 endfunction
 
 
@@ -576,11 +576,11 @@ endfunction
 " Text Objects - helpers {{{1
 
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-  let g:elixir_mix_view = a:view
+  let g:mixer_view = a:view
 
   if v:operator ==# 'c'
-    unlet g:elixir_mix_view.lnum
-    unlet g:elixir_mix_view.col
+    unlet g:mixer_view.lnum
+    unlet g:mixer_view.col
   endif
 
   call setpos("'<", [0, a:start_lnr, a:start_col, 0])
@@ -596,8 +596,8 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction!
 
 nnoremap <silent> <Plug>(ElixirExRestoreView)
-      \ :call winrestview(g:elixir_mix_view)<bar>
-      \ :unlet g:elixir_mix_view<bar>
+      \ :call winrestview(g:mixer_view)<bar>
+      \ :unlet g:mixer_view<bar>
       \ :normal! ^<cr>
 
 function! s:adjust_whitespace(start_lnr, start_col)
@@ -714,8 +714,8 @@ function! s:textobj_map(inside) abort
     else
       if start_col == end_col - 1
         let handle_empty_map = 1
-        let b:elixir_mix_start_col = start_col
-        let b:elixir_mix_operator = v:operator
+        let b:mixer_start_col = start_col
+        let b:mixer_operator = v:operator
       else
         let start_col += 1
         let end_col -= 1
@@ -742,9 +742,9 @@ function! s:textobj_map(inside) abort
 endfunction
 
 nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
-      \ :call cursor([line('.'), b:elixir_mix_start_col + 1])<bar>
-      \ :unlet b:elixir_mix_operator<bar>
-      \ :unlet b:elixir_mix_start_col<cr>
+      \ :call cursor([line('.'), b:mixer_start_col + 1])<bar>
+      \ :unlet b:mixer_operator<bar>
+      \ :unlet b:mixer_start_col<cr>
 
 " Text Objects - block {{{1
 
@@ -1231,7 +1231,7 @@ endfunction
 " Projections - standard {{{1
 
 function! s:define_projections()
-  let name = b:elixir_mix_project.name
+  let name = b:mixer_project.name
   " These projections comes straight from elixir-tools.nvim
   " Thanks, @mhanberg
 
@@ -1457,7 +1457,7 @@ function! s:define_projections()
         \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
         \ }
 
-  if !empty(b:elixir_mix_project.name)
+  if !empty(b:mixer_project.name)
     let projectionist_heuristics['lib/*.ex']['related'] = ["lib/".name.".ex"]
 
     call extend(projectionist_heuristics, {
@@ -1476,9 +1476,9 @@ function! s:define_projections()
   endif
 
 
-  if g:elixir_mix_projections ==# 'replace'
+  if g:mixer_projections ==# 'replace'
     let g:projectionist_heuristics['mix.exs'] = projectionist_heuristics
-  elseif g:elixir_mix_projections ==# 'merge'
+  elseif g:mixer_projections ==# 'merge'
     call extend(g:projectionist_heuristics['mix.exs'], projectionist_heuristics)
   endif
 endfunction
