@@ -116,14 +116,14 @@ function! elixir_mix#init() abort
   for [macro, obj] in macros
     exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1, 0)\<cr>"
     exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0, 0)\<cr>"
-    exec "onoremap <silent> <buffer> i".obj." :call <sid>textobj_def('".macro."', 1, 0)\<cr>"
-    exec "onoremap <silent> <buffer> a".obj." :call <sid>textobj_def('".macro."', 0, 0)\<cr>"
+    exec "onoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1, 0)\<cr>"
+    exec "onoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0, 0)\<cr>"
   endfor
 
   exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
   exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
-  exec "onoremap <silent> <buffer> iF :call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "onoremap <silent> <buffer> aF :call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
   vnoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
   vnoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
@@ -534,7 +534,7 @@ function! s:in_render() abort
   return s:in_range(line('.'), col('.'), start_pos, end_pos)
 endfunction
 
-function! s:R() abort
+function! s:R(type) abort
   if s:has_render()
     if s:in_live_view()
       if s:in_render()
@@ -562,7 +562,7 @@ function! s:R() abort
       let basename = s:sub(expand("%:p"), '\.html.heex$', '.ex')
     endif
 
-    exec "edit ".basename
+    exec a:type basename
   endif
 endfunction
 
