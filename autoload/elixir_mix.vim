@@ -63,7 +63,23 @@ function! elixir_mix#init() abort
   call s:init_mix_project()
 
   if !s:command_exists("R")
-    command -buffer -nargs=0 R call s:R()
+    command -buffer -nargs=0 R call s:R('edit')
+  endif
+
+  if !s:command_exists("RE")
+    command -buffer -nargs=0 RE call s:R('edit')
+  endif
+
+  if !s:command_exists("RS")
+    command -buffer -nargs=0 RS call s:R('split')
+  endif
+
+  if !s:command_exists("RV")
+    command -buffer -nargs=0 RV call s:R('vsplit')
+  endif
+
+  if !s:command_exists("RT")
+    command -buffer -nargs=0 RT call s:R('tabedit')
   endif
 
   if !s:command_exists("ToPipe")
@@ -519,10 +535,6 @@ function! s:in_render() abort
 endfunction
 
 function! s:R() abort
-  if !exists("b:elixir_mix_project")
-    return
-  endif
-
   if s:has_render()
     if s:in_live_view()
       if s:in_render()
