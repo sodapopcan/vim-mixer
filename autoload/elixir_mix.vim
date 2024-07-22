@@ -79,7 +79,7 @@ function! elixir_mix#init() abort
   endif
 
   if !s:command_exists("Deps")
-    command -buffer -nargs=* -range Deps call s:Deps(<range>, <f-args>)
+    command -buffer -nargs=* -range Deps call s:Deps(<range>, <line1>, <line2>, <f-args>)
   endif
 
   if !s:command_exists("Generate")
@@ -349,13 +349,13 @@ function! s:populate_mix_tasks()
 endfunction
 
 function! s:gather_mix_tasks(_channel, result)
-  let b:elixir_mix_tasks = get(b:, "elixir_mix_tasks", [])
-  let b:elixir_mix_tasks = add(b:elixir_mix_tasks, a:result)
+  let g:elixir_mix_tasks = get(g:, "elixir_mix_tasks", [])
+  call add(g:elixir_mix_tasks, a:result)
 endfunction
 
 function! s:set_mix_tasks(_id, _status)
-  let b:elixir_mix_project.tasks = join(b:elixir_mix_tasks, "\n")
-  unlet b:elixir_mix_tasks
+  let b:elixir_mix_project.tasks = join(g:elixir_mix_tasks, "\n")
+  unlet g:elixir_mix_tasks
 endfunction
 
 " Mix - :Mix {{{1
@@ -376,13 +376,22 @@ function! s:Mix(...) abort
   endif
 endfunction
 
+
 " Mix - :Deps {{{1
 
-function! s:Deps(range, ...) abort
+function! s:Deps(range, line1, line2, ...) abort
+  if a:1 == '-add'
+    call s:get_deps(a:2)
+
+    return
+  endif
+
   let args = join(a:000, " ")
 
-  if a:range == 1
-    let args = args." ".matchstr(getline("."), '\%(\s\+\)\?{:\zs\w\+')
+  if a:range > 0
+    for lnr in range(a:line1, a:line2)
+      let args = args." ".matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+')
+    endfor
   endif
 
   if s:command_exists("Dispatch")
@@ -390,6 +399,47 @@ function! s:Deps(range, ...) abort
   else
     call system("mix deps.".args)
   endif
+endfunction
+
+function! s:get_deps(dep) abort
+  let cmd = 'mix hex.info '.a:dep
+  let g:elixir_mix_deps_dep = a:dep
+
+  if exists("*job_start")
+    call job_start(["sh", "-c", cmd], {
+          \   "out_cb": function("s:gather_dep_output"),
+          \   "exit_cb": function("s:append_dep"),
+          \   "mode": "nl"
+          \ })
+  elseif exists("*jobstart")
+    call jobstart(["sh", "-c", cmd], {
+          \   "on_stdout": function("s:gather_dep_output"),
+          \   "on_exit": function("s:append_dep"),
+          \   "mode": "nl"
+          \ })
+  endif
+endfunction
+
+function! s:gather_dep_output(_channel, line) abort
+  let g:elixir_mix_dep_output = get(g:, "elixir_mix_dep_output", [])
+  call add(g:elixir_mix_dep_output, a:line)
+endfunction
+
+function! s:append_dep(_id, _status) abort
+  let output = join(g:elixir_mix_dep_output, "\n")
+  let dep = matchstr(output, "{:".g:elixir_mix_deps_dep.",.*}")
+  unlet g:elixir_mix_deps_dep g:elixir_mix_dep_output
+
+  call append(line("."), [dep])
+  normal! j==
+
+  if match(getline(line(".") + 1), "\]$") == -1
+    exec "normal! A,\<esc>^"
+  else
+    exec "normal! kA,\<esc>j^"
+  endif
+
+  write
 endfunction
 
 function! ElixirMixMixComplete(A, L, P) abort
