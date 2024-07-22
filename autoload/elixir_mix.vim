@@ -403,7 +403,12 @@ endfunction
 
 function! s:get_deps(dep) abort
   let cmd = 'mix hex.info '.a:dep
-  let g:elixir_mix_deps_dep = a:dep
+
+  let g:elixir_mix_deps_add = {
+        \   "dep": a:dep,
+        \   "lnr": line("."),
+        \   "output": []
+        \ }
 
   if exists("*job_start")
     call job_start(["sh", "-c", cmd], {
@@ -421,23 +426,22 @@ function! s:get_deps(dep) abort
 endfunction
 
 function! s:gather_dep_output(_channel, line) abort
-  let g:elixir_mix_dep_output = get(g:, "elixir_mix_dep_output", [])
-  call add(g:elixir_mix_dep_output, a:line)
+  call add(g:elixir_mix_deps_add.output, a:line)
 endfunction
 
 function! s:append_dep(_id, _status) abort
-  let output = join(g:elixir_mix_dep_output, "\n")
-  let dep = matchstr(output, "{:".g:elixir_mix_deps_dep.",.*}")
-  unlet g:elixir_mix_deps_dep g:elixir_mix_dep_output
+  let output = join(g:elixir_mix_deps_add.output, "\n")
+  let dep = matchstr(output, "{:".g:elixir_mix_deps_add.dep.",.*}")
 
-  call append(line("."), [dep])
-  normal! j==
+  call append(g:elixir_mix_deps_add.lnr, [dep])
 
-  if match(getline(line(".") + 1), "\]$") == -1
+  if match(getline(g:elixir_mix_deps_add.lnr), "\]$") == -1
     exec "normal! A,\<esc>^"
   else
     exec "normal! kA,\<esc>j^"
   endif
+
+  unlet g:elixir_mix_deps_add
 
   write
 endfunction
