@@ -468,40 +468,40 @@ endfunction
 
 " Mix - :Generate {{{1
 
-let g:mixer_generators = {
-      \   'repo': 'ecto.gen.repo',
-      \   'migration': 'ecto.gen.migration',
-      \   'auth': 'phx.gen.auth',
-      \   'cert': 'phx.gen.cert',
-      \   'channel': 'phx.gen.channel',
-      \   'context': 'phx.gen.context',
-      \   'embedded': 'phx.gen.embedded',
-      \   'gen': 'phx.gen',
-      \   'html': 'phx.gen.html',
-      \   'json': 'phx.gen.json',
-      \   'live': 'phx.gen.live',
-      \   'notifier': 'phx.gen.notifier',
-      \   'presence': 'phx.gen.presence',
-      \   'release': 'phx.gen.release',
-      \   'schema': 'phx.gen.schema',
-      \   'secret': 'phx.gen.secret',
-      \   'socket': 'phx.gen.socket'
-      \ }
-
 function! s:Generate(...) abort
-  let task = g:mixer_generators[a:1]
+  let tasks = s:get_gen_tasks()
+
+  if !has_key(tasks, task)
+    echom "No task with that name" | return
+  endif
 
   if s:command_exists("Dispatch")
-    exec "Dispatch mix ".task." ".join(a:000[1:])
+    exec "Dispatch mix ".tasks[task]." ".join(a:000[1:])
   else
-    call system("mix ".task." ".join(a:000[1:]))
+    call system("mix ".tasks[task]." ".join(a:000[1:]))
   endif
 endfunction
 
 function! MixerGenerateComplete(A, L, P) abort
-  return join(keys(g:mixer_generators), "\n")
+  return join(keys(s:get_gen_tasks()), "\n")
 endfunction
 
+function! s:get_gen_tasks() abort
+  let tasks = {}
+
+  for task in filter(split(b:mixer_project.tasks, "\n"), {-> v:val =~ '\.gen\.'})
+    let task_name = matchstr(task, '\.gen\.\zs.*$')
+
+    if has_key(tasks, task_name)
+      let package_name = matchstr(task, '^\l\+\')
+      let task_name = package_name.'.'.task_name
+    endif
+
+    let tasks[task_name] = task
+  endfor
+
+  return tasks
+endfunction
 
 
 " Phoenix -- :R {{{1

@@ -92,13 +92,8 @@ Mix                                         *mixer-commands-mix*
                       :Generate migration add_name_to_users
                       :Generate live Accounts User users name:string age:integer
 <
-                    These tasks are hardcoded to avoid possible naming
-                    conflicts if a dynamic way were to be used.
-
-                    You can add your own generators like so:
->
-                      let g:mixer_generators['custom'] = 'my_app.gen.custom'
-<
+                    Naming collisions are resolved by prepending the packages
+                    name to the duplicate tasks.
 
 
 TEXT OBJECTS                                *mixer-text-objects*
