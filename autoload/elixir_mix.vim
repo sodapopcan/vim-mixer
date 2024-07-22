@@ -63,7 +63,7 @@ function! elixir_mix#init() abort
   call s:init_mix_project()
 
   if !s:command_exists("R")
-    command -buffer -nargs=0 R call s:related()
+    command -buffer -nargs=0 R call s:R()
   endif
 
   if !s:command_exists("ToPipe")
@@ -503,7 +503,7 @@ function! s:has_render() abort
   return search(s:render_regex, 'wn')
 endfunction
 
-function! s:related() abort
+function! s:R() abort
   if !exists("b:elixir_mix_project")
     return
   endif
@@ -512,15 +512,17 @@ function! s:related() abort
     if s:in_live_view()
       if s:in_render()
         let b:tpl_lnr = line('.')
+
         if b:impl_lnr
-          exec ":".b:impl_lnr
+          exec b:impl_lnr
         else
           call search('^\s\+def mount(')
         endif
       else
         let b:impl_lnr = line('.')
+
         if b:tpl_lnr
-          exec ":".b:tpl_lnr
+          exec b:tpl_lnr
         else
           call search('^\s\+def render(')
         endif
@@ -532,7 +534,8 @@ function! s:related() abort
     else
       let basename = s:sub(expand("%:p"), '\.html.heex$', '.ex')
     endif
-    exec "e ".basename
+
+    exec "edit ".basename
   endif
 endfunction
 
