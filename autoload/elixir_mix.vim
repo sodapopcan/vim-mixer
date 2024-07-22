@@ -487,20 +487,35 @@ function! ElixirMixGenerateComplete(A, L, P) abort
 endfunction
 
 
-" Phoenix {{{1
+
+" Phoenix -- :R {{{1
 
 function! s:in_live_view() abort
   return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
 endfunction
 
-let s:render_regex = '^\s\+def render('
-
-function! s:in_render() abort
-  return match(getline('.'), s:render_regex) != -1 || search(s:render_regex, 'bWn')
+function! s:has_render() abort
+  return search('^\s\+def render(', 'wn')
 endfunction
 
-function! s:has_render() abort
-  return search(s:render_regex, 'wn')
+function! s:in_render() abort
+  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
+  let view = winsaveview()
+
+  if !search('def render(', 'Wb', 0, 0, Skip)
+    return 0
+  end
+
+  let start_pos = [line('.'), col('.')]
+
+  call search('\<do\>', 'W', 0, 0, Skip)
+
+  call searchpair('\<do\>', '', '\<end\>', 'W', Skip)
+  let end_pos = [line('.'), col('.')]
+
+  call winrestview(view)
+
+  return s:in_range(line('.'), col('.'), start_pos, end_pos)
 endfunction
 
 function! s:R() abort
