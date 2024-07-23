@@ -345,7 +345,7 @@ function! s:Mix(...) abort
     let args = a:000[1:]
   else
     let env = ''
-    let arg = a:000
+    let args = a:000
   endif
 
   if s:command_exists("Dispatch")
