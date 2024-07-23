@@ -6,94 +6,25 @@ License: Same terms as Vim itself (see |license|)
 
 TABLE OF CONTENTS                           *mixer*
 
-INTRODUCTION................................|mixer-introduction|
-COMMANDS....................................|mixer-commands|
-  * Mix.....................................|mixer-commands-mix|
-  * Editing.................................|mixer-commands-editing|
-  * Navigation..............................|mixer-navigation|
-TEXT OBJECTS................................|mixer-text-objects|
-  * Maps....................................|mixer-maps|
-  * Functions...............................|mixer-functions|
-  * Sigils..................................|mixer-sigils|
-  * Comments................................|mixer-comments|
+INTRODUCTION .............................| |mixer-introduction|
+TEXT OBJECTS .............................| |mixer-text-objects|
+  * Maps .................................| |mixer-maps|
+  * Functions ............................| |mixer-functions|
+  * Sigils ...............................| |mixer-sigils|
+  * Comments .............................| |mixer-comments|
+MIX ......................................| |mixer-mix|
+  * COMMANDS .............................| |mixer-mix-commands|
+  * Navigation ...........................| |mixer-navigation|
 
 
 INTRODUCTION                                *mixer-introduction*
 
 Provides utilities for working with the Elixir programming language
 <https://elixir-lang.org>.  For Vim users, this compliments elixir.vim
-<https://github.com/elixir-lang/vim-elixir>.  This library is designed to work
+<https://github.com/elixir-lang/vim-elixir>.  This plugin is designed to work
 with nvim as well, though nvim users may also want to evaluate
 elixir-tools.nvim <https://github.com/elixir-tools/elixir-tools.nvim>.  This
-library can be used along-side it.
-
-
-COMMANDS                                    *mixer-commands*
-
-Mix                                         *mixer-commands-mix*
-                                            *mixer-:Mix*
-                                            *:Mix*
-
-:Mix [args]
-                    Run a mix command with autocomplete.  Uses |dispatch| if
-                    available.
-
-                    You can specifify the environment like so:
->
-                      :Mix -test mix compile
-<
-                    This works for any environment you have specified outside
-                    the standard "dev", "test", and "prod".  When called with
-                    a bang [!], it will run the task in both dev and test
-                    envs.
-
-
-:{range}Deps [task] {args}
-                    A wrapper around `mix deps` with some added functionality.
-
-                    The standard tasks are available as well as a special
-                    `-add` task.  This allows you to add deps to your mix.exs
-                    by placing your cursor above where you would like to add
-                    it and invoking:
->
-                      :Deps -add live_view
-<
-                    This is only available if the current buffer is `mix.exs`,
-                    though it will not check to see if your cursor is in the
-                    right place.
-
-                    Given a {range}, it will operate on those lines.  For
-                    example, given this line:
->
-                      {:live_view, "~> 0.20"},
-<
-                    You could call `mix update live_view` like so:
-      >
-                      :.Deps update
-<
-                    The following lines visually selected:
->
-                      {:floki, "~> 0.3"},
-                      {:phoenix_test, "~> 1.7"},
-                      {:pathex, "~> 2.5"},
-                      {:image, "~> 0.5"}
-<
-                    Running
->
-                      :.Deps update
-<
-                    will result in:
->
-                      mix deps update floki phoenix_test pathex image
-<
-
-:Generate           Unified generator command, aware of Phoenix and Ecto:
->
-                      :Generate migration add_name_to_users
-                      :Generate live Accounts User users name:string age:integer
-<
-                    Naming collisions are resolved by prepending the packages
-                    name to the duplicate tasks.
+plugin can be used along-side it.
 
 
 TEXT OBJECTS                                *mixer-text-objects*
@@ -165,46 +96,55 @@ ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
 
-EDITING                                     *mixer-editing*
-
-                                            *mixer-pipes*
-                    NOTE: These commands only work for functions called with
-                    parens.  A special case is made for `case`.
-
-                    This plugin provides two commands for manipulating pipes:
-                    |:FromPipe| and |:ToPipe|.  While it's quite robust it is
-                    not perfect and will need to be formatted.  This is mostly
-                    only true if un-piping a multiline data-structure.
-
-                    For example:
->
-                      %{
-                        bar: baz()
-                      }
-                      |> foo("biz")
-<
-                    will become:
->
-                      foo(
-                        %{
-                          bar: baz()
-                        }, "biz")
-<
-
-                    But for simplier cases it works quite well, even with more
-                    complex datastructres.  It is even aware of infix
-                    operators, so you can actually convert between:
->
-                      1 + 1
-<
-                    and
->
-                      1
-                      |> Kernel.+()
-<
-
 COMMANDS                                    *mixer-commands*
 
+Mix                                         *mixer-commands-mix*
+                                            *mixer-:Mix*
+                                            *:Mix*
+
+:Mix [args]         Run a mix command with autocomplete.  Uses |dispatch| if
+                    available.
+
+                    You can specifify the environment like so:
+>
+                      :Mix -test mix compile
+<
+                    This works for any environment you have specified outside
+                    the standard "dev", "test", and "prod".  When called with
+                    a bang [!], it will run the task in both dev and test
+                    envs.
+
+
+:{range}Deps [task] {args}
+                    A wrapper around `mix deps` with some added functionality.
+
+                    The standard tasks are available as well as a special
+                    `-add` task.  This allows you to add deps to your mix.exs
+                    by placing your cursor above where you would like to add
+                    it and invoking:
+>
+                      :Deps -add live_view
+<
+                    This is only available if the current buffer is `mix.exs`,
+                    though it will not check to see if your cursor is in the
+                    right place.
+
+                    Given a {range}, it will operate on those lines.  For
+                    example, given this line:
+>
+                      {:live_view, "~> 0.20"},
+<
+                    You could call `mix update live_view` like so:
+      >
+                      :.Deps update
+<
+                    The following lines visually selected:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_test, "~> 1.7"},
+                      {:pathex, "~> 2.5"},
+                      {:image, "~> 0.5"}
+<
                     Running
 >
                       :.Deps update
@@ -214,5 +154,12 @@ COMMANDS                                    *mixer-commands*
                       mix deps update floki phoenix_test pathex image
 <
 
+:Generate           Unified generator command, aware of Phoenix and Ecto:
+>
+                      :Generate migration add_name_to_users
+                      :Generate live Accounts User users name:string age:integer
+<
+                    Naming collisions are resolved by prepending the packages
+                    name to the duplicate tasks.
 
   vim:tw=78:et:ft=help:norl:
