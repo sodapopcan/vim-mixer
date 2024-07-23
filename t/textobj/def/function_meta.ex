@@ -18,7 +18,7 @@ end
 # 9 12
 # 11 1
 #_
-#%daf
+#%daF
 defmodule Foo do
 end
 #"
@@ -33,7 +33,7 @@ end
     "foo"
   end
 #_
-#%dif
+#%diF
 defmodule Foo do
   @doc """
   I'm some docs.

@@ -114,20 +114,20 @@ function! mixer#init() abort
     command -buffer -nargs=0 FromPipe call s:from_pipe()
   endif
 
-  let defregex = 'def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl'
-  let macros = [[defregex, 'f'], ['defmodule', 'M'], ['quote', 'q']]
+  vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
+  vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
+  onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
+  onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
 
-  for [macro, obj] in macros
-    exec "vnoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1, 0)\<cr>"
-    exec "vnoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0, 0)\<cr>"
-    exec "onoremap <silent> <buffer> i".obj." :\<c-u>call <sid>textobj_def('".macro."', 1, 0)\<cr>"
-    exec "onoremap <silent> <buffer> a".obj." :\<c-u>call <sid>textobj_def('".macro."', 0, 0)\<cr>"
-  endfor
+  vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
+  vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
+  onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
+  onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
 
-  exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
-  exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  vnoremap <silent> <buffer> iM :\<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
+  vnoremap <silent> <buffer> aM :\<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
+  onoremap <silent> <buffer> iM :\<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
+  onoremap <silent> <buffer> aM :\<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
 
   vnoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
   vnoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
