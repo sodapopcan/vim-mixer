@@ -242,35 +242,6 @@ function! s:get_term(cmd)
   return value
 endfunction
 
-function! s:get_outer_term()
-  let outer_term = s:cursor_outer_syn_name()
-
-  if outer_term ==# 'Map'
-    let value = s:get_term('da{')
-
-    if getline('.')[col('.') - 1] == "%"
-      normal! x
-    else
-      normal! X
-    endif
-
-    return "%".value
-  elseif outer_term ==# 'List'
-    return s:get_term('da[')
-  elseif outer_term ==# 'String'
-    return s:get_term('ida"')
-  elseif outer_term ==# 'Tuple'
-    return s:get_term('da{')
-  elseif outer_term ==# 'CharList'
-    return s:get_term("da'")
-    " elseif outer_term ==# 'Sigil'
-    "   normal! F~
-    "\~\%([a-z]\|[A-Z]\+\)\%([\[{('"|/<]\).*\%([\]})'"|/>]\)"
-  else
-    return s:get_term("daW")
-  endif
-endfunction
-
 
 " Mix - helpers {{{1
 
