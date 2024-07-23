@@ -745,7 +745,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 " Text Objects - block {{{1
 
 function! s:textobj_block(inside) abort
-  let Skip = {-> s:skip_terms('Tuple\|String\|Comment') || s:is_lambda()}
+  let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
 
   normal! ^
@@ -821,7 +821,7 @@ endfunction
 " Text Objects - def {{{1
 
 function! s:textobj_def(keyword, inside, ignore_meta) abort
-  let Skip = {-> s:skip_terms('Tuple\|String\|Comment') || s:is_lambda()}
+  let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
