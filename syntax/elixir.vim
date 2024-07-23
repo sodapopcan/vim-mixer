@@ -19,7 +19,7 @@ if !hlexists('elixirSigil')
   syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirMixerDelimEscape transparent
   syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+("                end=")"   skip="\\\\\|\\)"   contains=elixirMixerDelimEscape transparent
 
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"                                                              transparent
+  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"                                            transparent
   syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l{"                end="}"   skip="\\\\\|\\}"   contains=elixirMixerRegexEscapePunctuation transparent
   syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l<"                end=">"   skip="\\\\\|\\>"   contains=elixirMixerRegexEscapePunctuation transparent
   syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirMixerRegexEscapePunctuation transparent
