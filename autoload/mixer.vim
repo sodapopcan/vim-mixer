@@ -215,7 +215,7 @@ function! s:cursor_on_comment_or_blank_line()
 endfunction
 
 function! s:is_string_or_comment()
-  return s:cursor_syn_name() =~ '\%(String\|Comment\|CharList\|Atom\)'
+  return s:cursor_syn_name() =~ 'String\|Comment\|CharList\|Atom'
 endfunction
 
 function! s:starts_with_pipe(line)
