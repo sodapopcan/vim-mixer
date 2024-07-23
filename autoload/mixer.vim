@@ -968,6 +968,7 @@ function! s:textobj_sigil(inner)
   let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
   let on_modifier = 0
+
   if s:cursor_term() !~ 'Sigil' && expand('<cWORD>') =~ '\%('.regex.'\)\w\+$'
     normal! b
     if s:cursor_term() =~ 'Sigil'
@@ -1023,6 +1024,10 @@ endfunction
 " Projections - standard {{{1
 
 function! s:define_projections()
+  if filereadable(b:mixer_project.root."/".".projections.json")
+    return
+  endif
+
   let name = b:mixer_project.name
   " These projections comes straight from elixir-tools.nvim
   " Thanks, @mhanberg
