@@ -607,10 +607,10 @@ function! s:adjust_whitespace(start_lnr, start_col)
   return [start_lnr, start_col]
 endfunction
 
-function! s:adjust_block_region(inside, start_lnr, start_col, end_lnr, end_col) abort
+function! s:adjust_block_region(inner, start_lnr, start_col, end_lnr, end_col) abort
   let [start_lnr, start_col, end_lnr, end_col] = [a:start_lnr, a:start_col, a:end_lnr, a:end_col]
 
-  if a:inside
+  if a:inner
     let start_lnr += 1
     let end_lnr -= 1
 
@@ -639,7 +639,7 @@ endfunction
 
 " Text Objects - map {{{1
 
-function! s:textobj_map(inside) abort
+function! s:textobj_map(inner) abort
   let Skip = {-> s:is_string_or_comment()}
 
   let view = winsaveview()
@@ -688,7 +688,7 @@ function! s:textobj_map(inside) abort
 
   let handle_empty_map = 0
 
-  if a:inside
+  if a:inner
     call cursor(start_lnr, start_col)
     normal f{
 
@@ -744,7 +744,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 
 " Text Objects - block {{{1
 
-function! s:textobj_block(inside) abort
+function! s:textobj_block(inner) abort
   let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
 
@@ -770,13 +770,13 @@ function! s:textobj_block(inside) abort
 
   let start_col = 1
 
-  if a:inside
+  if a:inner
     let start_lnr = do_pos[0]
   else
     let [start_lnr, start_col] = func_pos
   endif
 
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
 
   let view.lnum = start_lnr
 
@@ -820,7 +820,7 @@ endfunction
 
 " Text Objects - def {{{1
 
-function! s:textobj_def(keyword, inside, ignore_meta) abort
+function! s:textobj_def(keyword, inner, ignore_meta) abort
   let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
@@ -855,7 +855,7 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   let start_col = 1
 
-  if a:inside
+  if a:inner
     let start_lnr = do_pos[0]
   else
     let [start_lnr, start_col] = func_pos
@@ -866,14 +866,13 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
 
   let start_col = 0
 
-  if !a:inside && !a:ignore_meta
+  " Look for the meta
+  if !a:inner && !a:ignore_meta
     if !s:is_blank(getline('.'))
       normal! k^
     endif
 
     while s:cursor_function_metadata() || s:is_blank(getline('.'))
-      " call writefile([s:cursor_synstack_str()], 'foo.vim', 'a')
-
       if s:cursor_function_metadata()
         let last_meta_lnr = line('.')
       endif
@@ -884,15 +883,15 @@ function! s:textobj_def(keyword, inside, ignore_meta) abort
     let start_lnr = last_meta_lnr
   endif
 
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inside, start_lnr, start_col, end_lnr, end_col)
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-" Text Objects - comment {{{1
+" Text Objects - comment 
 
-function! s:textobj_comment(inside)
+function! s:textobj_comment(inner)
   let view = winsaveview()
   let cursor_origin = getcurpos('.')
 
@@ -937,7 +936,7 @@ function! s:textobj_comment(inside)
 
   let end_lnr = line('.')
 
-  if a:inside && comment_type ==# 'DocString'
+  if a:inner && comment_type ==# 'DocString'
     let start_lnr += 1
     let end_lnr -= 1
     let end_col = len(getline(end_lnr))
