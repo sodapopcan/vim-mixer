@@ -158,10 +158,6 @@ function! s:cursor_char(...)
   endif
 endfunction
 
-function! s:cursor_prev_char()
-  return getline('.')[col('.') - 2]
-endfunction
-
 function! s:cursor_term()
   return s:sub((synIDattr(synID(line('.'), col('.'), 0), "name")), '^elixir', '')
 endfunction
