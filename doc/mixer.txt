@@ -98,11 +98,9 @@ ac                  A comment.  Mostly just useful for formatting when
 
 COMMANDS                                    *mixer-commands*
 
-Mix                                         *mixer-commands-mix*
-                                            *mixer-:Mix*
-                                            *:Mix*
+                                            *mixer-:Mix* *:Mix*
 
-:Mix [args]         Run a mix command with autocomplete.  Uses |dispatch| if
+:Mix[!] [args]      Run a mix command with autocomplete.  Uses |dispatch| if
                     available.
 
                     You can specifify the environment like so:
@@ -114,7 +112,7 @@ Mix                                         *mixer-commands-mix*
                     a bang [!], it will run the task in both dev and test
                     envs.
 
-
+                                            *mixer-:Deps* *:Deps*
 :{range}Deps [task] {args}
                     A wrapper around `mix deps` with some added functionality.
 
@@ -154,10 +152,27 @@ Mix                                         *mixer-commands-mix*
                       mix deps update floki phoenix_test pathex image
 <
 
-:Generate           Unified generator command, aware of Phoenix and Ecto:
+                                            *mixer-:Migrate* *:Migrate*
+:Migrate[!]         Run migrations
+
+                    With a bang, will run in both dev and test environments.
+
+
+                                            *mixer-:Rollback* *:Rollback*
+:Rollback[!]        Rollback migrations
+
+                    With a bang, will run in both dev and test environments.
+
+
+                                            *mixer-:Generate* *:Generate*
+:Generate           Unified generator command with autocomplete.
+
+                    Run any "*.gen.*" task in your project without namesapce.
+
+                    For example:
 >
-                      :Generate migration add_name_to_users
                       :Generate live Accounts User users name:string age:integer
+                      :Generate migration add_name_to_users
 <
                     Naming collisions are resolved by prepending the packages
                     name to the duplicate tasks.
