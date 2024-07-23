@@ -94,6 +94,10 @@ function! mixer#init() abort
     command -buffer -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
 
+  if !s:command_exists("M")
+    command -buffer -complete=custom,MixerMixComplete -nargs=* M call s:Mix(<f-args>)
+  endif
+
   if !s:command_exists("Deps")
     command -buffer -nargs=* -range Deps call s:Deps(<range>, <line1>, <line2>, <f-args>)
   endif
