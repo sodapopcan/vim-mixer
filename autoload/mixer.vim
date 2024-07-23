@@ -988,7 +988,7 @@ function! s:textobj_sigil(inner)
         \   "\/": "\/",
         \   "|": "|",
         \   "'": "'",
-        \   '"': '"',
+        \   "\"": "\"",
         \   "(": ")",
         \   "[": "]",
         \   "{": "}",
@@ -999,11 +999,11 @@ function! s:textobj_sigil(inner)
     call search(open, 'W', 0, 0, Skip)
     exec "normal! ".(len(open))."\<space>"
     let [start_lnr, start_col] = [line('.'), col('.')]
-    call search(close, 'W', 0, 0, Skip)
+    call search(escape(close, '"'), 'W', 0, 0, Skip)
     exec "normal! 1\<left>"
   else
     call search(open, 'W', 0, 0, Skip)
-    call search(close, 'W', 0, 0, Skip)
+    call search(escape(close, '"'), 'W', 0, 0, Skip)
 
     if len(open) == 3
       normal! ll
