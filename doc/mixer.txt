@@ -205,30 +205,14 @@ EDITING                                     *mixer-editing*
 
 COMMANDS                                    *mixer-commands*
 
-:FromPipe[!]        Moves a piped argument into function parens.
-
-                    The bang version will attempt to format.
-
-                    See *mixer-pipes* for more info.
-
-
-                                            *:ToPipe* *mixer-:ToPipe*
-:ToPipe[!]          Converts a function call to an inline pipe.
-
-                    The bang version creates a multi-line pipe.  This is
-                    ignored if you are creating a nested pipe.  For example:
+                    Running
 >
-                      foo
-                      |> bar(baz("biz"))
+                      :.Deps update
 <
-                    If you want to pipe `"biz"` into `baz()` it will always
-                    produce:
+                    will result in:
 >
-                      foo
-                      |> bar("biz" |> baz())
+                      mix deps update floki phoenix_test pathex image
 <
-                    even if you use the bang version.
 
-                    See *mixer-pipes* for more info.
 
   vim:tw=78:et:ft=help:norl:
