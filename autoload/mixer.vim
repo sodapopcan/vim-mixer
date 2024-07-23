@@ -158,7 +158,7 @@ function! s:cursor_char(...)
   endif
 endfunction
 
-function! s:cursor_term()
+function! s:cursor_syn_name()
   return s:sub((synIDattr(synID(line('.'), col('.'), 0), "name")), '^elixir', '')
 endfunction
 
@@ -215,7 +215,7 @@ function! s:cursor_on_comment_or_blank_line()
 endfunction
 
 function! s:is_string_or_comment()
-  return s:cursor_term() =~ '\%(String\|Comment\|CharList\|Atom\)'
+  return s:cursor_syn_name() =~ '\%(String\|Comment\|CharList\|Atom\)'
 endfunction
 
 function! s:starts_with_pipe(line)
@@ -741,7 +741,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 " Text Objects - block {{{1
 
 function! s:textobj_block(inner) abort
-  let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
+  let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
 
   normal! ^
@@ -817,7 +817,7 @@ endfunction
 " Text Objects - def {{{1
 
 function! s:textobj_def(keyword, inner, ignore_meta) abort
-  let Skip = {-> s:cursor_term() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
+  let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
@@ -946,7 +946,7 @@ endfunction
 
 " Text Objects - sigil {{{1
 fun! V()
-  return s:cursor_term()
+  return s:cursor_syn_name()
 endfun
 
 function! s:textobj_sigil(inner)
@@ -958,21 +958,21 @@ function! s:textobj_sigil(inner)
         \   'MixDelimEscape',
         \   'RegexEscapePunctuation',
         \   'MixRegexEscapePunctuation'
-        \ ], s:cursor_term()) >= 0}
+        \ ], s:cursor_syn_name()) >= 0}
 
   let view = winsaveview()
   let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
   let on_modifier = 0
 
-  if s:cursor_term() !~ 'Sigil' && expand('<cWORD>') =~ '\%('.regex.'\)\w\+$'
+  if s:cursor_syn_name() !~ 'Sigil' && expand('<cWORD>') =~ '\%('.regex.'\)\w\+$'
     normal! b
-    if s:cursor_term() =~ 'Sigil'
+    if s:cursor_syn_name() =~ 'Sigil'
       let on_modifer = 1
     endif
   endif
 
-  if s:cursor_term() =~ 'Sigil' || on_modifier
+  if s:cursor_syn_name() =~ 'Sigil' || on_modifier
     let [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
   else
     let [start_lnr, start_col] = searchpos('\~', 'Wc', 0, 0, Skip)
