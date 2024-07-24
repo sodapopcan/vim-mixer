@@ -459,10 +459,6 @@ endfunction
 
 " Phoenix -- :R {{{1
 
-function! s:in_live_view() abort
-  return search('^\s\+use [A-Z][A-Za-z\.]\+[^\.], .*\%(live_view\|live_component\|Phoenix.LiveView\|Phoenix.LiveComponent\)', 'wn')
-endfunction
-
 function! s:has_render() abort
   return search('^\s\+def render(', 'wn')
 endfunction
@@ -489,23 +485,21 @@ endfunction
 
 function! s:R(type) abort
   if s:has_render()
-    if s:in_live_view()
-      if s:in_render()
-        let b:tpl_lnr = line('.')
+    if s:in_render()
+      let b:tpl_lnr = line('.')
 
-        if b:impl_lnr
-          exec b:impl_lnr
-        else
-          call search('^\s\+def mount(')
-        endif
+      if b:impl_lnr
+        exec b:impl_lnr
       else
-        let b:impl_lnr = line('.')
+        call search('^\s\+def mount(')
+      endif
+    else
+      let b:impl_lnr = line('.')
 
-        if b:tpl_lnr
-          exec b:tpl_lnr
-        else
-          call search('^\s\+def render(')
-        endif
+      if b:tpl_lnr
+        exec b:tpl_lnr
+      else
+        call search('^\s\+def render(')
       endif
     endif
   else
