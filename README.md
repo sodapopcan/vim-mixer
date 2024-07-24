@@ -27,10 +27,13 @@ NeoVim users: YMMV.  I recommend [elixir-tools.nvim](https://github.com/elixir-t
 
 - [elixir.vim](https://github.com/elixir-editors/vim-elixir)
   - Obviously.
-- [endwise.vim](https://github.com/tpope/vim-endwise)
-  - Auto-adds `end` after hitting `<cr>` in insert mode.
+- [closetag](https://github.com/alvan/vim-closetag)
+  - Auto-close HTML tags.  Mixer is aware of this plugin and will auto-activate
+    it when your cursor is inside `~H` or `~F`.
 - [splitjoin.vim](https://github.com/AndrewRadev/splitjoin.vim)
   - Among other things, it lets you pipe and unpipe args.
+- [endwise.vim](https://github.com/tpope/vim-endwise)
+  - Auto-adds `end` after hitting `<cr>` in insert mode.
 
 -------------------
   - With your cursor within the `index` controller action, `:R` will take you to

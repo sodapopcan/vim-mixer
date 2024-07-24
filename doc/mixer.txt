@@ -12,6 +12,7 @@ TEXT OBJECTS .............................| |mixer-text-objects|
   * Functions ............................| |mixer-functions|
   * Sigils ...............................| |mixer-sigils|
   * Comments .............................| |mixer-comments|
+  * options ..............................| |mixer-text-objects-options|
 MIX ......................................| |mixer-mix|
   * COMMANDS .............................| |mixer-mix-commands|
   * Navigation ...........................| |mixer-navigation|
@@ -51,6 +52,7 @@ Here is an overview:
 
 
 
+                    do/end blocks~
 id                                          *mixer-ie* *mixer-ae*
 ad                  A do/end block.  Currently brings "else" along with it.
 
@@ -67,6 +69,7 @@ ad                  A do/end block.  Currently brings "else" along with it.
                     the "let foo = " will be included in "ad".
 
 
+                    function and macro definitions~
 if                                          *mixer-if* *mixer-af*
 af                                          *mixer-iF* *mixer-aF*
 iF
@@ -78,27 +81,53 @@ aF                  A function including `def`, `defp`, `defmacro`, and  `defmac
                     "aF" though the latter exists for convenience.
 
 
+                    module definitions~
 iM                                          *mixer-iM* *mixer-aM*
 aM                  A module definition.
 
 
+                    maps and structs~
 im                                          *mixer-im* *mixer-am*
 am
 Im
 Am                  A map or struct.  The rather unconvention "Im" and "Am"
                     versions will target the most outer map or struct.
 
+
+                    sigils~
 iS                                          *mixer-i~* *mixer-a~*
 aS                  A sigil.  Works regardless of the delimiter.
 
+
+                    comments~
 ic                                          *mixer-ic* *mixer-ac*
 ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
+                                            *mixer-text-objects-options*
+By default, text objects use the "seek" behavior.  This means if you type
+`daf` outside of a function, it will delete the next function searching
+downward.  You may turn this off with the following setting:
+>
+  let g:mixer_textobj_seek = ""
+<
+Now your cursor must be on an object to operate on it.
+
+Fine-grained control over which objects use seek is possible by providing
+a comma comma-separate string where the possible values are:
+>
+  let g:mixer_textobj_seek_block = "doend,module,map,sigil,comment"
+<
+This is the default.
+
 
 COMMANDS                                    *mixer-commands*
 
-                                            *mixer-:Mix* *:Mix*
+                    Mix~
+                                            *mixer-commands-mix*
+                                            *mixer-:Mix*
+                                            *:Mix*
+>>>>>>> 64deef6 (Update wishful docs)
 
 :Mix[!] [args]      Run a mix command with autocomplete.  Uses |dispatch| if
                     available.
@@ -174,7 +203,11 @@ COMMANDS                                    *mixer-commands*
                       :Generate live Accounts User users name:string age:integer
                       :Generate migration add_name_to_users
 <
-                    Naming collisions are resolved by prepending the packages
-                    name to the duplicate tasks.
+
+                    Naming collisions are resolved by appending the package
+                    prefix in square brackets to the duplicate tasks.
+
+                    Only available when the current working directory is part
+                    of a mix project.
 
   vim:tw=78:et:ft=help:norl:
