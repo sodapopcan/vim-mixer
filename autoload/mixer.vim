@@ -553,17 +553,15 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 
   normal! gv
 
-  if v:operator ==# 'c'
-    call feedkeys("\<c-o>\<Plug>(ElixirExRestoreView)\<right>")
-  else
-    call feedkeys("\<Plug>(ElixirExRestoreView)")
-  endif
+  call feedkeys("\<c-r>=MixerRestorView()\<cr>")
 endfunction!
 
-nnoremap <silent> <Plug>(ElixirExRestoreView)
-      \ :call winrestview(g:mixer_view)<bar>
-      \ :unlet g:mixer_view<bar>
-      \ :normal! ^<cr>
+function! MixerRestorView() abort
+  call winrestview(g:mixer_view)
+  unlet g:mixer_view
+
+  return ""
+endfunction
 
 function! s:adjust_whitespace(start_lnr, start_col)
   let [start_lnr, start_col] = [a:start_lnr, a:start_col]
