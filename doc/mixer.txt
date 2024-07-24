@@ -116,7 +116,7 @@ Now your cursor must be on an object to operate on it.
 Fine-grained control over which objects use seek is possible by providing
 a comma comma-separate string where the possible values are:
 >
-  let g:mixer_textobj_seek_block = "doend,module,map,sigil,comment"
+  let g:mixer_textobj_seek_block = "block,module,map,sigil,comment"
 <
 This is the default.
 
