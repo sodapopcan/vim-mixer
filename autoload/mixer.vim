@@ -464,7 +464,7 @@ function! s:has_render() abort
 endfunction
 
 function! s:in_render() abort
-  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
+  let Skip = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
   let view = winsaveview()
 
   if !search('def render(', 'Wb', 0, 0, Skip)
