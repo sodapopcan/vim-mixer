@@ -106,15 +106,15 @@ function! mixer#init() abort
     command -buffer -complete=custom,MixerGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
 
-  vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
-  vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
-  onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
-  onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
+  vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
+  vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
+  onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
+  onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
 
-  vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
-  vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
-  onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
-  onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
+  vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
+  vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
+  onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
+  onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
 
   vnoremap <silent> <buffer> iM :\<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
   vnoremap <silent> <buffer> aM :\<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
@@ -787,7 +787,7 @@ endfunction
 
 " Text Objects - def {{{1
 
-function! s:textobj_def(keyword, inner, ignore_meta) abort
+function! s:textobj_def(keyword, inner, include_meta) abort
   let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
@@ -834,7 +834,7 @@ function! s:textobj_def(keyword, inner, ignore_meta) abort
   let start_col = 0
 
   " Look for the meta
-  if !a:inner && !a:ignore_meta
+  if !a:inner && a:include_meta
     if !s:is_blank(getline('.'))
       normal! k^
     endif
