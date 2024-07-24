@@ -243,16 +243,6 @@ function! s:get_term(cmd)
 endfunction
 
 
-" Mix - helpers {{{1
-
-function! s:root(path) abort
-  return b:mixer_project.root.'/'.a:path
-endfunction
-
-function! s:is_mix_project() abort
-  return exists("b:mixer_project")
-endfunction
-
 " Mix - project {{{1
 
 function! s:init_mix_project() abort
