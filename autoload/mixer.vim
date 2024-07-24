@@ -7,6 +7,10 @@ function! s:sub(str, pat, rep)
   return substitute(a:str, a:pat, a:rep, '')
 endfunction
 
+function! s:in_list(list, member)
+  return index(a:list, a:member) != -1
+endfunction
+
 function! s:matches(str, pat)
   return match(str, path) >= 0
 endfunction
@@ -101,7 +105,7 @@ function! mixer#init() abort
   endif
 
   if !s:command_exists("Generate")
-    command -buffer -complete=custom,MixerGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
+    command -buffer -complete=custom,MixerGenerateComplete -nargs=1 Generate call s:Generate(<f-args>)
   endif
 endfunction
 
@@ -423,6 +427,7 @@ endfunction
 
 function! s:Generate(...) abort
   let tasks = s:get_gen_tasks()
+  let task = a:1
 
   if !has_key(tasks, task)
     echom "No task with that name" | return
@@ -436,24 +441,39 @@ function! s:Generate(...) abort
 endfunction
 
 function! MixerGenerateComplete(A, L, P) abort
-  return join(keys(s:get_gen_tasks()), "\n")
+  let tasks = keys(s:get_gen_tasks())
+  let tasks = sort(tasks)
+
+  return join(tasks, "\n")
 endfunction
 
 function! s:get_gen_tasks() abort
-  let tasks = {}
+  let Package = {task -> matchstr(task, '^\l\+')}
+  let gen_tasks = {}
+  let dup_keys = []
+  let all_tasks = split(b:mixer_project.tasks, "\n")
 
-  for task in filter(split(b:mixer_project.tasks, "\n"), {-> v:val =~ '\.gen\.'})
-    let task_name = matchstr(task, '\.gen\.\zs.*$')
+  for task in filter(all_tasks, {-> v:val =~ '\.gen\.'})
+    let task_key = matchstr(task, '\.gen\.\zs.*$')
 
-    if has_key(tasks, task_name)
-      let package_name = matchstr(task, '^\l\+\')
-      let task_name = package_name.'.'.task_name
+    if has_key(gen_tasks, task_key) || s:in_list(dup_keys, task_key)
+      let package_name = Package(task)
+      let dup_key = task_key
+      let task_key = task_key."-".package_name
+
+      if !s:in_list(dup_keys, dup_key)
+        let dup_task = gen_tasks[dup_key]
+        unlet gen_tasks[dup_key]
+        let new_key = dup_key."-".Package(dup_task)
+        let gen_tasks[new_key] = dup_task
+        call add(dup_keys, dup_key)
+      endif
     endif
 
-    let tasks[task_name] = task
+    let gen_tasks[task_key] = task
   endfor
 
-  return tasks
+  return gen_tasks
 endfunction
 
 

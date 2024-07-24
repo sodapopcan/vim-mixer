@@ -199,7 +199,7 @@ COMMANDS                                    *mixer-commands*
                                             *mixer-:Generate* *:Generate*
 :Generate           Unified generator command with autocomplete.
 
-                    Run any "*.gen.*" task in your project without namesapce.
+                    Run any `*.gen.*` task in your project without namesapce.
 
                     For example:
 >
@@ -208,7 +208,13 @@ COMMANDS                                    *mixer-commands*
 <
 
                     Naming collisions are resolved by appending the package
-                    prefix in square brackets to the duplicate tasks.
+                    prefix separated by a dot (`-`).  For example, if you have
+                    a Phoenix project that is using Guardian and you type
+                    `:Gen sec<tab>` you will see:
+>
+                      :Gen secret-
+                      secret-guardian secret-phx
+<
 
                     Only available when the current working directory is part
                     of a mix project.
