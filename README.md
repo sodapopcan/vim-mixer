@@ -2,9 +2,7 @@
 
 Extra goodies for developing Elixir applications and Mix projects.
 
-Some functionality depends on [elixir.vim](https://github.com/elixir-editors/vim-elixir/) and [projectionist.vim](https://github.com/tpope/vim-projectionist).
-
-NeoVim users: YMMV.  I recommend [elixir-tools.nvim](https://github.com/elixir-tools/elixir-tools.nvim) instead.
+Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-projectionist).
 
 ## Features
 
