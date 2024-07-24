@@ -781,7 +781,7 @@ endfunction
 " Text Objects - def {{{1
 
 function! s:textobj_def(keyword, inner, include_meta) abort
-  let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
+  let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
