@@ -61,7 +61,7 @@ function! s:command_exists(cmd)
   return exists(":".a:cmd) == 2
 endfunction
 
-" Init {{{1
+" Init: Commands {{{1
 
 function! mixer#init() abort
   let mix_file = findfile("mix.exs", ".;")
@@ -108,6 +108,9 @@ function! mixer#init() abort
     command -buffer -complete=custom,MixerGenerateComplete -nargs=1 Generate call s:Generate(<f-args>)
   endif
 endfunction
+
+
+" Init: Mappings {{{1
 
 function mixer#define_mappings()
   vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
@@ -243,7 +246,7 @@ function! s:get_term(cmd)
 endfunction
 
 
-" Mix - project {{{1
+" Mix: Project {{{1
 
 function! s:init_mix_project(mix_file) abort
   let mix_file = a:mix_file
@@ -292,7 +295,7 @@ function! s:init_mix_project(mix_file) abort
   endif
 endfunction
 
-" Mix - tasks {{{1
+" Mix: Tasks {{{1
 
 function! s:populate_mix_tasks()
   " Thanks @mhandberg for the awk stuff
@@ -323,7 +326,7 @@ function! s:set_mix_tasks(_id, _status)
   unlet g:mixer_tasks
 endfunction
 
-" Mix - :Mix {{{1
+" Mix: :Mix {{{1
 
 function! s:Mix(...) abort
   if a:1 =~ '^-'
@@ -342,7 +345,7 @@ function! s:Mix(...) abort
 endfunction
 
 
-" Mix - :Deps {{{1
+" Mix: :Deps {{{1
 
 function! s:Deps(range, line1, line2, ...) abort
   if a:0 == 0
@@ -423,7 +426,7 @@ function! MixerMixComplete(A, L, P) abort
   return b:mixer_project.tasks
 endfunction
 
-" Mix - :Generate {{{1
+" Mix: :Generate {{{1
 
 function! s:Generate(...) abort
   let tasks = s:get_gen_tasks()
@@ -477,7 +480,7 @@ function! s:get_gen_tasks() abort
 endfunction
 
 
-" Phoenix -- :R {{{1
+" Phoenix: :R {{{1
 
 function! s:has_render() abort
   return search('^\s\+def render(', 'wn')
@@ -542,7 +545,7 @@ function! s:EditMigration(type, ...) abort
 
 endfunction
 
-" Text Objects - helpers {{{1
+" Text Objects: Helpers {{{1
 
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
   let g:mixer_view = a:view
@@ -617,7 +620,154 @@ function! s:adjust_block_region(inner, start_lnr, start_col, end_lnr, end_col) a
   return [start_lnr, start_col, end_lnr, end_col]
 endfunction
 
-" Text Objects - map {{{1
+" Text Objects: block {{{1
+
+function! s:textobj_block(inner) abort
+  let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
+  let view = winsaveview()
+
+  normal! ^
+
+  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+  let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
+
+  let func_pos = s:jump_to_function()
+
+  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos) && do_pos != [0, 0]
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+  else
+    call winrestview(view)
+    normal! wb
+
+    let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, Skip)
+    let func_pos = s:jump_to_function()
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+  endif
+
+  let start_col = 1
+
+  if a:inner
+    let start_lnr = do_pos[0]
+  else
+    let [start_lnr, start_col] = func_pos
+  endif
+
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
+
+  let view.lnum = start_lnr
+
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+endfunction
+
+function! s:jump_to_function()
+  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
+
+  " With out cursor on the 'd' of a `do` block, we want to find its matching
+  " function without knowing its name.
+
+  " First lets check if we have a builtin as that is simple.
+  if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
+    " We're not going to do anything here
+    "
+  " If not we're going to check if we have either a paren block or a single
+  " argument list, tuple, or map.  This is the only other case like we will
+  " cover for now.
+  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \<do\>', 'Wb', line('.'))
+    " We're multiline which means we can skip right to the line that has our
+    " function call!  Again, this is thanks to Elixir's syntax rules that you
+    " cannot have whitespace between a function call and its opening paren.
+    let close_char = s:cursor_char()
+
+    if close_char == ')'
+      let open_char = '('
+    elseif close_char == ']' 
+      let open_char = '['
+    elseif close_char == '}' 
+      let open_char = '{'
+    else
+      return [0, 0]
+    endif
+    call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
+  endif
+
+  normal! ^
+  return [line('.'), 0]
+endfunction
+
+" Text Objects: def {{{1
+
+function! s:textobj_def(keyword, inner, include_meta) abort
+  let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
+  let view = winsaveview()
+  let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
+
+  normal! ^
+
+  if s:cursor_function_metadata() || s:is_blank(getline('.'))
+    call search(keyword, 'Wc', 0, 0, Skip)
+  endif
+
+  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+  let func_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
+  let do_pos = searchpos('\<do\>', 'W', 0, 0, Skip)
+  let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+
+  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, end_pos) && do_pos != [0, 0]
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = end_pos
+  else
+    call winrestview(view)
+    normal! wb
+
+    let func_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
+    let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
+    call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+  endif
+
+  if func_pos == [0, 0]
+    return winrestview(view)
+  endif
+
+  let start_col = 1
+
+  if a:inner
+    let start_lnr = do_pos[0]
+  else
+    let [start_lnr, start_col] = func_pos
+  endif
+
+  call setpos('.', [0, start_lnr, start_col, 0])
+  let last_meta_lnr = start_lnr
+
+  let start_col = 0
+
+  " Look for the meta
+  if !a:inner && a:include_meta
+    if !s:is_blank(getline('.'))
+      normal! k^
+    endif
+
+    while s:cursor_function_metadata() || s:is_blank(getline('.'))
+      if s:cursor_function_metadata()
+        let last_meta_lnr = line('.')
+      endif
+
+      normal! k^
+    endwhile
+
+    let start_lnr = last_meta_lnr
+  endif
+
+  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
+
+  let view.lnum = start_lnr
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+endfunction
+
+" Text Objects: map {{{1
 
 function! s:textobj_map(inner) abort
   let Skip = {-> s:is_string_or_comment()}
@@ -722,213 +872,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
       \ :unlet b:mixer_operator<bar>
       \ :unlet b:mixer_start_col<cr>
 
-" Text Objects - block {{{1
-
-function! s:textobj_block(inner) abort
-  let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
-  let view = winsaveview()
-
-  normal! ^
-
-  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
-  let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
-
-  let func_pos = s:jump_to_function()
-
-  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos) && do_pos != [0, 0]
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
-  else
-    call winrestview(view)
-    normal! wb
-
-    let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, Skip)
-    let func_pos = s:jump_to_function()
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
-  endif
-
-  let start_col = 1
-
-  if a:inner
-    let start_lnr = do_pos[0]
-  else
-    let [start_lnr, start_col] = func_pos
-  endif
-
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
-
-  let view.lnum = start_lnr
-
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-endfunction
-
-function! s:jump_to_function()
-  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
-
-  " With out cursor on the 'd' of a `do` block, we want to find its matching
-  " function without knowing its name.
-
-  " First lets check if we have a builtin as that is simple.
-  if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
-    " We're not going to do anything here
-    "
-  " If not we're going to check if we have either a paren block or a single
-  " argument list, tuple, or map.  This is the only other case like we will
-  " cover for now.
-  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \<do\>', 'Wb', line('.'))
-    " We're multiline which means we can skip right to the line that has our
-    " function call!  Again, this is thanks to Elixir's syntax rules that you
-    " cannot have whitespace between a function call and its opening paren.
-    let close_char = s:cursor_char()
-
-    if close_char == ')'
-      let open_char = '('
-    elseif close_char == ']' 
-      let open_char = '['
-    elseif close_char == '}' 
-      let open_char = '{'
-    else
-      return [0, 0]
-    endif
-    call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
-  endif
-
-  normal! ^
-  return [line('.'), 0]
-endfunction
-
-" Text Objects - def {{{1
-
-function! s:textobj_def(keyword, inner, include_meta) abort
-  let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
-  let view = winsaveview()
-  let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
-
-  normal! ^
-
-  if s:cursor_function_metadata() || s:is_blank(getline('.'))
-    call search(keyword, 'Wc', 0, 0, Skip)
-  endif
-
-  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
-  let func_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
-  let do_pos = searchpos('\<do\>', 'W', 0, 0, Skip)
-  let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
-
-  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, end_pos) && do_pos != [0, 0]
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = end_pos
-  else
-    call winrestview(view)
-    normal! wb
-
-    let func_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
-    let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
-  endif
-
-  if func_pos == [0, 0]
-    return winrestview(view)
-  endif
-
-  let start_col = 1
-
-  if a:inner
-    let start_lnr = do_pos[0]
-  else
-    let [start_lnr, start_col] = func_pos
-  endif
-
-  call setpos('.', [0, start_lnr, start_col, 0])
-  let last_meta_lnr = start_lnr
-
-  let start_col = 0
-
-  " Look for the meta
-  if !a:inner && a:include_meta
-    if !s:is_blank(getline('.'))
-      normal! k^
-    endif
-
-    while s:cursor_function_metadata() || s:is_blank(getline('.'))
-      if s:cursor_function_metadata()
-        let last_meta_lnr = line('.')
-      endif
-
-      normal! k^
-    endwhile
-
-    let start_lnr = last_meta_lnr
-  endif
-
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
-
-  let view.lnum = start_lnr
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-endfunction
-
-" Text Objects - comment 
-
-function! s:textobj_comment(inner)
-  let view = winsaveview()
-  let cursor_origin = getcurpos('.')
-
-  normal $
-
-  if !s:cursor_on_comment()
-    return winrestview(view)
-  endif
-
-  let comment_type = s:cursor_outer_syn_name()
-
-  while s:cursor_on_comment() && comment_type == s:cursor_outer_syn_name()
-    if line('.') == 1
-      break
-    endif
-
-    normal k$
-  endwhile
-
-  if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
-    normal j$
-  endif
-
-  let start_lnr = line('.')
-  let start_col = 0
-
-  call setpos('.', cursor_origin)
-
-  normal $
-
-  while s:cursor_on_comment() && comment_type ==# s:cursor_outer_syn_name()
-    if line('.') == line('$')
-      break
-    endif
-
-    normal j$
-  endwhile
-
-  if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
-    normal k$
-  endif
-
-  let end_lnr = line('.')
-
-  if a:inner && comment_type ==# 'DocString'
-    let start_lnr += 1
-    let end_lnr -= 1
-    let end_col = len(getline(end_lnr))
-  else
-    let end_col = len(getline(end_lnr)) + 1
-  endif
-
-  let view.lnum = start_lnr
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-endfunction
-
-" Text Objects - sigil {{{1
+" Text Objects: sigil {{{1
 fun! V()
   return s:cursor_syn_name()
 endfun
@@ -999,6 +943,65 @@ function! s:textobj_sigil(inner)
   call setpos("'>", [0, end_lnr, end_col, 0])
 
   normal! gv
+endfunction
+
+" Text Objects: comment  {{{1
+
+function! s:textobj_comment(inner)
+  let view = winsaveview()
+  let cursor_origin = getcurpos('.')
+
+  normal $
+
+  if !s:cursor_on_comment()
+    return winrestview(view)
+  endif
+
+  let comment_type = s:cursor_outer_syn_name()
+
+  while s:cursor_on_comment() && comment_type == s:cursor_outer_syn_name()
+    if line('.') == 1
+      break
+    endif
+
+    normal k$
+  endwhile
+
+  if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
+    normal j$
+  endif
+
+  let start_lnr = line('.')
+  let start_col = 0
+
+  call setpos('.', cursor_origin)
+
+  normal $
+
+  while s:cursor_on_comment() && comment_type ==# s:cursor_outer_syn_name()
+    if line('.') == line('$')
+      break
+    endif
+
+    normal j$
+  endwhile
+
+  if !s:cursor_on_comment() || comment_type != s:cursor_outer_syn_name()
+    normal k$
+  endif
+
+  let end_lnr = line('.')
+
+  if a:inner && comment_type ==# 'DocString'
+    let start_lnr += 1
+    let end_lnr -= 1
+    let end_col = len(getline(end_lnr))
+  else
+    let end_col = len(getline(end_lnr)) + 1
+  endif
+
+  let view.lnum = start_lnr
+  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
 " Projections {{{1
