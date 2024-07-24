@@ -127,8 +127,6 @@ COMMANDS                                    *mixer-commands*
                                             *mixer-commands-mix*
                                             *mixer-:Mix*
                                             *:Mix*
->>>>>>> 64deef6 (Update wishful docs)
-
 :Mix[!] [args]      Run a mix command with autocomplete.  Uses |dispatch| if
                     available.
 
@@ -142,8 +140,13 @@ COMMANDS                                    *mixer-commands*
                     envs.
 
                                             *mixer-:Deps* *:Deps*
-:{range}Deps [task] {args}
+:{range}Deps {task} {args}
                     A wrapper around `mix deps` with some added functionality.
+
+                    The default {task} is `get`.
+
+                    If the current buffer is `mix.exs` it will write it if
+                    it's been modified.
 
                     The standard tasks are available as well as a special
                     `-add` task.  This allows you to add deps to your mix.exs

@@ -349,13 +349,21 @@ endfunction
 " Mix - :Deps {{{1
 
 function! s:Deps(range, line1, line2, ...) abort
-  if a:1 == '-add'
-    call s:get_deps(a:2)
+  if a:0 == 0
+    let args = "get"
+  else
+    if a:1 == '-add'
+      call s:find_dep(a:2)
 
-    return
+      return
+    endif
+
+    let args = join(a:000, " ")
   endif
 
-  let args = join(a:000, " ")
+  if expand('%p:h') ==# "mix.exs" && getbufinfo(bufnr())[0].changed
+    write
+  endif
 
   if a:range > 0
     for lnr in range(a:line1, a:line2)
@@ -370,7 +378,7 @@ function! s:Deps(range, line1, line2, ...) abort
   endif
 endfunction
 
-function! s:get_deps(dep) abort
+function! s:find_dep(dep) abort
   let cmd = 'mix hex.info '.a:dep
 
   let g:mixer_deps_add = {
