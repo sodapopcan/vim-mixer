@@ -60,7 +60,13 @@ endfunction
 " Init {{{1
 
 function! mixer#init() abort
-  call s:init_mix_project()
+  let mix_file = findfile("mix.exs", ".;")
+
+  if empty(mix_file)
+    return 0
+  endif
+
+  call s:init_mix_project(mix_file)
 
   if !s:command_exists("R")
     command -buffer -nargs=0 R call s:R('edit')
@@ -105,7 +111,9 @@ function! mixer#init() abort
   if !s:command_exists("Generate")
     command -buffer -complete=custom,MixerGenerateComplete -nargs=* Generate call s:Generate(<f-args>)
   endif
+endfunction
 
+function mixer#define_mappings()
   vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
   vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
   onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
@@ -245,12 +253,8 @@ endfunction
 
 " Mix - project {{{1
 
-function! s:init_mix_project() abort
-  let mix_file = findfile("mix.exs", ".;")
-
-  if mix_file == ""
-    return 0
-  endif
+function! s:init_mix_project(mix_file) abort
+  let mix_file = a:mix_file
 
   if !exists("g:mixer_projects")
     let g:mixer_projects = {}

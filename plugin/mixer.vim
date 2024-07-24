@@ -9,6 +9,8 @@ let g:loaded_mixer = 1
 
 augroup mixerHTML
   autocmd!
+  autocmd FileType elixir,eelixir call mixer#define_mappings()
+  autocmd BufEnter * call mixer#init()
   autocmd CursorMoved *.ex call s:set_close_tag_file_type()
 augroup END
 

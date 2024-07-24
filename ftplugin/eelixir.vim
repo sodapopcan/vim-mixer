@@ -1,1 +1,0 @@
-call mixer#init()
