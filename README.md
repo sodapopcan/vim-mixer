@@ -66,3 +66,7 @@ NeoVim users: YMMV.  I recommend [elixir-tools.nvim](https://github.com/elixir-t
   - `:Egettext`: Edit `gettext.ex`
   - `:Evendor`: Edit files in `assets/vendor`
   - `:Etailwind`: Edit `assets/tailwind.config.js`
+
+## License
+
+Distributed under the same terms as Vim itself. See `:help license`.
