@@ -981,7 +981,7 @@ function! s:textobj_sigil(inner)
   normal! gv
 endfunction
 
-" Projections - standard {{{1
+" Projections {{{1
 
 function! s:define_projections()
   if filereadable(b:mixer_project.root."/".".projections.json")
