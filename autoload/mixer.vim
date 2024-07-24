@@ -509,7 +509,9 @@ function! s:R(type) abort
       let basename = s:sub(expand("%:p"), '\.html.heex$', '.ex')
     endif
 
-    exec a:type basename
+    if !empty(glob(basename))
+      exec a:type basename
+    endif
   endif
 endfunction
 
@@ -535,8 +537,17 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 
   normal! gv
 
-  call feedkeys("\<c-r>=MixerRestorView()\<cr>")
-endfunction!
+  if v:operator ==# 'c'
+    call feedkeys("\<c-r>=MixerRestorView()\<cr>")
+  else
+    call feedkeys("\<Plug>(ElixirExRestoreView)")
+  endif
+endfunction
+ 
+nnoremap <silent> <Plug>(ElixirExRestoreView)
+      \ :call winrestview(g:mixer_view)<bar>
+      \ :unlet g:mixer_view<bar>
+      \ :normal! ^<cr>
 
 function! MixerRestorView() abort
   call winrestview(g:mixer_view)
