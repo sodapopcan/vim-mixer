@@ -7,7 +7,7 @@ if exists('g:loaded_mixer') || &cp
 endif
 let g:loaded_mixer = 1
 
-augroup mixerHTML
+augroup mixer
   autocmd!
   autocmd FileType elixir,eelixir call mixer#define_mappings()
   autocmd BufEnter * call mixer#init()
