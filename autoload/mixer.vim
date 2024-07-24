@@ -88,14 +88,6 @@ function! mixer#init() abort
     command -buffer -nargs=0 RT call s:R('tabedit')
   endif
 
-  if !s:command_exists("ToPipe")
-    command -buffer -nargs=0 ToPipe call s:to_pipe()
-  endif
-
-  if !s:command_exists("FromPipe")
-    command -buffer -nargs=0 FromPipe call s:from_pipe()
-  endif
-
   if !s:command_exists("Mix")
     command -buffer -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<f-args>)
   endif
@@ -224,10 +216,6 @@ endfunction
 
 function! s:is_string_or_comment()
   return s:cursor_syn_name() =~ 'String\|Comment\|CharList\|Atom'
-endfunction
-
-function! s:starts_with_pipe(line)
-  return match(trim(a:line), '^|>') >= 0
 endfunction
 
 function! s:empty_parens()
