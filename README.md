@@ -6,13 +6,17 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
 
 ## Features
 
-- Text objects like `ad`/`id` (do block), `af`/`if` (function/macro definition),
-  `iS` (sigil), `im` (map), `ic` (charlist) and more.
-- `:Mix` for runnings mix commands now with autocomplete.  Uses [dispatch](https://github.com/tpope/vim-dispatch)
+- Text objects!
+  - `ad`/`id` (do block)
+  - `af`/`if` (function/macro definition)
+  - `iS` (sigil)
+  - `im` (map)
+  - `ic` (comment)
+- `:Mix` for runnings mix commands with autocomplete.  Uses [dispatch](https://github.com/tpope/vim-dispatch)
   if available.
 - `:Deps` for added `mix deps` functionality, like dynamically adding
   packages.
-- `:Generate` for unifying generator commands, eg:
+- `:Gen` is a unified generator commands, eg:
   - `:Gen migration add_name_to_users`
   - `:Gen live Accounts User users name:string age:integer`
 - `:R` for jumping between controllers and templates
