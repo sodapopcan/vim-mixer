@@ -543,12 +543,6 @@ function! s:R(type) abort
 endfunction
 
 
-" Ecto {{{1
-
-function! s:EditMigration(type, ...) abort
-
-endfunction
-
 " Text Objects: Helpers {{{1
 
 function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
