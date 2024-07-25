@@ -7,7 +7,7 @@ function! s:sub(str, pat, rep)
   return substitute(a:str, a:pat, a:rep, '')
 endfunction
 
-function! s:in_list(list, member)
+function! s:includes(list, member)
   return index(a:list, a:member) != -1
 endfunction
 
@@ -463,12 +463,12 @@ function! s:get_gen_tasks() abort
   for task in filter(all_tasks, {-> v:val =~ '\.gen\.'})
     let task_key = matchstr(task, '\.gen\.\zs.*$')
 
-    if has_key(gen_tasks, task_key) || s:in_list(dup_keys, task_key)
+    if has_key(gen_tasks, task_key) || s:includes(dup_keys, task_key)
       let package_name = Package(task)
       let dup_key = task_key
       let task_key = task_key."-".package_name
 
-      if !s:in_list(dup_keys, dup_key)
+      if !s:includes(dup_keys, dup_key)
         let dup_task = gen_tasks[dup_key]
         unlet gen_tasks[dup_key]
         let new_key = dup_key."-".Package(dup_task)
