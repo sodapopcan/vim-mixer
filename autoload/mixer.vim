@@ -105,20 +105,16 @@ function! mixer#init() abort
     command -buffer -nargs=0 RT call s:R('tabedit')
   endif
 
-  if !s:command_exists("Mix")
-    command -buffer -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<f-args>)
-  endif
-
-  if !s:command_exists("M")
-    command -buffer -complete=custom,MixerMixComplete -nargs=* M call s:Mix(<f-args>)
-  endif
-
   if !s:command_exists("Deps")
-    command -buffer -nargs=* -range Deps call s:Deps(<range>, <line1>, <line2>, <f-args>)
+    command -buffer -bang -nargs=* -range Deps call s:Deps(<bang>0, <range>, <line1>, <line2>, <f-args>)
   endif
 
   if !s:command_exists("Gen")
     command -buffer -complete=custom,MixerGenComplete -nargs=1 Gen call s:Gen(<f-args>)
+  endif
+
+  if !s:command_exists("Migrate")
+    command -buffer -complete=custom,MixerMigrationComplete -nargs=* Migrate call s:Migrate(<f-args>)
   endif
 endfunction
 
@@ -339,42 +335,80 @@ function! s:set_mix_tasks(_id, _status)
   unlet g:mixer_tasks
 endfunction
 
-" Mix: :Mix {{{1
+" Mix: helpers {{{1
 
-function! s:Mix(...) abort
-  if a:1 =~ '^-'
-    let env = 'MIX_ENV='.a:1[1:].' '
-    let args = a:000[1:]
-  else
-    let env = ''
-    let args = a:000
+function! s:run_mix_command(bang, cmd, args) abort
+  let envs = []
+  let index = 0
+
+  let args = copy(a:args)
+
+  for arg in a:args
+    if (index == 0 || len(envs)) && arg =~ '^+'
+      if !a:bang
+        call add(envs, arg[1:])
+      endif
+
+      call remove(args, 0)
+    else
+      break
+    endif
+  endfor
+
+  if a:bang
+    let envs = ["dev", "test"]
+  elseif empty(envs)
+    call add(envs, 'dev')
   endif
+
+  if a:cmd != ""
+    call insert(args, a:cmd, 0)
+  endif
+
+  let commands = []
+
+  for env in envs
+    call add(commands, "MIX_ENV=".env." mix ".join(args, " "))
+  endfor
+
+  let command = join(commands, " && ")
 
   if s:command_exists("Dispatch")
-    exec "Dispatch ".env."mix ".join(args, " ")
+    exec "Dispatch" command
   else
-    call system(env."mix ".join(args, " "))
+    call system(command)
   endif
+endfunction
+
+
+" Mix: :Mix {{{1
+
+function! s:Mix(bang, ...) abort
+  call s:run_mix_command(a:bang, "", a:000)
 endfunction
 
 
 " Mix: :Deps {{{1
 
-function! s:Deps(range, line1, line2, ...) abort
+function! s:Deps(bang, range, line1, line2, ...) abort
   let buf_is_mix = expand('%p:h') ==# "mix.exs"
 
-  if a:0 == 0 && buf_is_mix
-    let args = ".get"
-  elseif a:0
-    if a:1 == '-add'
-      call s:find_dep(a:2)
+  let args = copy(a:000)
 
-      return
+  if !a:0 && buf_is_mix
+    let task_frag = "get"
+  elseif a:0 && a:1 == '-add'
+    if a:0 == 1
+      echom "What do you want me to add?" | return
     endif
 
-    let args = join(a:000, " ")
+    return s:find_dep(a:2)
+  elseif a:0
+    let task_frag = args[0]
+    let args = args[1:]
   else
-    let args = ""
+    let task_frag = ""
+    let args = []
   endif
 
   if buf_is_mix && getbufinfo(bufnr())[0].changed
@@ -383,15 +417,13 @@ function! s:Deps(range, line1, line2, ...) abort
 
   if a:range > 0
     for lnr in range(a:line1, a:line2)
-      let args = ".".args." ".matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+')
+      call add(args, matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+'))
     endfor
   endif
 
-  if s:command_exists("Dispatch")
-    exec "Dispatch mix deps".args
-  else
-    call system("mix deps".args)
-  endif
+  let task = join(["deps", task_frag], ".")
+
+  call s:run_mix_command(a:bang, task, args)
 endfunction
 
 function! s:find_dep(dep) abort
