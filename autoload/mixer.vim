@@ -251,12 +251,12 @@ endfunction
 function! s:init_mix_project(mix_file) abort
   let mix_file = a:mix_file
 
-  if !exists("g:mixer_projects")
-    let g:mixer_projects = {}
+  if !exists("g:mix_projects")
+    let g:mix_projects = {}
   endif
 
-  if !exists("b:mixer_project")
-    let b:mixer_project = {}
+  if !exists("b:mix_project")
+    let b:mix_project = {}
   endif
 
   let b:impl_lnr = 0
@@ -273,8 +273,8 @@ function! s:init_mix_project(mix_file) abort
     let project_name = ""
   endtry
 
-  if !has_key(g:mixer_projects, project_root)
-    let g:mixer_projects[project_root] = {
+  if !has_key(g:mix_projects, project_root)
+    let g:mix_projects[project_root] = {
           \   "root": project_root,
           \   "name": project_name,
           \   "alias": s:to_elixir_alias(project_name),
@@ -284,13 +284,13 @@ function! s:init_mix_project(mix_file) abort
     call s:populate_mix_tasks()
   endif
 
-  let b:mixer_project = g:mixer_projects[project_root]
+  let b:mix_project = g:mix_projects[project_root]
 
-  autocmd! DirChanged * let b:mixer_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
+  autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
-  let g:mixer_projections = get(g:, "mixer_projections", "replace")
+  let g:mix_projections = get(g:, "mix_projections", "replace")
 
-  if g:mixer_projections !=# "disable"
+  if g:mix_projections !=# "disable"
     call s:define_projections()
   endif
 endfunction
@@ -322,7 +322,7 @@ function! s:gather_mix_tasks(_channel, result)
 endfunction
 
 function! s:set_mix_tasks(_id, _status)
-  let b:mixer_project.tasks = join(g:mixer_tasks, "\n")
+  let b:mix_project.tasks = join(g:mixer_tasks, "\n")
   unlet g:mixer_tasks
 endfunction
 
@@ -427,7 +427,7 @@ function! s:append_dep(_id, _status) abort
 endfunction
 
 function! MixerMixComplete(A, L, P) abort
-  return b:mixer_project.tasks
+  return b:mix_project.tasks
 endfunction
 
 " Mix: :Gen {{{1
@@ -458,7 +458,7 @@ function! s:get_gen_tasks() abort
   let Package = {task -> matchstr(task, '^\l\+')}
   let gen_tasks = {}
   let dup_keys = []
-  let all_tasks = split(b:mixer_project.tasks, "\n")
+  let all_tasks = split(b:mix_project.tasks, "\n")
 
   for task in filter(all_tasks, {-> v:val =~ '\.gen\.'})
     let task_key = matchstr(task, '\.gen\.\zs.*$')
@@ -1011,11 +1011,11 @@ endfunction
 " Projections {{{1
 
 function! s:define_projections()
-  if filereadable(b:mixer_project.root."/".".projections.json")
+  if filereadable(b:mix_project.root."/".".projections.json")
     return
   endif
 
-  let name = b:mixer_project.name
+  let name = b:mix_project.name
   " These projections comes straight from elixir-tools.nvim
   " Thanks, @mhanberg
 
@@ -1241,7 +1241,7 @@ function! s:define_projections()
         \   'priv/repo/migrations/*.exs': { 'type': 'migration', 'dispatch': 'mix ecto.migrate' }
         \ }
 
-  if !empty(b:mixer_project.name)
+  if !empty(b:mix_project.name)
     let projectionist_heuristics['lib/*.ex']['related'] = ["lib/".name.".ex"]
 
     call extend(projectionist_heuristics, {
@@ -1260,9 +1260,9 @@ function! s:define_projections()
   endif
 
 
-  if g:mixer_projections ==# 'replace'
+  if g:mix_projections ==# 'replace'
     let g:projectionist_heuristics['mix.exs'] = projectionist_heuristics
-  elseif g:mixer_projections ==# 'merge'
+  elseif g:mix_projections ==# 'merge'
     call extend(g:projectionist_heuristics['mix.exs'], projectionist_heuristics)
   endif
 endfunction
