@@ -3,12 +3,16 @@
 
 " Utility {{{1
 
-function! s:sub(str, pat, rep)
+function! s:sub(str, pat, rep) abort
   return substitute(a:str, a:pat, a:rep, '')
 endfunction
 
-function! s:includes(list, member)
+function! s:includes(list, member) abort
   return index(a:list, a:member) != -1
+endfunction
+
+function! s:file_exists(glob) abort
+  return !empty(glob(a:glob))
 endfunction
 
 function! s:matches(str, pat)
@@ -57,13 +61,22 @@ function! s:in_range(lnr, col, start, end) abort
   return 0
 endfunction
 
-function! s:command_exists(cmd)
+function! s:command_exists(cmd) abort
   return exists(":".a:cmd) == 2
 endfunction
+
 
 " Init: Commands {{{1
 
 function! mixer#init() abort
+  if !s:command_exists("Mix")
+    command -buffer -bang -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
+  endif
+
+  if !s:command_exists("M")
+    command -buffer -bang -complete=custom,MixerMixComplete -nargs=* M call s:Mix(<bang>0, <f-args>)
+  endif
+
   let mix_file = findfile("mix.exs", ".;")
 
   if empty(mix_file)
