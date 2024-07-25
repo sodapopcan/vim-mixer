@@ -196,15 +196,15 @@ COMMANDS                                    *mixer-commands*
                     With a bang, will run in both dev and test environments.
 
 
-                                            *mixer-:Generate* *:Generate*
-:Generate           Unified generator command with autocomplete.
+                                            *mixer-:Gen* *:Gen*
+:Gen                Unified generator command with autocomplete.
 
                     Run any `*.gen.*` task in your project without namesapce.
 
                     For example:
 >
-                      :Generate live Accounts User users name:string age:integer
-                      :Generate migration add_name_to_users
+                      :Gen live Accounts User users name:string age:integer
+                      :Gen migration add_name_to_users
 <
 
                     Naming collisions are resolved by appending the package

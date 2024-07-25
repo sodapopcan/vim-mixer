@@ -104,8 +104,8 @@ function! mixer#init() abort
     command -buffer -nargs=* -range Deps call s:Deps(<range>, <line1>, <line2>, <f-args>)
   endif
 
-  if !s:command_exists("Generate")
-    command -buffer -complete=custom,MixerGenerateComplete -nargs=1 Generate call s:Generate(<f-args>)
+  if !s:command_exists("Gen")
+    command -buffer -complete=custom,MixerGenComplete -nargs=1 Gen call s:Gen(<f-args>)
   endif
 endfunction
 
@@ -426,9 +426,9 @@ function! MixerMixComplete(A, L, P) abort
   return b:mixer_project.tasks
 endfunction
 
-" Mix: :Generate {{{1
+" Mix: :Gen {{{1
 
-function! s:Generate(...) abort
+function! s:Gen(...) abort
   let tasks = s:get_gen_tasks()
   let task = a:1
 
@@ -443,7 +443,7 @@ function! s:Generate(...) abort
   endif
 endfunction
 
-function! MixerGenerateComplete(A, L, P) abort
+function! MixerGenComplete(A, L, P) abort
   let tasks = keys(s:get_gen_tasks())
   let tasks = sort(tasks)
 
