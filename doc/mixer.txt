@@ -105,7 +105,8 @@ ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
                                             *mixer-text-objects-options*
-By default, text objects use the "seek" behavior.  This means if you type
+
+By default, text objects use the "seek" behaviour.  This means if you type
 `daf` outside of a function, it will delete the next function searching
 downward.  You may turn this off with the following setting:
 >
@@ -141,12 +142,12 @@ COMMANDS                                    *mixer-commands*
 
                                             *mixer-:Deps* *:Deps*
 :{range}Deps {task} {args}
-                    A wrapper around `mix deps` with some added functionality.
+                    A wrapper around `mix deps` with some added functionality
+                    and behaviour.
 
-                    The default {task} is `get`.
-
-                    If the current buffer is `mix.exs` it will write it if
-                    it's been modified.
+                    If the current buffer is `mix.exs` it:
+                      - will :write the buffer it if it has been modified.
+                      - will run `mix deps get`.
 
                     The standard tasks are available as well as a special
                     `-add` task.  This allows you to add deps to your mix.exs

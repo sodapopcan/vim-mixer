@@ -348,9 +348,11 @@ endfunction
 " Mix: :Deps {{{1
 
 function! s:Deps(range, line1, line2, ...) abort
-  if a:0 == 0
-    let args = "get"
-  else
+  let buf_is_mix = expand('%p:h') ==# "mix.exs"
+
+  if a:0 == 0 && buf_is_mix
+    let args = ".get"
+  elseif a:0
     if a:1 == '-add'
       call s:find_dep(a:2)
 
@@ -358,22 +360,24 @@ function! s:Deps(range, line1, line2, ...) abort
     endif
 
     let args = join(a:000, " ")
+  else
+    let args = ""
   endif
 
-  if expand('%p:h') ==# "mix.exs" && getbufinfo(bufnr())[0].changed
+  if buf_is_mix && getbufinfo(bufnr())[0].changed
     write
   endif
 
   if a:range > 0
     for lnr in range(a:line1, a:line2)
-      let args = args." ".matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+')
+      let args = ".".args." ".matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+')
     endfor
   endif
 
   if s:command_exists("Dispatch")
-    exec "Dispatch mix deps.".args
+    exec "Dispatch mix deps".args
   else
-    call system("mix deps.".args)
+    call system("mix deps".args)
   endif
 endfunction
 
