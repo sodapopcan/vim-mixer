@@ -29,6 +29,7 @@ endfunction
 
 function! s:camelcase(word) " From tpope
   let word = substitute(a:word, '-', '_', 'g')
+
   if word !~# '_' && word =~# '\l'
     return substitute(word,'^.','\l&','')
   else
@@ -271,6 +272,7 @@ function! s:init_mix_project(mix_file) abort
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
   let project_root = s:sub(mix_file, 'mix.exs$', '')
+
   if project_root ==# ""
     let project_root = "."
   endif
@@ -278,6 +280,7 @@ function! s:init_mix_project(mix_file) abort
   try
     let contents = join(readfile(mix_file), "\n")
     let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze,')
+    let deps_fun = matchstr(contents, 'def project\%(()\)\?\_.*deps:\s\+\zs\w\+\ze\%(()\)\?,')
   catch
     let project_name = ""
   endtry
@@ -287,6 +290,7 @@ function! s:init_mix_project(mix_file) abort
           \   "root": project_root,
           \   "name": project_name,
           \   "alias": s:to_elixir_alias(project_name),
+          \   "deps_fun": deps_fun,
           \   "tasks": ""
           \ }
 
@@ -397,6 +401,12 @@ function! s:Deps(bang, range, line1, line2, ...) abort
 
   if !a:0 && buf_is_mix
     let task_frag = "get"
+  elseif !a:0 && !buf_is_mix
+    exec "edit" b:mix_project.root."/"."mix.exs"
+    call search('defp\?\s\+'.b:mix_project.deps_fun)
+    exec "normal! z\<cr>"
+
+    return
   elseif a:0 && a:1 == '-add'
     if a:0 == 1
       echom "What do you want me to add?" | return

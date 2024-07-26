@@ -142,23 +142,26 @@ COMMANDS                                    *mixer-commands*
 
                                             *mixer-:Deps* *:Deps*
 :{range}Deps {task} {args}
-                    A wrapper around `mix deps` with some added functionality
-                    and behaviour.
+                    A wrapper around `mix deps` with some added behaviour.
 
-                    If the current buffer is `mix.exs` it:
-                      - will :write the buffer it if it has been modified.
-                      - will run `mix deps get`.
+                    Without {task} or {args} and the current buffer is
+                    `mix.exs`, it will:
+
+                      - |:write| the buffer if it has been modified
+                      - run `mix deps get`
+
+                    In any other buffer it will take you to `mix.exs` and
+                    jump to your `deps` function.  This works regardless of
+                    what you have named it.
 
                     The standard tasks are available as well as a special
                     `-add` task.  This allows you to add deps to your mix.exs
                     by placing your cursor above where you would like to add
-                    it and invoking:
+                    it and invoking (for example):
 >
-                      :Deps -add live_view
+                      :Deps -add phoenix_test
 <
-                    This is only available if the current buffer is `mix.exs`,
-                    though it will not check to see if your cursor is in the
-                    right place.
+                    This is only available if the current buffer is `mix.exs`.
 
                     Given a {range}, it will operate on those lines.  For
                     example, given this line:
