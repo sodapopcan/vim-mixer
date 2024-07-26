@@ -107,7 +107,7 @@ function! mixer#init() abort
   endif
 
   if !s:command_exists("Deps")
-    command -buffer -bang -nargs=* -range Deps call s:Deps(<bang>0, <range>, <line1>, <line2>, <f-args>)
+    command -buffer -complete=custom,MixerDepsComplete -bang -nargs=* -range Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
   endif
 
   if !s:command_exists("Gen")
@@ -396,10 +396,13 @@ function! s:Mix(bang, ...) abort
   call s:run_mix_command(a:bang, "", a:000)
 endfunction
 
+function! MixerMixComplete(A, L, P) abort
+  return b:mix_project.tasks
+endfunction
 
 " Mix: :Deps {{{1
 
-function! s:Deps(bang, range, line1, line2, ...) abort
+function! s:Deps(bang, mods, range, line1, line2, ...) abort
   let buf_is_mix = expand('%p:h') ==# "mix.exs"
 
   let args = copy(a:000)
@@ -407,7 +410,13 @@ function! s:Deps(bang, range, line1, line2, ...) abort
   if !a:0 && buf_is_mix
     let task_frag = "get"
   elseif !a:0 && !buf_is_mix
-    exec "edit" b:mix_project.root."/"."mix.exs"
+    if a:mods =~ 'hor\|vert'
+      let cmd = 'split'
+    else
+      let cmd = 'edit'
+    endif
+
+    exec a:mods cmd b:mix_project.root."/"."mix.exs"
     call search('defp\?\s\+'.b:mix_project.deps_fun)
     exec "normal! z\<cr>"
 
@@ -475,10 +484,10 @@ function! s:append_dep(_id, _status) abort
 
   call append(g:mixer_deps_add.lnr, [dep])
 
-  if match(getline(g:mixer_deps_add.lnr), "\]$") == -1
-    exec "normal! A,\<esc>^"
-  else
+  if s:matches(getline(g:mixer_deps_add.lnr), "\]$")
     exec "normal! kA,\<esc>j^"
+  else
+    exec "normal! A,\<esc>^"
   endif
 
   unlet g:mixer_deps_add
@@ -486,8 +495,12 @@ function! s:append_dep(_id, _status) abort
   write
 endfunction
 
-function! MixerMixComplete(A, L, P) abort
-  return b:mix_project.tasks
+function! MixerDepsComplete(A, L, P) abort
+  let tasks = split(b:mix_project.tasks, "\n")
+  let deps_tasks = filter(tasks, {-> v:val =~ '^deps' && v:val !=# 'deps'})
+  let bare_tasks = map(deps_tasks, {-> s:sub(v:val, '^deps\.', '')})
+
+  return join(bare_tasks, "\n")
 endfunction
 
 " Mix: :Gen {{{1
