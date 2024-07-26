@@ -62,6 +62,26 @@ function! s:in_range(lnr, col, start, end) abort
   return 0
 endfunction
 
+" Run a job with a pointer to a list to store the job output in memory. 
+" This is currently just used for getting mix tasks on start up.
+function! s:async_append(cmd, append_output_to)
+  if exists("*job_start")
+    call job_start(["sh", "-c", a:cmd], {
+          \   "out_cb": function("s:_gather_output", [a:append_output_to]),
+          \   "mode": "nl"
+          \ })
+  elseif exists("*jobstart")
+    call jobstart(["sh", "-c", a:mix_help], {
+          \   "on_stdout": function("s:_gather_output", [a:append_output_to]),
+          \   "mode": "nl"
+          \ })
+  endif
+endfunction
+
+function! s:_gather_output(collector, channel, result)
+  call add(a:collector, a:result)
+endfunction
+
 function! s:command_exists(cmd) abort
   return exists(":".a:cmd) == 2
 endfunction
@@ -292,8 +312,10 @@ function! s:init_mix_project(mix_file) abort
           \   "name": project_name,
           \   "alias": s:to_elixir_alias(project_name),
           \   "deps_fun": deps_fun,
-          \   "tasks": ""
+          \   "tasks": []
           \ }
+
+    let b:mix_project = g:mix_projects[project_root]
 
     call s:populate_mix_tasks()
   endif
@@ -315,29 +337,12 @@ function! s:populate_mix_tasks()
   " Thanks @mhandberg for the awk stuff
   let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
 
-  if exists("*job_start")
-    call job_start(["sh", "-c", mix_help], {
-          \   "out_cb": function("s:gather_mix_tasks"),
-          \   "exit_cb": function("s:set_mix_tasks"),
-          \   "mode": "nl"
-          \ })
-  elseif exists("*jobstart")
-    call jobstart(["sh", "-c", mix_help], {
-          \   "on_stdout": function("s:gather_mix_tasks"),
-          \   "on_exit": function("s:set_mix_tasks"),
-          \   "mode": "nl"
-          \ })
-  endif
+  call s:async_append(mix_help, b:mix_project.tasks)
 endfunction
 
 function! s:gather_mix_tasks(_channel, result)
   let g:mixer_tasks = get(g:, "mixer_tasks", [])
   call add(g:mixer_tasks, a:result)
-endfunction
-
-function! s:set_mix_tasks(_id, _status)
-  let b:mix_project.tasks = join(g:mixer_tasks, "\n")
-  unlet g:mixer_tasks
 endfunction
 
 " Mix: helpers {{{1
@@ -393,7 +398,7 @@ function! s:Mix(bang, ...) abort
 endfunction
 
 function! MixerMixComplete(A, L, P) abort
-  return b:mix_project.tasks
+  return join(b:mix_project.tasks, "\n")
 endfunction
 
 " Mix: :Deps {{{1
@@ -494,8 +499,7 @@ function! s:append_dep(_id, _status) abort
 endfunction
 
 function! MixerDepsComplete(A, L, P) abort
-  let tasks = split(b:mix_project.tasks, "\n")
-  let deps_tasks = filter(tasks, {-> v:val =~ '^deps' && v:val !=# 'deps'})
+  let deps_tasks = filter(b:mix_project.tasks, {-> v:val =~ '^deps' && v:val !=# 'deps'})
   let bare_tasks = map(deps_tasks, {-> s:sub(v:val, '^deps\.', '')})
 
   return join(bare_tasks, "\n")
@@ -529,7 +533,7 @@ function! s:get_gen_tasks() abort
   let Package = {task -> matchstr(task, '^\l\+')}
   let gen_tasks = {}
   let dup_keys = []
-  let all_tasks = split(b:mix_project.tasks, "\n")
+  let all_tasks = b:mix_project.tasks
 
   for task in filter(all_tasks, {-> v:val =~ '\.gen\.'})
     let task_key = matchstr(task, '\.gen\.\zs.*$')
