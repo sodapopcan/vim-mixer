@@ -128,15 +128,17 @@ COMMANDS                                    *mixer-commands*
                                             *mixer-commands-mix*
                                             *mixer-:Mix*
                                             *:Mix*
-:Mix[!] [args]      Run a mix command with autocomplete.  Uses |dispatch| if
+:Mix[!] {flags} {args}
+                    Run a mix command with autocomplete.  Uses |dispatch| if
                     available.
 
                     You can specifify the environment like so:
 >
-                      :Mix -test mix compile
+                      :Mix +test mix compile
 <
                     This works for any environment you have specified outside
-                    the standard "dev", "test", and "prod".  When called with
+                    the standard "dev", "test", and "prod".  The `+` simply
+                    means "environment name."  When called with
                     a bang [!], it will run the task in both dev and test
                     envs.
 
@@ -144,8 +146,8 @@ COMMANDS                                    *mixer-commands*
 :{range}Deps {task} {args}
                     A wrapper around `mix deps` with some added behaviour.
 
-                    Without {task} or {args} and the current buffer is
-                    `mix.exs`, it will:
+                    When the current buffer is `mix.exs` and called without
+                    {task} or {args} it will:
 
                       - |:write| the buffer if it has been modified
                       - run `mix deps get`
@@ -164,15 +166,15 @@ COMMANDS                                    *mixer-commands*
                     This is only available if the current buffer is `mix.exs`.
 
                     Given a {range}, it will operate on those lines.  For
-                    example, given this line:
+                    example, with your cursor on this line:
 >
                       {:live_view, "~> 0.20"},
 <
-                    You could call `mix update live_view` like so:
+                    You could update LiveView by calling:
       >
                       :.Deps update
 <
-                    The following lines visually selected:
+                    With the following lines visually selected:
 >
                       {:floki, "~> 0.3"},
                       {:phoenix_test, "~> 1.7"},
@@ -181,23 +183,44 @@ COMMANDS                                    *mixer-commands*
 <
                     Running
 >
-                      :.Deps update
+                      :Deps update
 <
                     will result in:
 >
                       mix deps update floki phoenix_test pathex image
 <
+                    This is really more of a party trick as it's probably
+                    pretty rare that the deps you want to update will be right
+                    next to each other but hey, if they are...!
+
 
                                             *mixer-:Migrate* *:Migrate*
-:Migrate[!]         Run migrations
+:{count}Migrate[!] {arg}
+                    Run migrations with autocomplete.
 
-                    With a bang, will run in both dev and test environments.
+                    With a bang [!] it will run in both dev and test
+                    environments.  {count} will be passed to `--step`.  {arg}
+                    is either a path to or filename of a migration which will
+                    be passed to `--to`.  This can be a relative or absolute
+                    path, or simply the migration name.  The former does not
+                    work in umbrella apps unless your cwd an app.
+
+                    For example, if the current buffer is a migration you want
+                    to migrate `--to`, you may do so with:
+>
+                      :Migrate %
+<
+                    Only available in a mix project with Ecto.
 
 
                                             *mixer-:Rollback* *:Rollback*
-:Rollback[!]        Rollback migrations
 
-                    With a bang, will run in both dev and test environments.
+:{count}Rollback[!] {args}
+                    Rollback migrations with autocomplete.
+
+                    Works just like |:Migrate| in reverse.
+
+                    Only available in a mix project with Ecto.
 
 
                                             *mixer-:Gen* *:Gen*
@@ -211,16 +234,16 @@ COMMANDS                                    *mixer-commands*
                       :Gen migration add_name_to_users
 <
 
-                    Naming collisions are resolved by appending the package
-                    prefix separated by a dot (`-`).  For example, if you have
+                    Name collisions are resolved by appending the package
+                    prefix separated by a dot (`.`).  For example, if you have
                     a Phoenix project that is using Guardian and you type
                     `:Gen sec<tab>` you will see:
 >
-                      :Gen secret-
-                      secret-guardian secret-phx
+                      :Gen secret.
+                      secret.guardian secret.phx
 <
+                    Tasks are sorted by their non-namespaced names.
 
-                    Only available when the current working directory is part
-                    of a mix project.
+                    Only available in a mix project.
 
   vim:tw=78:et:ft=help:norl:

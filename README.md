@@ -28,7 +28,7 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
 ## Recommended Plugins
 
 - [elixir.vim](https://github.com/elixir-editors/vim-elixir)
-  - Obviously.
+  - Not strictly required for nvimmers.
 - [closetag](https://github.com/alvan/vim-closetag)
   - Auto-close HTML tags.  Mixer is aware of this plugin and will auto-activate
     it when your cursor is inside `~H` or `~F`.

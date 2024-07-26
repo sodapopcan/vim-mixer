@@ -283,6 +283,7 @@ function! s:init_mix_project(mix_file) abort
     let deps_fun = matchstr(contents, 'def project\%(()\)\?\_.*deps:\s\+\zs\w\+\ze\%(()\)\?,')
   catch
     let project_name = ""
+    let deps_fun = ""
   endtry
 
   if !has_key(g:mix_projects, project_root)
@@ -382,6 +383,10 @@ function! s:run_mix_command(bang, cmd, args) abort
   else
     call system(command)
   endif
+endfunction
+
+function! s:remove_env_options(cmd_string) abort
+
 endfunction
 
 
@@ -539,17 +544,53 @@ function! s:get_gen_tasks() abort
 endfunction
 
 
-" Phoenix: :R {{{1
+" :Migrate {{{1
 
-function! s:has_render() abort
-  return search('^\s\+def render(', 'wn')
+function! s:Migrate(bang, count, args) abort
 endfunction
 
-function! s:in_render() abort
-  let Skip = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
-  let view = winsaveview()
+let s:migrate_opts = [
+      \   "--all",
+      \   "--log-migrations-sql",
+      \   "--log-migrator-sql",
+      \   "--log-level",
+      \   "--migrations-path",
+      \   "--no-compile",
+      \   "--no-deps-check",
+      \   "--pool-size",
+      \   "--prefix",
+      \   "--quiet",
+      \   "--repo",
+      \   "--step",
+      \   "--strict-version-order",
+      \   "--to",
+      \   "--to-exclusive",
+      \   "-r",
+      \   "-n"
+      \ ]
 
-  if !search('def render(', 'Wb', 0, 0, Skip)
+function! MixerMigrationComplete(A, L, _) abort
+  if a:L =~ "-"
+    return join(s:migrate_opts, "\n")
+  endif
+
+  " let prefix = "/priv/repo/migrations"
+  " let completions = glob(b:mix_project.root.prefix."/*"), "\n"
+
+  return ""
+endfunction
+
+" Phoenix: :R {{{1
+
+function!  s:has_render() abort
+  return  search('^\s\+def render(', 'wn')
+endfuncti on
+
+function!  s:in_render() abort
+  let Ski p = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
+  let vie w = winsaveview()
+
+  if !sea rch('def render(', 'Wb', 0, 0, Skip)
     return 0
   end
 
@@ -619,7 +660,7 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
     call feedkeys("\<Plug>(ElixirExRestoreView)")
   endif
 endfunction
- 
+
 nnoremap <silent> <Plug>(ElixirExRestoreView)
       \ :call winrestview(g:mixer_view)<bar>
       \ :unlet g:mixer_view<bar>
