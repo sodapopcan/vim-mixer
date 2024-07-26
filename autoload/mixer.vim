@@ -409,7 +409,7 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
   let args = copy(a:000)
 
   if !a:0 && buf_is_mix
-    let task_frag = "get"
+    let task_fragment = "get"
   elseif !a:0 && !buf_is_mix
     if a:mods =~ 'hor\|vert'
       let cmd = 'split'
@@ -429,10 +429,10 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
 
     return s:find_dep(a:2)
   elseif a:0
-    let task_frag = args[0]
+    let task_fragment = args[0]
     let args = args[1:]
   else
-    let task_frag = ""
+    let task_fragment = ""
     let args = []
   endif
 
