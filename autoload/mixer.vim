@@ -385,10 +385,6 @@ function! s:run_mix_command(bang, cmd, args) abort
   endif
 endfunction
 
-function! s:remove_env_options(cmd_string) abort
-
-endfunction
-
 
 " Mix: :Mix {{{1
 
@@ -481,6 +477,8 @@ endfunction
 function! s:append_dep(_id, _status) abort
   let output = join(g:mixer_deps_add.output, "\n")
   let dep = matchstr(output, "{:".g:mixer_deps_add.dep.",.*}")
+
+  call search('\]')
 
   call append(g:mixer_deps_add.lnr, [dep])
 
