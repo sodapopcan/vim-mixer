@@ -280,15 +280,17 @@ function! s:get_term(cmd)
   return value
 endfunction
 
-function! s:get_pair(delim) abort
-  return {
+let s:pairs = {
         \   '(': ')',
         \   ')': '(',
         \   '{': '}',
         \   '}': '{',
         \   '[': ']',
         \   ']': '[',
-        \ }[a:delim]
+        \ }
+
+function! s:get_pair(delim) abort
+  return get(s:pairs, a:delim, 0)
 endfunction
 
 " Syntax helpers - Functions {{{1
@@ -318,7 +320,7 @@ function! s:find_function()
     let close_char = s:cursor_char()
     let open_char = s:get_pair(close_char)
 
-    call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
+    call searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'Wb', {-> s:is_string_or_comment()})
   endif
 
   normal! ^
@@ -361,7 +363,7 @@ function! s:find_function_end() abort
       let open_char = s:cursor_char()
       let close_char = s:get_pair(open_char)
 
-      return searchpairpos(open_char, '', close_char, 'W', Skip)
+      return searchpairpos(escape(open_char, '['), '', escape(close_char, ']'), 'W', Skip)
     endif
   else
     return searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
@@ -909,9 +911,11 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   if !a:inner && a:include_annotations
     let def_pos = s:find_first_function_head(def_pos)
+    let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
   endif
 
-  let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
+  call cursor(do_pos)
+
   let first_head_has_keyword_do = expand('<cWORD>') ==# 'do:'
 
   if !a:inner && a:include_annotations
@@ -919,10 +923,9 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   endif
 
   call searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
-  let end_pos = s:find_function_end()
 
   let [start_lnr, start_col] = def_pos
-  let [end_lnr, end_col] = end_pos
+  let [end_lnr, end_col] = s:find_function_end()
 
   call cursor(def_pos)
 
@@ -944,11 +947,9 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   if a:inner && first_head_has_keyword_do
     let start_col = do_pos[1] + 3
   else
-    let start_col = 1
     let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
   endif
 
-  " echom [start_lnr, start_col, end_lnr, end_col]
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
