@@ -804,10 +804,14 @@ endfunction
 " Text Objects: def {{{1
 
 function! s:textobj_def(keyword, inner, include_meta) abort
-  let known_annotations = get(g:,
-        \   'mixer_known_annotations',
-        \   '@doc\>\|@spec\>\|@tag\>\|\<@requirements\>\|\<attr\>\|\<slot\>'
-        \ )
+  let known_annotations = '@doc\>\|@spec\>\|@tag\>\|\<@requirements\>\|\<attr\>\|\<slot\>'
+  let user_annotations = get(g:, 'mixer_known_annotations')
+
+  if user_annotations
+    let known_annotations = join([known_annotations, user_annotations], '\|')
+  endif
+
+  echom known_annotations
 
   let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()

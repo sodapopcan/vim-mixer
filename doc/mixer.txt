@@ -1,4 +1,4 @@
-*mixer.txt*  Extras and extensions for *elixir*
+*mixer.txt*  *mixer* mixes mixes your mix so you can mix while you mix
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
@@ -76,22 +76,21 @@ iF
 aF                  A function definition including `def`, `defp`, `defmacro`, and
                     `defmacrop` as well as `defn` for Nx'ers.
 
-                    "aF" will include any function docstrings, specs,
-                    comments, `attr`s and `slot`s and other meta as well as
-                    all function heads.  "af" only targets the function
-                    itself.  There is no difference between "if" and "iF"
-                    though the latter exists for your symmetrical convenience.
+                    "aF" will include any function annotations.  Annotations
+                    are considered from a small list of well-known ones
+                    - `@doc`, `@spec`, `@tag`, and `@requirements` - as well
+                    as LiveView's `attr` and `slot` macros.  Otherwise,
+                    anything between these and the function head and anything
+                    touching the function head (no blank lines) will be
+                    included.
 
-                    "aF" tries to be reasonable so long as you are being
-                    reasonable.  For any function that is not the first
-                    definition in a module, it will look up to the first `end` and
-                    take everything with it.  However, if there happen to be
-                    an `alias`, `import`, or `require`, or a module attribute
-                    that is referenced below the function, it will leave them
-                    alone.
-
-
-
+                    While this shouldn't be necessary, it is possible to add
+                    your own by setting `g:mixer_known_annotations` to
+                    a regex.  For example:
+>
+                      let g:mixer_known_annotations =
+                        \ '\<my_macro\>\|@my_attribute\>'
+<
 
                     module definitions~
 iM                                          *mixer-iM* *mixer-aM*
