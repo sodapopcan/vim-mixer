@@ -19,8 +19,11 @@ function! s:matches(str, pat)
   return match(str, path) >= 0
 endfunction
 
-function! s:is_blank(str)
-  return empty(trim(a:str))
+function! s:is_blank(...)
+  if a:0
+    return a:1 =~ '^\s*$'
+  else
+    return getline('.') =~ '^\s*$'
 endfunction
 
 function! s:to_elixir_alias(word)
@@ -253,7 +256,7 @@ function! s:cursor_on_comment()
 endfunction
 
 function! s:cursor_on_comment_or_blank_line()
-  return s:cursor_on_comment() || s:is_blank(getline('.'))
+  return s:cursor_on_comment() || s:is_blank()
 endfunction
 
 function! s:is_string_or_comment()
@@ -895,7 +898,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
 
-  if s:check_for_meta(known_annotations) || s:is_blank(getline('.'))
+  if s:check_for_meta(known_annotations) || s:is_blank()
     call search(keyword, 'W', 0, 0, Skip)
   endif
 
@@ -934,7 +937,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   " Look for the meta
   if !a:inner && a:include_annotations
-    if !s:is_blank(getline('.'))
+    if !s:is_blank()
       normal! k^
     endif
 
