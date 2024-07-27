@@ -239,10 +239,6 @@ function! s:is_lambda()
   return terms[0] ==# 'elixirMixerLambda'
 endfunction
 
-function! s:cursor_function_metadata()
-  return s:cursor_synstack_str() =~ 'Comment\|DocString\|Variable'
-endfunction
-
 function! s:cursor_on_comment()
   return index(['Comment', 'DocString', 'DocStringDelimiter'], s:cursor_outer_syn_name()) > -1
 endfunction
@@ -808,13 +804,18 @@ endfunction
 " Text Objects: def {{{1
 
 function! s:textobj_def(keyword, inner, include_meta) abort
+  let known_annotations = get(g:,
+        \   'mixer_known_annotations',
+        \   '@doc\>\|@spec\>\|@tag\>\|\<@requirements\>\|\<attr\>\|\<slot\>'
+        \ )
+
   let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
   normal! ^
 
-  if s:cursor_function_metadata() || s:is_blank(getline('.'))
+  if s:check_for_meta(known_annotations) || s:is_blank(getline('.'))
     call search(keyword, 'Wc', 0, 0, Skip)
   endif
 
@@ -849,7 +850,6 @@ function! s:textobj_def(keyword, inner, include_meta) abort
   endif
 
   call setpos('.', [0, start_lnr, start_col, 0])
-  let last_meta_lnr = start_lnr
 
   let start_col = 0
 
@@ -859,21 +859,29 @@ function! s:textobj_def(keyword, inner, include_meta) abort
       normal! k^
     endif
 
-    while s:cursor_function_metadata() || s:is_blank(getline('.'))
-      if s:cursor_function_metadata()
-        let last_meta_lnr = line('.')
-      endif
+    let stopline = max([1, search('\<end\>', 'Wbn')])
 
-      normal! k^
-    endwhile
+    call search('\s*$', 'Wb', stopline, 0, {-> s:is_string_or_comment()})
 
-    let start_lnr = last_meta_lnr
+    while search(known_annotations, 'Wb', stopline) | endwhile
+
+    let [start_lnr, start_col] = [line('.'), col('.')]
   endif
 
   let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+endfunction
+
+function! s:check_for_meta(known_annotations)
+  let word = expand('<cword>')
+  let WORD = expand('<cWORD>')
+
+  return
+        \ s:cursor_synstack_str() =~ 'Comment\|DocString' ||
+        \ word =~ a:known_annotations ||
+        \ WORD =~ a:known_annotations
 endfunction
 
 " Text Objects: map {{{1
