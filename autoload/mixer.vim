@@ -811,8 +811,6 @@ function! s:textobj_def(keyword, inner, include_meta) abort
     let known_annotations = join([known_annotations, user_annotations], '\|')
   endif
 
-  echom known_annotations
-
   let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
