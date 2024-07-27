@@ -73,12 +73,24 @@ ad                  A do/end block.  Currently brings "else" along with it.
 if                                          *mixer-if* *mixer-af*
 af                                          *mixer-iF* *mixer-aF*
 iF
-aF                  A function including `def`, `defp`, `defmacro`, and  `defmacrop`.
+aF                  A function definition including `def`, `defp`, `defmacro`, and
+                    `defmacrop` as well as `defn` for Nx'ers.
 
-                    "aF" will include docstrings, specs, comments, and other
-                    meta as well as all function heads.  "af" only targets the
-                    function itself.  There is no difference between "if" and
-                    "aF" though the latter exists for convenience.
+                    "aF" will include any function docstrings, specs,
+                    comments, `attr`s and `slot`s and other meta as well as
+                    all function heads.  "af" only targets the function
+                    itself.  There is no difference between "if" and "iF"
+                    though the latter exists for your symmetrical convenience.
+
+                    "aF" tries to be reasonable so long as you are being
+                    reasonable.  For any function that is not the first
+                    definition in a module, it will look up to the first `end` and
+                    take everything with it.  However, if there happen to be
+                    an `alias`, `import`, or `require`, or a module attribute
+                    that is referenced below the function, it will leave them
+                    alone.
+
+
 
 
                     module definitions~
@@ -143,7 +155,7 @@ COMMANDS                                    *mixer-commands*
                     envs.
 
                                             *mixer-:Deps* *:Deps*
-:{range}Deps {task} {args}
+:{range}Deps[!] {task} {args}
                     A wrapper around `mix deps` with some added behaviour.
 
                     When the current buffer is `mix.exs` and called without
@@ -165,12 +177,13 @@ COMMANDS                                    *mixer-commands*
 <
                     This is only available if the current buffer is `mix.exs`.
 
-                    Given a {range}, it will operate on those lines.  For
-                    example, with your cursor on this line:
+                    Given a {range}, it will operate on those lines.  This is
+                    probably most useful with the current line for example,
+                    with your cursor on this line:
 >
                       {:live_view, "~> 0.20"},
 <
-                    You could update LiveView by calling:
+                    You can update LiveView by calling:
       >
                       :.Deps update
 <
@@ -192,6 +205,9 @@ COMMANDS                                    *mixer-commands*
                     This is really more of a party trick as it's probably
                     pretty rare that the deps you want to update will be right
                     next to each other but hey, if they are...!
+
+                    When called with a bang [!] it will run the task in both
+                    dev and test envs.
 
 
                                             *mixer-:Migrate* *:Migrate*
