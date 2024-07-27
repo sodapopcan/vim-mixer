@@ -291,6 +291,92 @@ function! s:get_pair(delim) abort
         \ }[a:delim]
 endfunction
 
+" Syntax helpers - Functions {{{1
+
+function! s:find_function()
+  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
+
+  let known_macros = '\<\%('.
+        \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|'.
+        \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
+        \ '\)\>'
+
+  " With out cursor on the 'd' of a `do` block, we want to find its matching
+  " function without knowing its name.
+
+  " First lets check if we have a builtin as that is simple.
+  if searchpair(known_macros, '', '\<do\>\|\<do:', 'Wb', {-> s:is_string_or_comment()})
+    " We're not going to do anything here
+    "
+  " If not we're going to check if we have either a paren block or a single
+  " argument list, tuple, or map.  This is the only other case like we will
+  " cover for now.
+  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \%(\<do\>\|\<do:\)', 'Wb', line('.'))
+    " We're multiline which means we can skip right to the line that has our
+    " function call!  Again, this is thanks to Elixir's syntax rules that you
+    " cannot have whitespace between a function call and its opening paren.
+    let close_char = s:cursor_char()
+    let open_char = s:get_pair(close_char)
+
+    call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
+  endif
+
+  normal! ^
+  return [line('.'), 0]
+endfunction
+
+function! s:find_first_function_head(def_pos) abort
+  let func_name = s:get_func_name(a:def_pos)
+  while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
+
+  return [line('.'), col('.')]
+endfunction
+
+function! s:find_last_function_head(def_pos) abort
+  let func_name = s:get_func_name(a:def_pos)
+  while search('def\%(\l\+\)\?\s\+'.func_name, 'W') | endwhile
+
+  return [line('.'), col('.')]
+endfunction
+
+function! s:get_func_name(def_pos) abort
+  call cursor(a:def_pos)
+  normal! W
+  let func_name = expand('<cword>')
+  normal! ^
+  return func_name
+endfunction
+
+" This functions assumes the cursor is on the `d` of a `do` or `do:`
+function! s:find_function_end() abort
+  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
+
+  if expand('<cWORD>') ==# 'do:'
+    call search('(\|{\|\[', 'W', line('.'))
+
+    if expand('<cWORD>') ==# 'do:'
+      normal! $
+      return [line('.'), col('.')]
+    else
+      let open_char = s:cursor_char()
+      let close_char = s:get_pair(open_char)
+
+      return searchpairpos(open_char, '', close_char, 'W', Skip)
+    endif
+  else
+    return searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+  end
+endfunction
+
+function! s:check_for_meta(known_annotations)
+  let word = expand('<cword>')
+  let WORD = expand('<cWORD>')
+
+  return
+        \ s:cursor_synstack_str() =~ 'Comment\|DocString' ||
+        \ word =~ a:known_annotations ||
+        \ WORD =~ a:known_annotations
+endfunction
 
 " Mix: Project {{{1
 
@@ -786,38 +872,6 @@ function! s:textobj_block(inner) abort
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-function! s:find_function()
-  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
-
-  let known_macros = '\<\%('.
-        \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|'.
-        \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
-        \ '\)\>'
-
-  " With out cursor on the 'd' of a `do` block, we want to find its matching
-  " function without knowing its name.
-
-  " First lets check if we have a builtin as that is simple.
-  if searchpair(known_macros, '', '\<do\>\|\<do:', 'Wb', {-> s:is_string_or_comment()})
-    " We're not going to do anything here
-    "
-  " If not we're going to check if we have either a paren block or a single
-  " argument list, tuple, or map.  This is the only other case like we will
-  " cover for now.
-  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \%(\<do\>\|\<do:\)', 'Wb', line('.'))
-    " We're multiline which means we can skip right to the line that has our
-    " function call!  Again, this is thanks to Elixir's syntax rules that you
-    " cannot have whitespace between a function call and its opening paren.
-    let close_char = s:cursor_char()
-    let open_char = s:get_pair(close_char)
-
-    call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
-  endif
-
-  normal! ^
-  return [line('.'), 0]
-endfunction
-
 " Text Objects: def {{{1
 
 function! s:textobj_def(keyword, inner, include_annotations) abort
@@ -898,59 +952,6 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
-endfunction
-
-function! s:find_first_function_head(def_pos) abort
-  let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
-
-  return [line('.'), col('.')]
-endfunction
-
-function! s:find_last_function_head(def_pos) abort
-  let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+'.func_name, 'W') | endwhile
-
-  return [line('.'), col('.')]
-endfunction
-
-function! s:get_func_name(def_pos) abort
-  call cursor(a:def_pos)
-  normal! W
-  let func_name = expand('<cword>')
-  normal! ^
-  return func_name
-endfunction
-
-" This functions assumes the cursor is on the `d` of a `do` or `do:`
-function! s:find_function_end() abort
-  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
-
-  if expand('<cWORD>') ==# 'do:'
-    call search('(\|{\|\[', 'W', line('.'))
-
-    if expand('<cWORD>') ==# 'do:'
-      normal! $
-      return [line('.'), col('.')]
-    else
-      let open_char = s:cursor_char()
-      let close_char = s:get_pair(open_char)
-
-      return searchpairpos(open_char, '', close_char, 'W', Skip)
-    endif
-  else
-    return searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
-  end
-endfunction
-
-function! s:check_for_meta(known_annotations)
-  let word = expand('<cword>')
-  let WORD = expand('<cWORD>')
-
-  return
-        \ s:cursor_synstack_str() =~ 'Comment\|DocString' ||
-        \ word =~ a:known_annotations ||
-        \ WORD =~ a:known_annotations
 endfunction
 
 " Text Objects: map {{{1
