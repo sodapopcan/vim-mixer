@@ -736,7 +736,7 @@ function! s:textobj_block(inner) abort
   let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
   let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
 
-  let func_pos = s:jump_to_function()
+  let func_pos = s:find_function()
 
   if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos) && do_pos != [0, 0]
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
@@ -746,7 +746,7 @@ function! s:textobj_block(inner) abort
     normal! wb
 
     let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, Skip)
-    let func_pos = s:jump_to_function()
+    let func_pos = s:find_function()
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
     let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   endif
@@ -766,7 +766,7 @@ function! s:textobj_block(inner) abort
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
-function! s:jump_to_function()
+function! s:find_function()
   let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
 
   " With out cursor on the 'd' of a `do` block, we want to find its matching
