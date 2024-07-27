@@ -912,7 +912,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   endif
 
   let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
-  let first_head_hard_keyword_do = expand('<cWORD>') ==# 'do:'
+  let first_head_has_keyword_do = expand('<cWORD>') ==# 'do:'
 
   if !a:inner && a:include_annotations
     call s:find_last_function_head(def_pos)
@@ -941,7 +941,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     let [start_lnr, start_col] = [line('.'), col('.')]
   endif
 
-  if a:inner && first_head_hard_keyword_do
+  if a:inner && first_head_has_keyword_do
     let start_col = do_pos[1] + 3
   else
     let start_col = 1
