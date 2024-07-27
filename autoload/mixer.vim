@@ -404,7 +404,7 @@ endfunction
 " Mix: :Deps {{{1
 
 function! s:Deps(bang, mods, range, line1, line2, ...) abort
-  let buf_is_mix = expand('%p:h') ==# "mix.exs"
+  let buf_is_mix = expand('%t') =~ "mix.exs"
 
   let args = copy(a:000)
 
@@ -418,7 +418,7 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
     endif
 
     exec a:mods cmd b:mix_project.root."/"."mix.exs"
-    call search('defp\?\s\+'.b:mix_project.deps_fun)
+    call search('defp\?\s\+'.b:mix_project.deps_fun, 'c')
     exec "normal! z\<cr>"
 
     return
