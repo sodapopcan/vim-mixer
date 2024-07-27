@@ -446,7 +446,7 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
     endfor
   endif
 
-  let task = join(["deps", task_frag], ".")
+  let task = join(["deps", task_fragment], ".")
 
   call s:run_mix_command(a:bang, task, args)
 endfunction
