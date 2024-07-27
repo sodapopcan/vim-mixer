@@ -182,6 +182,15 @@ function mixer#define_mappings()
   vnoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
   onoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
   onoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
+
+  if exists('g:loaded_sideways') && get(g:, 'mixer_enable_textobj_arg')
+    if empty(maparg('aa', 'x')) && empty(maparg('ia', 'o'))
+      omap aa <Plug>SidewaysArgumentTextobjA
+      xmap aa <Plug>SidewaysArgumentTextobjA
+      omap ia <Plug>SidewaysArgumentTextobjI
+      xmap ia <Plug>SidewaysArgumentTextobjI
+    endif
+  endif
 endfunction
 
 

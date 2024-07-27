@@ -41,15 +41,15 @@ Here is an overview:
 
 
   Elixir construct    | Text Object  (mneumonic/notes)
-  --------------------+------------------------------------------
+  --------------------+------------------------------------------------
   do/end blocks       | d  (do)
   def[p]/defmarco[p]  | f
-  def[p]/defmacro[p]  | F  (includes meta and all function heads)
+  def[p]/defmacro[p]  | F  (targets annotations and all function heads)
   defmodule           | M
   %{}/%Foo{}          | m  (map)
-  ~s""/etc.           | ~  (note the uppercase)
+  ~s""/etc.           | S  (note the uppercase)
   #/@doc """/etc      | c  (comment)
-
+  function arg        | a  (requires dependency, see below)
 
 
                     do/end blocks~
@@ -115,13 +115,24 @@ ic                                          *mixer-ic* *mixer-ac*
 ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
+
+                    function arguments~
+ia                                          *mixer-text-objects-arguments*
+aa
+                    A function argument.
+
+                    These are only available if the plugin sideways.vim is
+                    installed.  You can find this on www.vim.org or on github
+                    at <https://github.com/AndrewRadev/sideways.vim>.
+
+
                                             *mixer-text-objects-options*
 
 By default, text objects use the "seek" behaviour.  This means if you type
 `daf` outside of a function, it will delete the next function searching
 downward.  You may turn this off with the following setting:
 >
-  let g:mixer_textobj_seek = ""
+  let g:mixer_textobj_seek = 0
 <
 Now your cursor must be on an object to operate on it.
 
