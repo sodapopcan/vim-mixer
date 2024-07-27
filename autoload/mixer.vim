@@ -675,23 +675,23 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
   normal! gv
 
   if v:operator ==# 'c'
-    call feedkeys("\<c-r>=MixerRestorView()\<cr>")
+    call feedkeys("\<c-r>=MixerRestoreViewInsert()\<cr>")
   else
-    call feedkeys("\<Plug>(ElixirExRestoreView)")
+    call feedkeys("\<Plug>(MixerRestorView)")
   endif
 endfunction
 
-nnoremap <silent> <Plug>(MixerRestoreViewInsert)
-      \ :call winrestview(g:mixer_view)<bar>
-      \ :unlet g:mixer_view<bar>
-      \ :normal! ^<cr>
-
-function! MixerRestorViewNormal() abort
+function! MixerRestoreViewInsert() abort
   call winrestview(g:mixer_view)
   unlet g:mixer_view
 
   return ""
 endfunction
+
+nnoremap <silent> <Plug>(MixerRestorView)
+      \ :call winrestview(g:mixer_view)<bar>
+      \ :unlet g:mixer_view<bar>
+      \ :normal! ^<cr>
 
 function! s:adjust_whitespace(start_lnr, start_col)
   let [start_lnr, start_col] = [a:start_lnr, a:start_col]
@@ -832,44 +832,43 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   normal! ^
 
+  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+
   if s:check_for_meta(known_annotations) || s:is_blank(getline('.'))
-    call search(keyword, 'Wc', 0, 0, Skip)
+    call search(keyword, 'W', 0, 0, Skip)
   endif
 
-  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
-  let func_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
-    " call winrestview(view)
+  let def_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
   let do_pos = searchpos('\<do\>\|\<do:', 'W', 0, 0, Skip)
   let end_pos = s:find_function_end()
 
-  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, end_pos) && do_pos != [0, 0]
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let is_keyword_do = expand('<cWORD>') ==# 'do:'
-    let [end_lnr, end_col] = end_pos
-  else
+  if !s:in_range(cursor_origin_lnr, cursor_origin_col, def_pos, end_pos) || do_pos == [0, 0]
     call winrestview(view)
     normal! wb
 
-    let func_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
-    let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
-    let is_keyword_do = expand('<cWORD>') ==# 'do:'
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = s:find_function_end()
+    let def_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
   endif
 
-  if func_pos == [0, 0]
-    return winrestview(view)
+  if def_pos == [0, 0] | return winrestview(view) | endif
+
+  if !a:inner && a:include_annotations
+    let def_pos = s:find_first_function_head(def_pos)
   endif
 
-  let start_col = 1
+  let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
+  let first_head_hard_keyword_do = expand('<cWORD>') ==# 'do:'
 
-  if a:inner
-    let start_lnr = do_pos[0]
-  else
-    let [start_lnr, start_col] = func_pos
+  if !a:inner && a:include_annotations
+    call s:find_last_function_head(def_pos)
   endif
 
-  call setpos('.', [0, start_lnr, start_col, 0])
+  call searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
+  let end_pos = s:find_function_end()
+
+  let [start_lnr, start_col] = def_pos
+  let [end_lnr, end_col] = end_pos
+
+  call cursor(def_pos)
 
   " Look for the meta
   if !a:inner && a:include_annotations
@@ -886,9 +885,10 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     let [start_lnr, start_col] = [line('.'), col('.')]
   endif
 
-  if a:inner && is_keyword_do
+  if a:inner && first_head_hard_keyword_do
     let start_col = do_pos[1] + 3
   else
+    let start_col = 1
     let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
   endif
 
@@ -898,6 +898,29 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
 endfunction
 
+function! s:find_first_function_head(def_pos) abort
+  let func_name = s:get_func_name(a:def_pos)
+  while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
+
+  return [line('.'), col('.')]
+endfunction
+
+function! s:find_last_function_head(def_pos) abort
+  let func_name = s:get_func_name(a:def_pos)
+  while search('def\%(\l\+\)\?\s\+'.func_name, 'W') | endwhile
+
+  return [line('.'), col('.')]
+endfunction
+
+function! s:get_func_name(def_pos) abort
+  call cursor(a:def_pos)
+  normal! W
+  let func_name = expand('<cword>')
+  normal! ^
+  return func_name
+endfunction
+
+" This functions assumes the cursor is on the `d` of a `do` or `do:`
 function! s:find_function_end() abort
   let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
 

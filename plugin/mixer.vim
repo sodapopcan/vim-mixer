@@ -35,3 +35,7 @@ function! s:set_close_tag_file_type()
     let g:closetag_filenames = substitute(g:closetag_filenames, ',\*\.ex$', '', '')
   endif
 endfunction
+
+" Options {{{1
+
+let g:mixer_textobj_arg = get(g:, 'mixer_enable_textobj_arg', 1)
