@@ -40,21 +40,25 @@ specs, docstrings, etc.
 Here is an overview:
 
 
-  Elixir construct    | Text Object  (mneumonic/notes)
-  --------------------+------------------------------------------------
-  do/end blocks       | d  (do)
-  def[p]/defmarco[p]  | f
-  def[p]/defmacro[p]  | F  (targets annotations and all function heads)
-  defmodule           | M
-  %{}/%Foo{}          | m  (map)
-  ~s""/etc.           | S  (note the uppercase)
-  #/@doc """/etc      | c  (comment)
-  function arg        | a  (requires dependency, see below)
+    Elixir construct    | Text Object  (mneumonic/notes)
+    --------------------+------------------------------------------------
+    do/end blocks       | d  (do)
+    def[p]/defmarco[p]  | f
+    def[p]/defmacro[p]  | F  (targets annotations and all function heads)
+    defmodule           | M
+    %{}/%Foo{}          | m  (map)
+    ~s""/etc.           | S  (note the uppercase)
+    #/@doc """/etc      | c  (comment)
+    function arg        | a  (requires dependency, see below)
 
 
                     do/end blocks~
 id                                          *mixer-ie* *mixer-ae*
 ad                  A do/end block.  Currently brings "else" along with it.
+                    It work with keyword syntax as well along with different
+                    kinds of funky syntax like `do:` on its own line, `do:` on
+                    a new line, multiline `do: ()`, multiline `do: %{}`, and
+                    even multine `do: []` .
 
                     These target all the builtin macros/special forms and work
                     well with them.  They are also designed to be general, so
@@ -151,19 +155,35 @@ COMMANDS                                    *mixer-commands*
                                             *mixer-:Mix*
                                             *:Mix*
 :Mix[!] {flags} {args}
-                    Run a mix command with autocomplete.  Uses |dispatch| if
-                    available.
+                    Run a mix command with autocomplete.
+
+                    It will use an async library, if available.  Currently,
+                    it's only aware of |dispatch| though PRs for others are
+                    welcome (see: https://github.com/sodapopcan/vim-mixer).
+
+                    When called with a bang [!] it will call `:MyAsyncRunner!`
+                    if that command exists.  When called with two bangs [!!]
+                    (the second ! is really just the first argument) it will
+                    be be called syncronously.
 
                     You can specifify the environment like so:
 >
-                      :Mix +test mix compile
+                      :Mix -test mix compile
 <
                     This works for any environment you have specified outside
-                    the standard "dev", "test", and "prod".  The `+` simply
-                    means "environment name."  When called with
-                    a bang [!], it will run the task in both dev and test
-                    envs.
+                    the standard "dev", "test", and "prod".  The `-` simply
+                    means "environment name."
 
+                    You can also additional environments onto the default like
+                    so:
+>
+                      :Mix +test mix compile
+<
+                    Assuming your default env is dev, this will run:
+>
+                      $ MIX_ENV=dev mix compile && MIX_ENV=test mix compile
+
+<
                                             *mixer-:Deps* *:Deps*
 :{range}Deps[!] {task} {args}
                     A wrapper around `mix deps` with some added behaviour.
@@ -179,11 +199,11 @@ COMMANDS                                    *mixer-commands*
                     what you have named it.
 
                     The standard tasks are available as well as a special
-                    `-add` task.  This allows you to add deps to your mix.exs
+                    `add` task.  This allows you to add deps to your mix.exs
                     by placing your cursor above where you would like to add
                     it and invoking (for example):
 >
-                      :Deps -add phoenix_test
+                      :Deps add phoenix_test
 <
                     This is only available if the current buffer is `mix.exs`.
 
@@ -206,7 +226,7 @@ COMMANDS                                    *mixer-commands*
 <
                     Running
 >
-                      :Deps update
+                      :'<,'>Deps update
 <
                     will result in:
 >
@@ -214,28 +234,30 @@ COMMANDS                                    *mixer-commands*
 <
                     This is really more of a party trick as it's probably
                     pretty rare that the deps you want to update will be right
-                    next to each other but hey, if they are...!
+                    next to each other but het, here we are... !
 
-                    When called with a bang [!] it will run the task in both
-                    dev and test envs.
+                    This command's bang [!] behaviour works the same as it
+                    does for |:Mix|.
 
 
                                             *mixer-:Migrate* *:Migrate*
 :{count}Migrate[!] {arg}
                     Run migrations with autocomplete.
 
-                    With a bang [!] it will run in both dev and test
-                    environments.  {count} will be passed to `--step`.  {arg}
-                    is either a path to or filename of a migration which will
-                    be passed to `--to`.  This can be a relative or absolute
-                    path, or simply the migration name.  The former does not
-                    work in umbrella apps unless your cwd an app.
+                    {count} will be passed to `--step`.  {arg} is either
+                    a path to or filename of a migration which will be passed
+                    to `--to`.  This can be a relative or absolute path, or
+                    simply the migration name.  The former does not work in
+                    umbrella apps unless your cwd an app.
 
                     For example, if the current buffer is a migration you want
                     to migrate `--to`, you may do so with:
 >
                       :Migrate %
 <
+                    This command's bang [!] behaviour works the same as it
+                    does for |:Mix|.
+
                     Only available in a mix project with Ecto.
 
 
