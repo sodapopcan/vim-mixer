@@ -818,7 +818,7 @@ endfunction
 
 " Text Objects: def {{{1
 
-function! s:textobj_def(keyword, inner, include_meta) abort
+function! s:textobj_def(keyword, inner, include_annotations) abort
   let known_annotations = '@doc\>\|@spec\>\|@tag\>\|\<@requirements\>\|\<attr\>\|\<slot\>'
   let user_annotations = get(g:, 'mixer_known_annotations')
 
@@ -872,7 +872,7 @@ function! s:textobj_def(keyword, inner, include_meta) abort
   call setpos('.', [0, start_lnr, start_col, 0])
 
   " Look for the meta
-  if !a:inner && a:include_meta
+  if !a:inner && a:include_annotations
     if !s:is_blank(getline('.'))
       normal! k^
     endif
