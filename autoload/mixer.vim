@@ -760,7 +760,10 @@ endfunction
 
 " Text Objects: Helpers {{{1
 
-function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+function! s:textobj_select_obj(view, start_pos, end_pos)
+  let [start_lnr, start_col] = a:start_pos
+  let [end_lnr, end_col] = a:end_pos
+
   let g:mixer_view = a:view
 
   if v:operator ==# 'c'
@@ -768,8 +771,8 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
     unlet g:mixer_view.col
   endif
 
-  call setpos("'<", [0, a:start_lnr, a:start_col, 0])
-  call setpos("'>", [0, a:end_lnr, a:end_col, 0])
+  call setpos("'<", [0, start_lnr, start_col, 0])
+  call setpos("'>", [0, end_lnr, end_col, 0])
 
   normal! gv
 
@@ -792,10 +795,10 @@ nnoremap <silent> <Plug>(MixerRestorView)
       \ :unlet g:mixer_view<bar>
       \ :normal! ^<cr>
 
-function! s:adjust_whitespace(start_lnr, start_col)
-  let [start_lnr, start_col] = [a:start_lnr, a:start_col]
+function! s:adjust_whitespace(start_pos)
+  let [start_lnr, start_col] = a:start_pos
 
-  if a:start_lnr > 1 && s:is_blank(getline(a:start_lnr - 1))
+  if start_lnr > 1 && s:is_blank(getline(start_lnr - 1))
     let start_lnr -=1
     let start_col = 1
   endif
@@ -803,8 +806,9 @@ function! s:adjust_whitespace(start_lnr, start_col)
   return [start_lnr, start_col]
 endfunction
 
-function! s:adjust_block_region(inner, start_lnr, start_col, end_lnr, end_col) abort
-  let [start_lnr, start_col, end_lnr, end_col] = [a:start_lnr, a:start_col, a:end_lnr, a:end_col]
+function! s:adjust_block_region(inner, start_pos, end_pos) abort
+  let [start_lnr, start_col] = a:start_pos
+  let [end_lnr, end_col] = a:end_pos
 
   if a:inner
     let start_lnr += 1
@@ -819,7 +823,7 @@ function! s:adjust_block_region(inner, start_lnr, start_col, end_lnr, end_col) a
       exec start_lnr
     endif
   else
-    let [start_lnr, start_col] = s:adjust_whitespace(start_lnr, start_col)
+    let [start_lnr, start_col] = s:adjust_whitespace([start_lnr, start_col])
 
     if start_col == 0
       let start_col = 1
@@ -830,7 +834,7 @@ function! s:adjust_block_region(inner, start_lnr, start_col, end_lnr, end_col) a
     exec start_lnr
   endif
 
-  return [start_lnr, start_col, end_lnr, end_col]
+  return [[start_lnr, start_col], [end_lnr, end_col]]
 endfunction
 
 " Text Objects: block {{{1
@@ -848,7 +852,7 @@ function! s:textobj_block(inner) abort
 
   if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos) && do_pos != [0, 0]
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+    let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   else
     call winrestview(view)
     normal! wb
@@ -856,22 +860,21 @@ function! s:textobj_block(inner) abort
     let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, Skip)
     let func_pos = s:find_function()
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+    let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   endif
-
-  let start_col = 1
 
   if a:inner
-    let start_lnr = do_pos[0]
+    let start_pos = do_pos
+    let start_pos[1] = 1
   else
-    let [start_lnr, start_col] = func_pos
+    let start_pos = func_pos
   endif
 
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
+  let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
 
   let view.lnum = start_lnr
 
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+  call s:textobj_select_obj(view, start_pos, end_pos)
 endfunction
 
 " Text Objects: def {{{1
@@ -924,8 +927,8 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   call searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
 
-  let [start_lnr, start_col] = def_pos
-  let [end_lnr, end_col] = s:find_function_end()
+  let start_pos = def_pos
+  let end_pos = s:find_function_end()
 
   call cursor(def_pos)
 
@@ -941,18 +944,18 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
     while search(known_annotations, 'Wb', stopline) | endwhile
 
-    let [start_lnr, start_col] = [line('.'), col('.')]
+    let start_pos = [line('.'), col('.')]
   endif
 
   if a:inner && first_head_has_keyword_do
-    let start_col = do_pos[1] + 3
+    let start_pos[1] = do_pos[1] + 3
   else
-    let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
   endif
 
 
-  let view.lnum = start_lnr
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+  let view.lnum = start_pos[0]
+  call s:textobj_select_obj(view, start_pos, end_pos)
 endfunction
 
 " Text Objects: map {{{1
@@ -1189,7 +1192,7 @@ function! s:textobj_comment(inner)
   endif
 
   let view.lnum = start_lnr
-  call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+  call s:textobj_select_obj(view, [start_lnr, start_col], [end_lnr, end_col])
 endfunction
 
 " Projections {{{1
