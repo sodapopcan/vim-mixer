@@ -280,6 +280,17 @@ function! s:get_term(cmd)
   return value
 endfunction
 
+function! s:get_pair(delim) abort
+  return {
+        \   '(': ')',
+        \   ')': '(',
+        \   '{': '}',
+        \   '}': '{',
+        \   '[': ']',
+        \   ']': '[',
+        \ }[a:delim]
+endfunction
+
 
 " Mix: Project {{{1
 
@@ -798,16 +809,7 @@ function! s:find_function()
     " function call!  Again, this is thanks to Elixir's syntax rules that you
     " cannot have whitespace between a function call and its opening paren.
     let close_char = s:cursor_char()
-
-    if close_char == ')'
-      let open_char = '('
-    elseif close_char == ']' 
-      let open_char = '['
-    elseif close_char == '}' 
-      let open_char = '{'
-    else
-      return [0, 0]
-    endif
+    let open_char = s:get_pair(close_char)
 
     call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
   endif
@@ -932,14 +934,7 @@ function! s:find_function_end() abort
       return [line('.'), col('.')]
     else
       let open_char = s:cursor_char()
-
-      if open_char == '('
-        let close_char = ')'
-      elseif open_char == '[' 
-        let close_char = ']'
-      elseif open_char == '{' 
-        let close_char = '}'
-      endif
+      let close_char = s:get_pair(open_char)
 
       return searchpairpos(open_char, '', close_char, 'W', Skip)
     endif
