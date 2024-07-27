@@ -307,7 +307,7 @@ function! s:find_function()
   let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
 
   let known_macros = '\<\%('.
-        \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|'.
+        \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|defn\|defnp\|'.
         \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
         \ '\)\>'
 
