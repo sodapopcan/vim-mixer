@@ -769,17 +769,22 @@ endfunction
 function! s:find_function()
   let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
 
+  let known_macros = '\<\%('.
+        \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|'.
+        \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
+        \ '\)\>'
+
   " With out cursor on the 'd' of a `do` block, we want to find its matching
   " function without knowing its name.
 
   " First lets check if we have a builtin as that is simple.
-  if searchpair('\<\%(defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|case\|cond\|if\|unless\|for\|with\|test\|description\)\>', '', '\<do\>', 'Wb', {-> s:is_string_or_comment()})
+  if searchpair(known_macros, '', '\<do\>\|\<do:', 'Wb', {-> s:is_string_or_comment()})
     " We're not going to do anything here
     "
   " If not we're going to check if we have either a paren block or a single
   " argument list, tuple, or map.  This is the only other case like we will
   " cover for now.
-  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \<do\>', 'Wb', line('.'))
+  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \%(\<do\>\|\<do:\)', 'Wb', line('.'))
     " We're multiline which means we can skip right to the line that has our
     " function call!  Again, this is thanks to Elixir's syntax rules that you
     " cannot have whitespace between a function call and its opening paren.
@@ -794,6 +799,7 @@ function! s:find_function()
     else
       return [0, 0]
     endif
+
     call searchpair(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
   endif
 
@@ -811,7 +817,7 @@ function! s:textobj_def(keyword, inner, include_meta) abort
     let known_annotations = join([known_annotations, user_annotations], '\|')
   endif
 
-  let Skip = {-> s:cursor_syn_name() =~ 'Atom\|String\|Comment' || s:is_lambda()}
+  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
@@ -823,20 +829,23 @@ function! s:textobj_def(keyword, inner, include_meta) abort
 
   let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
   let func_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
-  let do_pos = searchpos('\<do\>', 'W', 0, 0, Skip)
-  let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+    " call winrestview(view)
+  let do_pos = searchpos('\<do\>\|\<do:', 'W', 0, 0, Skip)
+  let end_pos = s:find_function_end()
 
   if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, end_pos) && do_pos != [0, 0]
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
+    let is_keyword_do = expand('<cWORD>') ==# 'do:'
     let [end_lnr, end_col] = end_pos
   else
     call winrestview(view)
     normal! wb
 
     let func_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
-    let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
+    let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
+    let is_keyword_do = expand('<cWORD>') ==# 'do:'
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let [end_lnr, end_col] = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+    let [end_lnr, end_col] = s:find_function_end()
   endif
 
   if func_pos == [0, 0]
@@ -853,8 +862,6 @@ function! s:textobj_def(keyword, inner, include_meta) abort
 
   call setpos('.', [0, start_lnr, start_col, 0])
 
-  let start_col = 0
-
   " Look for the meta
   if !a:inner && a:include_meta
     if !s:is_blank(getline('.'))
@@ -870,10 +877,43 @@ function! s:textobj_def(keyword, inner, include_meta) abort
     let [start_lnr, start_col] = [line('.'), col('.')]
   endif
 
-  let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
+  if a:inner && is_keyword_do
+    let start_col = do_pos[1] + 3
+  else
+    let [start_lnr, start_col, end_lnr, end_col] = s:adjust_block_region(a:inner, start_lnr, start_col, end_lnr, end_col)
+  endif
+
+  " echom [start_lnr, start_col, end_lnr, end_col]
 
   let view.lnum = start_lnr
   call s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
+endfunction
+
+function! s:find_function_end() abort
+  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
+
+  if expand('<cWORD>') ==# 'do:'
+    call search('(\|{\|\[', 'W', line('.'))
+
+    if expand('<cWORD>') ==# 'do:'
+      normal! $
+      return [line('.'), col('.')]
+    else
+      let open_char = s:cursor_char()
+
+      if open_char == '('
+        let close_char = ')'
+      elseif open_char == '[' 
+        let close_char = ']'
+      elseif open_char == '{' 
+        let close_char = '}'
+      endif
+
+      return searchpairpos(open_char, '', close_char, 'W', Skip)
+    endif
+  else
+    return searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+  end
 endfunction
 
 function! s:check_for_meta(known_annotations)
