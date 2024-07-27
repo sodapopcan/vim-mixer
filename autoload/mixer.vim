@@ -318,9 +318,9 @@ function! s:init_mix_project(mix_file) abort
     let b:mix_project = g:mix_projects[project_root]
 
     call s:populate_mix_tasks()
+  else
+    let b:mix_project = g:mix_projects[project_root]
   endif
-
-  let b:mix_project = g:mix_projects[project_root]
 
   autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
