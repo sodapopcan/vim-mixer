@@ -275,6 +275,10 @@ function! s:empty_parens()
   return is_empty
 endfunction
 
+function! s:get_cursor_pos()
+  return [line('.'), col('.')]
+endfunction
+
 function! s:get_term(cmd)
   let save_i = @i
   exec 'normal! "i'.a:cmd
@@ -335,14 +339,14 @@ function! s:find_first_function_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
   while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
 
-  return [line('.'), col('.')]
+  return s:get_cursor_pos()
 endfunction
 
 function! s:find_last_function_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
   while search('def\%(\l\+\)\?\s\+'.func_name, 'W') | endwhile
 
-  return [line('.'), col('.')]
+  return s:get_cursor_pos()
 endfunction
 
 function! s:get_func_name(def_pos) abort
@@ -362,7 +366,7 @@ function! s:find_function_end() abort
 
     if expand('<cWORD>') ==# 'do:'
       normal! $
-      return [line('.'), col('.')]
+      return s:get_cursor_pos()
     else
       let open_char = s:cursor_char()
       let close_char = s:get_pair(open_char)
@@ -717,16 +721,16 @@ function!  s:in_render() abort
     return 0
   end
 
-  let start_pos = [line('.'), col('.')]
+  let start_pos = s:get_cursor_pos()
 
   call search('\<do\>', 'W', 0, 0, Skip)
 
   call searchpair('\<do\>', '', '\<end\>', 'W', Skip)
-  let end_pos = [line('.'), col('.')]
+  let end_pos = s:get_cursor_pos()
 
   call winrestview(view)
 
-  return s:in_range([line('.'), col('.')], start_pos, end_pos)
+  return s:in_range(s:get_cursor_pos(), start_pos, end_pos)
 endfunction
 
 function! s:R(type) abort
@@ -849,7 +853,7 @@ function! s:textobj_block(inner) abort
 
   normal! ^
 
-  let cursor_origin = [line('.'), col('.')]
+  let cursor_origin = s:get_cursor_pos()
   let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
 
   let func_pos = s:find_function()
@@ -897,7 +901,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   normal! ^
 
-  let cursor_origin = [line('.'), col('.')]
+  let cursor_origin = s:get_cursor_pos()
 
   if s:check_for_meta(known_annotations) || s:is_blank()
     call search(keyword, 'W', 0, 0, Skip)
@@ -948,7 +952,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
     while search(known_annotations, 'Wb', stopline) | endwhile
 
-    let start_pos = [line('.'), col('.')]
+    let start_pos = s:get_cursor_pos()
   endif
 
   if a:inner && first_head_has_keyword_do
@@ -969,7 +973,7 @@ function! s:textobj_map(inner) abort
   let Skip = {-> s:is_string_or_comment()}
 
   let view = winsaveview()
-  let cursor_origin = [line('.'), col('.')]
+  let cursor_origin = s:get_cursor_pos()
   let open_regex = '%\%([a-zA-Z.]\+\)\?{'
 
   if s:cursor_in_gutter()
@@ -1119,7 +1123,7 @@ function! s:textobj_sigil(inner)
   if a:inner
     call search(open, 'W', 0, 0, Skip)
     exec "normal! ".(len(open))."\<space>"
-    let [start_lnr, start_col] = [line('.'), col('.')]
+    let [start_lnr, start_col] = s:get_cursor_pos()
     call search(escape(close, '"'), 'W', 0, 0, Skip)
     exec "normal! 1\<left>"
   else
@@ -1133,7 +1137,7 @@ function! s:textobj_sigil(inner)
     call search('\a\+', 'We')
   endif
 
-  let [end_lnr, end_col] = [line('.'), col('.')]
+  let [end_lnr, end_col] = s:get_cursor_pos()
 
   call setpos("'<", [0, start_lnr, start_col, 0])
   call setpos("'>", [0, end_lnr, end_col, 0])
