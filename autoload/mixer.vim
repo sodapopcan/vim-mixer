@@ -42,23 +42,24 @@ endfunction
 
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
-function! s:in_range(lnr, col, start, end) abort
+function! s:in_range(pos, start, end) abort
+  let [lnr, col] = a:pos
   let [start_lnr, start_col] = a:start
   let [end_lnr, end_col] = a:end
 
-  if a:lnr > start_lnr && a:lnr < end_lnr
+  if lnr > start_lnr && lnr < end_lnr
     return 1
   endif
 
-  if a:lnr == start_lnr && a:lnr == end_lnr
-    return a:col >= start_col && a:col <= end_col
+  if lnr == start_lnr && lnr == end_lnr
+    return col >= start_col && col <= end_col
   endif
 
-  if a:lnr == start_lnr && a:col >= start_col
+  if lnr == start_lnr && col >= start_col
     return 1
   endif
 
-  if a:lnr == end_lnr && a:col <= end_col
+  if lnr == end_lnr && col <= end_col
     return 1
   endif
 
@@ -725,7 +726,7 @@ function!  s:in_render() abort
 
   call winrestview(view)
 
-  return s:in_range(line('.'), col('.'), start_pos, end_pos)
+  return s:in_range([line('.'), col('.')], start_pos, end_pos)
 endfunction
 
 function! s:R(type) abort
@@ -848,12 +849,12 @@ function! s:textobj_block(inner) abort
 
   normal! ^
 
-  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+  let cursor_origin = [line('.'), col('.')]
   let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
 
   let func_pos = s:find_function()
 
-  if s:in_range(cursor_origin_lnr, cursor_origin_col, func_pos, do_pos) && do_pos != [0, 0]
+  if s:in_range(cursor_origin, func_pos, do_pos) && do_pos != [0, 0]
     call setpos('.', [0, do_pos[0], do_pos[1], 0])
     let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
   else
@@ -896,7 +897,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   normal! ^
 
-  let [cursor_origin_lnr, cursor_origin_col] = [line('.'), col('.')]
+  let cursor_origin = [line('.'), col('.')]
 
   if s:check_for_meta(known_annotations) || s:is_blank()
     call search(keyword, 'W', 0, 0, Skip)
@@ -906,7 +907,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   let do_pos = searchpos('\<do\>\|\<do:', 'W', 0, 0, Skip)
   let end_pos = s:find_function_end()
 
-  if !s:in_range(cursor_origin_lnr, cursor_origin_col, def_pos, end_pos) || do_pos == [0, 0]
+  if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == [0, 0]
     call winrestview(view)
     normal! wb
 
