@@ -948,7 +948,8 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   endif
 
   if a:inner && first_head_has_keyword_do
-    let start_pos[1] = do_pos[1] + 3
+    " Clear `do:` When switching to insert, leave a space after it otherwise do not.
+    let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
     let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
   endif
