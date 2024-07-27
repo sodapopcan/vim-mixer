@@ -672,12 +672,12 @@ function! s:textobj_select_obj(view, start_lnr, start_col, end_lnr, end_col)
   endif
 endfunction
 
-nnoremap <silent> <Plug>(ElixirExRestoreView)
+nnoremap <silent> <Plug>(MixerRestoreViewInsert)
       \ :call winrestview(g:mixer_view)<bar>
       \ :unlet g:mixer_view<bar>
       \ :normal! ^<cr>
 
-function! MixerRestorView() abort
+function! MixerRestorViewNormal() abort
   call winrestview(g:mixer_view)
   unlet g:mixer_view
 
