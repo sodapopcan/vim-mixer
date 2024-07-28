@@ -650,7 +650,7 @@ function! MixerGenComplete(A, L, P) abort
 endfunction
 
 function! s:get_gen_tasks() abort
-  let Package = {task -> matchstr(task, '^\l\+')}
+  let PackageName = {task -> matchstr(task, '^\l\+')}
   let gen_tasks = {}
   let dup_keys = []
   let all_tasks = b:mix_project.tasks
@@ -659,14 +659,14 @@ function! s:get_gen_tasks() abort
     let task_key = matchstr(task, '\.gen\.\zs.*$')
 
     if has_key(gen_tasks, task_key) || s:includes(dup_keys, task_key)
-      let package_name = Package(task)
+      let package_name = PackageName(task)
       let dup_key = task_key
       let task_key = task_key."-".package_name
 
       if !s:includes(dup_keys, dup_key)
         let dup_task = gen_tasks[dup_key]
         unlet gen_tasks[dup_key]
-        let new_key = dup_key."-".Package(dup_task)
+        let new_key = dup_key."-".PackageName(dup_task)
         let gen_tasks[new_key] = dup_task
         call add(dup_keys, dup_key)
       endif
