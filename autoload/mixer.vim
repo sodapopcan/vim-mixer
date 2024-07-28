@@ -809,7 +809,7 @@ endfunction
 nnoremap <silent> <Plug>(MixerRestorView)
       \ :call winrestview(g:mixer_view)<bar>
       \ :unlet g:mixer_view<bar>
-      \ :normal! ^<cr>
+      \ :normal! ==^<cr>
 
 function! s:adjust_whitespace(start_pos)
   let [start_lnr, start_col] = a:start_pos
