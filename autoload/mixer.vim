@@ -853,6 +853,7 @@ function! s:adjust_block_region(inner, start_pos, end_pos) abort
   return [[start_lnr, start_col], [end_lnr, end_col]]
 endfunction
 
+
 " Text Objects: block {{{1
 
 function! s:textobj_block(inner) abort
