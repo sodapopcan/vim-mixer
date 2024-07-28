@@ -157,16 +157,13 @@ COMMANDS                                    *mixer-commands*
 :Mix[!] {flags} {args}
                     Run a mix command with autocomplete.
 
-                    It will use an async library, if available.  Currently,
+                    It will use an async library if available.  Currently,
                     it's only aware of |dispatch| though PRs for others are
                     welcome (see: https://github.com/sodapopcan/vim-mixer).
-
                     When called with a bang [!] it will call `:MyAsyncRunner!`
-                    if that command exists.  When called with two bangs [!!]
-                    (the second ! is really just the first argument) it will
-                    be be called syncronously.
+                    if supported.
 
-                    You can specifify the environment like so:
+                    You can specified the environment like so:
 >
                       :Mix -test mix compile
 <
@@ -182,8 +179,19 @@ COMMANDS                                    *mixer-commands*
                     Assuming your default env is dev, this will run:
 >
                       $ MIX_ENV=dev mix compile && MIX_ENV=test mix compile
-
 <
+                    If you wish to run a command synchronously using :Mix you
+                    may do so like this:
+>
+                      :Mix ! deps.get
+<
+                    Due to how vim commands are parsed, you can also call it
+                    like this:
+>
+                      :Mix!! deps.get
+<
+
+
                                             *mixer-:Deps* *:Deps*
 :{range}Deps[!] {task} {args}
                     A wrapper around `mix deps` with some added behaviour.

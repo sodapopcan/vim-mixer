@@ -465,21 +465,23 @@ function! s:run_mix_command(bang, cmd, args) abort
 
   let args = copy(a:args)
 
-  for arg in a:args
-    if (index == 0 || len(envs)) && arg =~ '^+'
-      if !a:bang
-        call add(envs, arg[1:])
-      endif
+  let async = 1
+  if args[0] ==# '!'
+    let async = 0
+    let args = args[1:]
+  end
 
+  let args_rest = copy(args)
+
+  for arg in args_rest
+    if (index == 0 || len(envs)) && arg =~ '^+'
       call remove(args, 0)
     else
       break
     endif
   endfor
 
-  if a:bang
-    let envs = ["dev", "test"]
-  elseif empty(envs)
+  if empty(envs)
     call add(envs, 'dev')
   endif
 
@@ -487,18 +489,24 @@ function! s:run_mix_command(bang, cmd, args) abort
     call insert(args, a:cmd, 0)
   endif
 
-  let commands = []
+  let mix_tasks = []
 
   for env in envs
-    call add(commands, "MIX_ENV=".env." mix ".join(args, " "))
+    call add(mix_tasks, "MIX_ENV=".env." mix ".join(args, " "))
   endfor
 
-  let command = join(commands, " && ")
+  let mix_command = join(mix_tasks, " && ")
 
-  if s:command_exists("Dispatch")
-    exec "Dispatch" command
+  let async_cmd = get(g:, 'mixer_async_command', 'Dispatch')
+
+  if s:command_exists(async_cmd) && async
+    if a:bang
+      let async_cmd = async_cmd.'!'
+    endif
+
+    exec async_cmd mix_command
   else
-    call system(command)
+    exec "!" mix_command
   endif
 endfunction
 
