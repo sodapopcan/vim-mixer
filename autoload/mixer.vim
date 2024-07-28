@@ -303,7 +303,11 @@ endfunction
 
 " Syntax helpers - Functions {{{1
 
-function! s:find_function()
+function! s:find_do(flags) abort
+  return searchpos('\<do\>:\?', a:flags, 0, 0, {-> s:is_string_or_comment()})
+endfunction
+
+function! s:find_do_block_head(flags)
   let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
 
   let known_macros = '\<\%('.
@@ -311,38 +315,36 @@ function! s:find_function()
         \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
         \ '\)\>'
 
-  " With out cursor on the 'd' of a `do` block, we want to find its matching
-  " function without knowing its name.
+  normal! gE
 
-  " First lets check if we have a builtin as that is simple.
-  if searchpair(known_macros, '', '\<do\>\|\<do:', 'Wb', {-> s:is_string_or_comment()})
-    " We're not going to do anything here
-    "
-  " If not we're going to check if we have either a paren block or a single
-  " argument list, tuple, or map.  This is the only other case like we will
-  " cover for now.
-  elseif search('^\%(\s\+\)\?\zs\%()\|]\|}\) \%(\<do\>\|\<do:\)', 'Wb', line('.'))
-    " We're multiline which means we can skip right to the line that has our
-    " function call!  Again, this is thanks to Elixir's syntax rules that you
-    " cannot have whitespace between a function call and its opening paren.
+  if s:cursor_char() ==# ','
+    normal! b
+  endif
+
+  if s:cursor_char() =~ ')\|}\|\]'
     let close_char = s:cursor_char()
     let open_char = s:get_pair(close_char)
 
     call searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'Wb', {-> s:is_string_or_comment()})
   endif
 
+  " TODO: Account for assignment
   normal! ^
-  return [line('.'), 0]
+
+  let func_pos = s:get_cursor_pos()
+
+  return func_pos
 endfunction
 
-function! s:find_first_function_head(def_pos) abort
+" TODO: Take arity into account.
+function! s:find_first_func_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
   while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
 
   return s:get_cursor_pos()
 endfunction
 
-function! s:find_last_function_head(def_pos) abort
+function! s:find_last_func_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
   while search('def\%(\l\+\)\?\s\+'.func_name, 'W') | endwhile
 
@@ -358,7 +360,7 @@ function! s:get_func_name(def_pos) abort
 endfunction
 
 " This functions assumes the cursor is on the `d` of a `do` or `do:`
-function! s:find_function_end() abort
+function! s:find_end_pos() abort
   let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
 
   if expand('<cWORD>') ==# 'do:'
@@ -374,7 +376,7 @@ function! s:find_function_end() abort
       return searchpairpos(escape(open_char, '['), '', escape(close_char, ']'), 'W', Skip)
     endif
   else
-    return searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+    return searchpairpos('\<do\>:\@!', '', '\<end\>', 'W', Skip)
   end
 endfunction
 
@@ -857,42 +859,62 @@ endfunction
 " Text Objects: block {{{1
 
 function! s:textobj_block(inner) abort
-  let Skip = {-> s:cursor_syn_name() =~ 'Tuple\|String\|Comment' || s:is_lambda()}
   let view = winsaveview()
 
-  normal! ^
+  " First check if we are between a function call and a `do`
+  let origin = s:get_cursor_pos()
+  let do_pos = s:find_do('Wc')
 
-  let cursor_origin = s:get_cursor_pos()
-  let do_pos = searchpos('\<do\>', 'Wc', 0, 0, Skip)
+  let func_pos = s:find_do_block_head('Wb')
 
-  let func_pos = s:find_function()
-
-  if s:in_range(cursor_origin, func_pos, do_pos) && do_pos != [0, 0]
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+  if s:in_range(origin, func_pos, do_pos)
+    call cursor(do_pos)
+    let end_pos = s:find_end_pos()
   else
-    call winrestview(view)
-    normal! wb
+    call cursor(origin)
 
-    let do_pos = searchpos('\<do\>', 'Wcb', 0, 0, Skip)
-    let func_pos = s:find_function()
-    call setpos('.', [0, do_pos[0], do_pos[1], 0])
-    let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', Skip)
+    let do_pos = s:find_do('Wb')
+
+    if do_pos == [0, 0]
+      return winrestview(view)
+    endif
+
+    let func_pos = s:find_do_block_head('Wb')
+
+    call cursor(do_pos)
+    let end_pos = s:find_end_pos()
+  endif
+
+  if !s:in_range(origin, func_pos, end_pos)
+    call cursor(func_pos)
+
+    let do_pos = s:find_do('Wb')
+    let func_pos = s:find_do_block_head('Wbc')
+    call cursor(do_pos)
+    let end_pos = s:find_end_pos()
   endif
 
   if a:inner
     let start_pos = do_pos
-    let start_pos[1] = 1
   else
     let start_pos = func_pos
   endif
 
-  let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
+  call cursor(do_pos)
+  let do = expand('<cWORD>')
+
+  if a:inner && do ==# 'do:'
+    " Clear `do:` When switching to insert, leave a space after it otherwise do not.
+    let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
+  else
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
+  endif
 
   let view.lnum = start_pos[0]
 
   call s:textobj_select_obj(view, start_pos, end_pos)
 endfunction
+
 
 " Text Objects: def {{{1
 
@@ -912,13 +934,13 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   let cursor_origin = s:get_cursor_pos()
 
-  if s:check_for_meta(known_annotations) || s:is_blank()
+  if s:check_for_meta(known_annotations)
     call search(keyword, 'W', 0, 0, Skip)
   endif
 
   let def_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
-  let do_pos = searchpos('\<do\>\|\<do:', 'W', 0, 0, Skip)
-  let end_pos = s:find_function_end()
+  let do_pos = searchpos('\<do\>:\?', 'W', 0, 0, Skip)
+  let end_pos = s:find_end_pos()
 
   if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == [0, 0]
     call winrestview(view)
@@ -930,8 +952,8 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   if def_pos == [0, 0] | return winrestview(view) | endif
 
   if !a:inner && a:include_annotations
-    let def_pos = s:find_first_function_head(def_pos)
-    let do_pos = searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
+    let def_pos = s:find_first_func_head(def_pos)
+    let do_pos = searchpos('\<do\>:\?', 'Wc', 0, 0, Skip)
   endif
 
   call cursor(do_pos)
@@ -939,13 +961,13 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   let first_head_has_keyword_do = expand('<cWORD>') ==# 'do:'
 
   if !a:inner && a:include_annotations
-    call s:find_last_function_head(def_pos)
+    call s:find_last_func_head(def_pos)
   endif
 
-  call searchpos('\<do\>\|\<do:', 'Wc', 0, 0, Skip)
+  call searchpos('\<do\>:\?', 'Wc', 0, 0, Skip)
 
   let start_pos = def_pos
-  let end_pos = s:find_function_end()
+  let end_pos = s:find_end_pos()
 
   call cursor(def_pos)
 
@@ -970,7 +992,6 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   else
     let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
   endif
-
 
   let view.lnum = start_pos[0]
   call s:textobj_select_obj(view, start_pos, end_pos)
