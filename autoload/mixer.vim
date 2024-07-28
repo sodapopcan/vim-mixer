@@ -889,7 +889,7 @@ function! s:textobj_block(inner) abort
 
   let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
 
-  let view.lnum = start_lnr
+  let view.lnum = start_pos[0]
 
   call s:textobj_select_obj(view, start_pos, end_pos)
 endfunction
