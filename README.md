@@ -69,6 +69,11 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
   - `:Evendor`: Edit files in `assets/vendor`
   - `:Etailwind`: Edit `assets/tailwind.config.js`
 
+## TODO
+- [ ] Fix "ci" going into insert mode when no textobj is found
+- [ ] Detect umbrella projects
+- [ ] Detect nested projects
+
 ## License
 
 Distributed under the same terms as Vim itself. See `:help license`.
