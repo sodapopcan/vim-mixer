@@ -279,6 +279,10 @@ function! s:get_cursor_pos()
   return [line('.'), col('.')]
 endfunction
 
+function! s:get_prev_line() abort
+  return getline(line('.') - 1)
+endfunction
+
 function! s:get_term(cmd)
   let save_i = @i
   exec 'normal! "i'.a:cmd
@@ -308,32 +312,18 @@ function! s:find_do(flags) abort
 endfunction
 
 function! s:find_do_block_head(flags)
-  let Skip = {-> s:cursor_outer_syn_name() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)'}
+  let Skip = {->
+        \ s:cursor_term() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)' ||
+        \ expand('<cword>') ==# 'when' ||
+        \ s:get_prev_line() =~ '\%((\|{\|\[\|,\|<-\)$'
+        \ }
 
-  let known_macros = '\<\%('.
-        \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|defn\|defnp\|'.
-        \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
-        \ '\)\>'
+  " let known_macros = '\<\%('.
+  "       \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|defn\|defnp\|'.
+  "       \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
+  "       \ '\)\>'
 
-  normal! gE
-
-  if s:cursor_char() ==# ','
-    normal! b
-  endif
-
-  if s:cursor_char() =~ ')\|}\|\]'
-    let close_char = s:cursor_char()
-    let open_char = s:get_pair(close_char)
-
-    call searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'Wb', {-> s:is_string_or_comment()})
-  endif
-
-  " TODO: Account for assignment
-  normal! ^
-
-  let func_pos = s:get_cursor_pos()
-
-  return func_pos
+  return searchpos('\%(\<\w\+\>\%(\s\)\)\%(=\|<\|>\|\!\|(\)\@!', 'Wb', 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
@@ -377,7 +367,10 @@ function! s:find_end_pos(do_pos) abort
       return searchpairpos(escape(open_char, '['), '', escape(close_char, ']'), 'W', Skip)
     endif
   else
-    return searchpairpos('\<do\>:\@!', '', '\<end\>', 'W', Skip)
+    let pos = searchpairpos('\<do\>:\@!', '', '\<end\>', 'W', Skip)
+    let pos[1] += 2
+
+    return pos
   end
 endfunction
 
