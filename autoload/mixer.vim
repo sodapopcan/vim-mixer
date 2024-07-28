@@ -542,7 +542,7 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
     exec "normal! z\<cr>"
 
     return
-  elseif a:0 && a:1 == '-add'
+  elseif a:0 && a:1 == 'add'
     if a:0 == 1
       echom "What do you want me to add?" | return
     endif
