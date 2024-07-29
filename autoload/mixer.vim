@@ -147,20 +147,17 @@ endfunction
 " Init: Mappings {{{1
 
 function mixer#define_mappings()
-  vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
-  vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
-  onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 1)<cr>
-  onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 1)<cr>
+  let defregex = 'defp\?\|defmacrop\?\|defnp\?'
 
-  vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
-  vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
-  onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 1, 0)<cr>
-  onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('def\|defp\|defmacro\|defmacrop', 0, 0)<cr>
+  exec "vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
+  exec "onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
+  exec "onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
 
-  vnoremap <silent> <buffer> iM :\<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
-  vnoremap <silent> <buffer> aM :\<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
-  onoremap <silent> <buffer> iM :\<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
-  onoremap <silent> <buffer> aM :\<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
+  vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
+  vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
+  onoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
+  onoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
 
   vnoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
   vnoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
