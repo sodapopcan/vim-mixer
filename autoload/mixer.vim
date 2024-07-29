@@ -154,6 +154,11 @@ function mixer#define_mappings()
   exec "onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
   exec "onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
 
+  exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+
   vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
   vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
   onoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
