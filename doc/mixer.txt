@@ -43,6 +43,7 @@ Here is an overview:
     Elixir construct    | Text Object  (mneumonic/notes)
     --------------------+------------------------------------------------
     do/end blocks       | d  (do)
+    do/end blocks       | D  (targets context like assignment)
     def[p]/defmarco[p]  | f
     def[p]/defmacro[p]  | F  (targets annotations and all function heads)
     defmodule           | M
@@ -54,23 +55,27 @@ Here is an overview:
 
                     do/end blocks~
 id                                          *mixer-ie* *mixer-ae*
-ad                  A do/end block.  Currently brings "else" along with it.
-                    It work with keyword syntax as well along with different
-                    kinds of funky syntax like `do:` on its own line, `do:` on
-                    a new line, multiline `do: ()`, multiline `do: %{}`, and
-                    even multine `do: []` .
+ad
+iD
+aD                  A do/end block including function call.
 
-                    These target all the builtin macros/special forms and work
-                    well with them.  They are also designed to be general, so
-                    should work with most custom macros.
+                    Currently brings `else` along with it.
 
-                    Currently, with code written like so:
+                    A reasonable effort is made for these to be as general as
+                    possible and work with custom macros, not just the
+                    builtins.  They work with both `do`/`end` syntax as
+                    well as keyword (`do: ...`) syntax.
+
+                    The "aD" and "iD" versions will take extra context into
+                    account.  For exampe, in the following code with the
+                    cursor represented by `*`:
 >
-                      let foo = if condition? do
-                        bar()
-                      end
+                      let foo =
+                        if condition? do
+                          bar(*)
+                        end
 <
-                    the "let foo = " will be included in "ad".
+                    typing `daD` will include the `let foo =` line.
 
 
                     function and macro definitions~
@@ -80,17 +85,15 @@ iF
 aF                  A function definition including `def`, `defp`, `defmacro`, and
                     `defmacrop` as well as `defn` for Nx'ers.
 
-                    "aF" will include any function annotations.  Annotations
-                    are considered from a small list of well-known ones
-                    - `@doc`, `@spec`, `@tag`, and `@requirements` - as well
-                    as LiveView's `attr` and `slot` macros.  Otherwise,
-                    anything between these and the function head and anything
-                    touching the function head (no blank lines) will be
-                    included.
+                    "aF" will include any function annotations.  A small list
+                    of well-known annotations are considered (definitively:
+                    `@doc`, `@spec`, `@tag`, and `@requirements`) as well as
+                    LiveView's `attr` and `slot` macros.  Otherwise, anything
+                    between these and the function head and anything touching
+                    the function head (no blank lines) will be included.
 
-                    While this shouldn't be necessary, it is possible to add
-                    your own by setting `g:mixer_known_annotations` to
-                    a regex.  For example:
+                    If necessary, it is possible to add your own by setting
+                    `g:mixer_known_annotations` to a regex.  For example:
 >
                       let g:mixer_known_annotations =
                         \ '\<my_macro\>\|@my_attribute\>'
@@ -103,10 +106,10 @@ aM                  A module definition.
 
                     maps and structs~
 im                                          *mixer-im* *mixer-am*
-am
-Im
-Am                  A map or struct.  The rather unconvention "Im" and "Am"
-                    versions will target the most outer map or struct.
+am                  A map or struct.
+
+                    With a count of `0`, as in `0yam`, this will target the
+                    most outter map.
 
 
                     sigils~
