@@ -312,18 +312,9 @@ function! s:find_do(flags) abort
 endfunction
 
 function! s:find_do_block_head(flags)
-  let Skip = {->
-        \ s:cursor_term() =~ '\%(Map\|List\|String\|Comment\|Atom\|Variable\)' ||
-        \ expand('<cword>') ==# 'when' ||
-        \ s:get_prev_line() =~ '\%((\|{\|\[\|,\|<-\)$'
-        \ }
+  let Skip = {-> expand('<cword>') ==# 'when' }
 
-  " let known_macros = '\<\%('.
-  "       \ 'defmodule\|def\|defp\|defmacro\|defmacrop\|defprotocol\|defimpl\|defn\|defnp\|'.
-  "       \ 'case\|cond\|if\|unless\|for\|with\|test\|description'.
-  "       \ '\)\>'
-
-  return searchpos('\%(\<\w\+\>\%(\s\)\)\%(=\|<\|>\|\!\|(\)\@!', 'Wb', 0, 0, Skip)
+  return searchpos('\%(\<\w\+\>\%(\s\)\)\%(=\|<\|>\|\!\|(\|\<do\>\)\@!', a:flags, 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
@@ -810,9 +801,10 @@ nnoremap <silent> <Plug>(MixerRestorView)
 function! s:adjust_whitespace(start_pos)
   let [start_lnr, start_col] = a:start_pos
 
-  if start_lnr > 1 && s:is_blank(getline(start_lnr - 1))
+  let start_line = getline(start_lnr)
+
+  if start_lnr > 1 && s:is_blank(getline(start_lnr - 1)) && start_col == 1
     let start_lnr -=1
-    let start_col = 1
   endif
 
   return [start_lnr, start_col]
