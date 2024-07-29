@@ -3,15 +3,15 @@
 
 " Utility {{{1
 
-function! s:sub(str, pat, rep) abort
+function! s:sub(str, pat, rep)
   return substitute(a:str, a:pat, a:rep, '')
 endfunction
 
-function! s:includes(list, member) abort
+function! s:includes(list, member)
   return index(a:list, a:member) != -1
 endfunction
 
-function! s:file_exists(glob) abort
+function! s:file_exists(glob)
   return !empty(glob(a:glob))
 endfunction
 
@@ -42,7 +42,7 @@ endfunction
 
 " Check if cursor is in range of two positions.
 " Positions are in the form of [line, col].
-function! s:in_range(pos, start, end) abort
+function! s:in_range(pos, start, end)
   let [lnr, col] = a:pos
   let [start_lnr, start_col] = a:start
   let [end_lnr, end_col] = a:end
@@ -86,7 +86,7 @@ function! s:_gather_output(collector, channel, result)
   call add(a:collector, a:result)
 endfunction
 
-function! s:command_exists(cmd) abort
+function! s:command_exists(cmd)
   return exists(":".a:cmd) == 2
 endfunction
 
@@ -303,13 +303,13 @@ let s:pairs = {
         \   ']': '[',
         \ }
 
-function! s:get_pair(delim) abort
+function! s:get_pair(delim)
   return get(s:pairs, a:delim, 0)
 endfunction
 
 " Syntax helpers - Functions {{{1
 
-function! s:find_do(flags) abort
+function! s:find_do(flags)
   return searchpos('\<do\>:\?', a:flags, 0, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|CharList'})
 endfunction
 
