@@ -143,6 +143,10 @@ function! mixer#init() abort
   endif
 endfunction
 
+function! s:unmapped(map, type)
+  return empty(maparg(a:map, a:type))
+endfunction
+
 
 " Init: Mappings {{{1
 
@@ -189,13 +193,60 @@ function mixer#define_mappings()
   onoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
   onoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
 
+  call s:define_argument_mappings()
+endfunction
+
+function! s:define_argument_mappings()
   if exists('g:loaded_sideways') && get(g:, 'mixer_enable_textobj_arg')
-    if empty(maparg('aa', 'x')) && empty(maparg('ia', 'o'))
+    if s:unmapped('aa', 'x') && s:unmapped('ia', 'o')
       omap aa <Plug>SidewaysArgumentTextobjA
       xmap aa <Plug>SidewaysArgumentTextobjA
       omap ia <Plug>SidewaysArgumentTextobjI
       xmap ia <Plug>SidewaysArgumentTextobjI
     endif
+
+    if exists('g:loaded_splitjoin') && s:unmapped('<aa', 'n') && s:unmapped('>aa', 'n')
+      nnoremap <aa :call <sid>arg_left(0)<cr>
+      nnoremap >aa :call <sid>arg_right(0)<cr>
+      nnoremap <ia :call <sid>arg_left(1)<cr>
+      nnoremap >ia :call <sid>arg_right(1)<cr>
+    endif
+  endif
+endfunction
+
+function! s:arg_left(inner)
+  if a:inner
+    call sideways#MoveLeft()
+  elseif !sideways#MoveLeft({'loop': 0})
+    call sj#Split()
+  endif
+endfunction
+
+function! s:arg_right(inner)
+  if a:inner
+    call sideways#MoveRight()
+  elseif sideways#MoveRight({'loop': 0})
+    return
+  endif
+
+  let curr_line = getline('.')
+  let prev_line = getline(line('.') - 1)
+  let next_line = getline(line('.') + 1)
+  let pipe_start = '^\%(\s*\)\?|>'
+
+  let on_func = curr_line =~ pipe_start && prev_line !~ pipe_start
+  let on_pipe_arg = curr_line !~ pipe_start && next_line =~ pipe_start
+
+  if on_pipe_arg || on_func 
+    if on_pipe_arg
+      normal! j
+    endif
+
+    normal! 0t(
+    let arg_pos = [line('.') - 1, col('.') - 1]
+
+    call sj#Join()
+    call cursor(arg_pos)
   endif
 endfunction
 
