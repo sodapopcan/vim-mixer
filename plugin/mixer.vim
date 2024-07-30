@@ -10,7 +10,6 @@ let g:loaded_mixer = 1
 augroup mixer
   autocmd!
   autocmd FileType elixir,eelixir call mixer#define_mappings()
-  autocmd FileType elixir,eelixir set makeprg=mix
   autocmd BufEnter * call mixer#init()
   autocmd CursorMoved *.ex call s:set_close_tag_file_type()
 augroup END
