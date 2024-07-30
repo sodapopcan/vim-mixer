@@ -262,7 +262,7 @@ function! s:cursor_char(...)
 endfunction
 
 function! s:cursor_syn_name()
-  return s:sub((synIDattr(synID(line('.'), col('.'), 0), "name")), '^elixir', '')
+  return s:sub(synIDattr(synID(line('.'), col('.'), 0), "name"), '^elixir', '')
 endfunction
 
 function! s:cursor_in_gutter()
