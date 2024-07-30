@@ -98,10 +98,6 @@ function! mixer#init() abort
     command -buffer -bang -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
   endif
 
-  if !s:command_exists("M")
-    command -buffer -bang -complete=custom,MixerMixComplete -nargs=* M call s:Mix(<bang>0, <f-args>)
-  endif
-
   let mix_file = findfile("mix.exs", ".;")
 
   if empty(mix_file)
