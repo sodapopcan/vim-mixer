@@ -271,15 +271,6 @@ function! s:cursor_in_gutter()
   return col('.') <= leading_whitespace_len
 endfunction
 
-" Move the cursor one character forward across newlines
-function! s:cursor_move_forward()
-  exec "normal! 1\<space>"
-endfunction
-
-function! s:cursor_move_back()
-  exec "normal! 1\<bs>"
-endfunction
-
 function! s:cursor_outer_syn_name()
   let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
   let terms = filter(terms, 'v:val !=# "elixirBlock"')
