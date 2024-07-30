@@ -1140,9 +1140,6 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
       \ :unlet b:mixer_start_col<cr>
 
 " Text Objects: sigil {{{1
-fun! V()
-  return s:cursor_syn_name()
-endfun
 
 function! s:textobj_sigil(inner)
   let Skip = {->
