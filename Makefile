@@ -1,10 +1,6 @@
 # Test and dist helpers
 
-t?=t
 test:
-	prove-vspec -d $(PWD) $(t)
+	cd test && vim -Nu vimrc -S test.vim && echo 'Success!' || echo 'Failure!'
 
-debug:
-	DEBUG=1 prove-vspec -d $(PWD) $(t)
-
-.PHONY: test debug
+.PHONY: test
