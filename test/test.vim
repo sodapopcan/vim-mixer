@@ -19,15 +19,18 @@ function! ParseLines(lines)
   return instructions
 endfunction!
 
-" function! GetBuf()
-"   let lines = []
+function! GetBuf()
+  let lines = []
 
-"   for lnr in range(1, line('$'))
-"     call add(getline(lnr))
-"   endfor
+  for lnr in range(1, line('$'))
+    call add(lines, getline(lnr))
+  endfor
 
-"   return lines
-" endfunction!
+  return lines
+endfunction!
+
+let tests = []
+let test_proto = {"file": "", "cmds": [], "cursor": []}
 
 for file in readdir('tests')
   let file = join(readfile('./tests/'.file), "\n")
@@ -41,13 +44,24 @@ for file in readdir('tests')
 
     new
     set ft=elixir
+
     call append(0, buffer)
+    normal Gdd
+
     for cursor in instructions.cursors
       call cursor(cursor)
 
+      let test = copy(test_proto)
+      let test.file = file
+      let test.cursor = cursor
+
       for cmd in instructions.cmds
+        call add(test.cmds, cmd)
         exec cmd
       endfor
+
+      echom GetBuf()
+      echom instructions.expected
     endfor
   endfor
 
