@@ -851,6 +851,10 @@ function! s:adjust_whitespace(start_pos)
 endfunction
 
 function! s:adjust_block_region(inner, start_pos, end_pos) abort
+  if v:operator ==# 'c' && !a:inner
+    return [a:start_pos, a:end_pos]
+  endif
+
   let [start_lnr, start_col] = a:start_pos
   let [end_lnr, end_col] = a:end_pos
 
