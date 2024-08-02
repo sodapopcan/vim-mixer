@@ -48,10 +48,11 @@ for file in readdir('tests')
 
       call append(0, buffer)
 
-      normal Gdd
+      $d_
       call cursor(cursor)
 
       for cmd in instructions.cmds
+        let cmd = escape(cmd, '<')
         exec cmd
       endfor
 
@@ -63,7 +64,7 @@ for file in readdir('tests')
         call add(fails, fail)
       endif
 
-      close!
+      bwipe!
     endfor
   endfor
 endfor
