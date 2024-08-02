@@ -351,10 +351,32 @@ function! s:find_do(flags)
   return searchpos('\<do\>:\?', a:flags, 0, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|CharList'})
 endfunction
 
-function! s:find_do_block_head(flags)
-  let Skip = {-> expand('<cword>') ==# 'when' }
+function! s:paren_in_range(do_pos)
+  if expand('<cWORD>') =~ '\<\k\+\>('
+    normal! f(
 
-  return searchpos('\%(\<\w\+\>\%(\s\)\)\%(=\|<\|>\|\!\|(\|\<do\>\)\@!', a:flags, 0, 0, Skip)
+    let open_pos = s:get_cursor_pos()
+
+    let pair_pos = searchpairpos('(', '', ')', 'Wn', {-> s:is_string_or_comment()})
+
+    normal! b
+
+    return s:in_range(a:do_pos, open_pos, pair_pos)
+  else
+    return 1
+  endif
+endfunction
+
+function! s:find_do_block_head(flags)
+  let do_pos = s:get_cursor_pos()
+
+  let Skip = {->
+        \ expand('<cword>') =~ '\<when\>\|\<in\>' ||
+        \ !s:paren_in_range(do_pos) ||
+        \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
+        \ }
+
+  return searchpos('\zs\%(\<\k\+\>\%(\s\|(\)\)'.'\%(=\|<\|>\|\!\|&\||\|\<when\>\|\<in\>\)\@!', a:flags, 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
@@ -415,6 +437,8 @@ function! s:check_for_meta(known_annotations)
         \ WORD =~ a:known_annotations
 endfunction
 
+" }}}
+" ----------- Mix --------
 " Mix: Project {{{1
 
 function! s:init_mix_project(mix_file) abort
