@@ -433,7 +433,7 @@ function! s:do_find_end() abort
   endif
 endfunction
 
-function! s:find_end_pos(do_pos) abort
+function! s:find_end_pos(func_pos, do_pos) abort
   call cursor(a:do_pos)
 
   let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda_end(a:do_pos)}
@@ -449,10 +449,12 @@ function! s:find_end_pos(do_pos) abort
           return s:get_cursor_pos()
         endif
       elseif s:cursor_char() ==# ')'
-        " let open_pos = searchpairpos('(', '', ')', 'Wbn', {-> s:is_string_or_comment()})
-        " if s:in_range(a:do_pos, open_pos, s:get_cursor_pos())
-          return s:get_cursor_pos()
-        " endif
+        let open_pos = searchpairpos('(', '', ')', 'Wbn', {-> s:is_string_or_comment()})
+        if open_pos[0] == a:func_pos[0] && open_pos[1] == a:func_pos[1] - 1
+          normal! h
+        endif
+
+        return s:get_cursor_pos()
       else
         return s:get_cursor_pos()
       endif
@@ -960,7 +962,7 @@ function! s:textobj_block(inner) abort
   let func_pos = s:find_do_block_head(do_pos, 'Wb')
 
   if s:in_range(origin, func_pos, do_pos)
-    let end_pos = s:find_end_pos(do_pos)
+    let end_pos = s:find_end_pos(func_pos, do_pos)
   else
     call cursor(origin)
 
@@ -972,7 +974,7 @@ function! s:textobj_block(inner) abort
 
     let func_pos = s:find_do_block_head(do_pos, 'Wb')
 
-    let end_pos = s:find_end_pos(do_pos)
+    let end_pos = s:find_end_pos(func_pos, do_pos)
   endif
 
   if !s:in_range(origin, func_pos, end_pos)
@@ -980,7 +982,7 @@ function! s:textobj_block(inner) abort
 
     let do_pos = s:find_do('Wb')
     let func_pos = s:find_do_block_head(do_pos, 'Wbc')
-    let end_pos = s:find_end_pos(do_pos)
+    let end_pos = s:find_end_pos(func_pos, do_pos)
   endif
 
   if a:inner
@@ -1030,7 +1032,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   let def_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
   let do_pos = s:find_do('W')
-  let end_pos = s:find_end_pos(do_pos)
+  let end_pos = s:find_end_pos(def_pos, do_pos)
 
   if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == [0, 0]
     call winrestview(view)
@@ -1057,7 +1059,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   let last_func_do_pos = s:find_do('Wc')
 
   let start_pos = def_pos
-  let end_pos = s:find_end_pos(last_func_do_pos)
+  let end_pos = s:find_end_pos(def_pos, last_func_do_pos)
 
   call cursor(def_pos)
 
