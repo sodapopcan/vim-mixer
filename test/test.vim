@@ -34,7 +34,7 @@ let fail_proto = {"file": "", "lnr": 0, "message": "", "cmds": [], "cursor": []}
 
 for file in readdir('tests')
   let contents = join(readfile('./tests/'.file), "\n")
-  let testdata = split(contents, '#===')
+  let testdata = split(contents, '#@@@')
 
   let buffer = split(testdata[0], "\n")
   let cases = testdata[1:]
