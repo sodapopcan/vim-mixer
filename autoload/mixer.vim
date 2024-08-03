@@ -397,10 +397,18 @@ function! s:get_func_name(def_pos) abort
   return func_name
 endfunction
 
+function! s:is_lambda_end(do_pos)
+  if expand('<cword>') ==# 'end'
+    return searchpair('\<fn\>', '', '\<end\>', 'Wbn', {-> s:is_string_or_comment()}, a:do_pos[0])
+  endif
+
+  return 0
+endfunction
+
 function! s:find_end_pos(do_pos) abort
   call cursor(a:do_pos)
 
-  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
+  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda_end(a:do_pos)}
 
   if expand('<cWORD>') ==# 'do:'
     call search('(\|{\|\[', 'W', line('.'))
