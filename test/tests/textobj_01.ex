@@ -34,6 +34,7 @@ defmodule Foo do
   end
 end
 #===
+## Replaces around a function
 #~ normal caf"New text"
 #.  3, 1
 #%

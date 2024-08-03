@@ -45,7 +45,7 @@ for file in readdir('tests')
     let lnr += len(instructions)
 
     for cursor in instructions.cursors
-      let lnr += 1
+      let lnr += len(instructions)
 
       new
       set ft=elixir
@@ -65,7 +65,7 @@ for file in readdir('tests')
       if GetBuf() != expected
         let fail = copy(fail_proto)
         let fail.file = file
-        let fail.lnr = lnr + 1
+        let fail.lnr = lnr
         let fail.message = getline(lnr + 1)
         let fail.cmds = instructions.cmds
         let fail.cursor = cursor
