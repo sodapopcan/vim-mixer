@@ -6,16 +6,17 @@ License: Same terms as Vim itself (see |license|)
 
 TABLE OF CONTENTS                           *mixer*
 
-INTRODUCTION .............................| |mixer-introduction|
-TEXT OBJECTS .............................| |mixer-text-objects|
-  * Maps .................................| |mixer-maps|
-  * Functions ............................| |mixer-functions|
-  * Sigils ...............................| |mixer-sigils|
-  * Comments .............................| |mixer-comments|
-  * options ..............................| |mixer-text-objects-options|
-MIX ......................................| |mixer-mix|
-  * COMMANDS .............................| |mixer-mix-commands|
-  * Navigation ...........................| |mixer-navigation|
+INTRODUCTION                               |mixer-introduction|
+TEXT OBJECTS                               |mixer-text-objects|
+  # Do/end blocks                          |mixer-text-object-do-end|
+  * Functions                              |mixer-functions|
+  * Maps                                   |mixer-maps|
+  * Sigils                                 |mixer-sigils|
+  * Comments                               |mixer-comments|
+  * options                                |mixer-text-objects-options|
+MIX                                        |mixer-mix|
+  * Commands                               |mixer-mix-commands|
+  * Navigation                             |mixer-navigation|
 
 
 INTRODUCTION                                *mixer-introduction*
@@ -34,8 +35,8 @@ TEXT OBJECTS                                *mixer-text-objects*
 
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
-for the def* family of macros where the 'a' versions include meta like
-specs, docstrings, etc.
+for the def* family of macros where the 'a' versions include specs,
+docstrings, LiveView's `attr` and `slot`, as well as other meta.
 
 Here is an overview:
 
@@ -47,10 +48,9 @@ Here is an overview:
     def[p]/defmarco[p]  | f
     def[p]/defmacro[p]  | F  (targets annotations and all function heads)
     defmodule           | M
-    %{}/%Foo{}          | m  (map)
-    ~s""/etc.           | S  (note the uppercase)
+    %{}/%Fooi.Bar{}     | m  (maps and structs)
+    Sigils              | S  (note the uppercase)
     #/@doc """/etc      | c  (comment)
-    function arg        | a  (requires dependency, see below)
 
 
                     do/end blocks~
@@ -64,7 +64,7 @@ aD                  A do/end block including function call.
                     A reasonable effort is made for these to be as general as
                     possible and work with custom macros, not just the
                     builtins.  They work with both `do`/`end` syntax as
-                    well as keyword (`do: ...`) syntax.
+                    well as keyword syntax (`do: ...`).
 
                     The "aD" and "iD" versions will take extra context into
                     account.  For exampe, in the following code with the
@@ -166,16 +166,15 @@ COMMANDS                                    *mixer-commands*
                     When called with a bang [!] it will call `:MyAsyncRunner!`
                     if supported.
 
-                    You can specified the environment like so:
+                    You can specify the environment like so:
 >
                       :Mix -test mix compile
 <
-                    This works for any environment you have specified outside
-                    the standard "dev", "test", and "prod".  The `-` simply
+                    This works for any custom environment you have outside the
+                    standard "dev", "test", and "prod".  The `-` here simply
                     means "environment name."
 
-                    You can also additional environments onto the default like
-                    so:
+                    You can also add environments onto the default like so:
 >
                       :Mix +test mix compile
 <
@@ -183,8 +182,8 @@ COMMANDS                                    *mixer-commands*
 >
                       $ MIX_ENV=dev mix compile && MIX_ENV=test mix compile
 <
-                    If you wish to run a command synchronously using :Mix you
-                    may do so like this:
+                    If you are using an async runner and wish to run a command
+                    synchronously using :Mix you may do so like this:
 >
                       :Mix ! deps.get
 <
@@ -193,11 +192,13 @@ COMMANDS                                    *mixer-commands*
 >
                       :Mix!! deps.get
 <
+                    The only difference between this and `:!mix` is that you
+                    get autocomplete and environment flags.
 
 
                                             *mixer-:Deps* *:Deps*
 :{range}Deps[!] {task} {args}
-                    A wrapper around `mix deps` with some added behaviour.
+                    A wrapper around `:Mix deps` with some added behaviour.
 
                     When the current buffer is `mix.exs` and called without
                     {task} or {args} it will:
@@ -212,7 +213,7 @@ COMMANDS                                    *mixer-commands*
                     The standard tasks are available as well as a special
                     `add` task.  This allows you to add deps to your mix.exs
                     by placing your cursor above where you would like to add
-                    it and invoking (for example):
+                    it and invoking the following:
 >
                       :Deps add phoenix_test
 <
@@ -247,8 +248,9 @@ COMMANDS                                    *mixer-commands*
                     pretty rare that the deps you want to update will be right
                     next to each other but het, here we are... !
 
-                    This command's bang [!] behaviour works the same as it
-                    does for |:Mix|.
+                    This command's bang [!] behaviour  works the same as it
+                    does for |:Mix|.  The environment flags (`-` and `+`) are
+                    also available.
 
 
                                             *mixer-:Migrate* *:Migrate*
@@ -266,8 +268,9 @@ COMMANDS                                    *mixer-commands*
 >
                       :Migrate %
 <
-                    This command's bang [!] behaviour works the same as it
-                    does for |:Mix|.
+                    This command's bang [!] behaviour  works the same as it
+                    does for |:Mix|.  The environment flags (`-` and `+`) are
+                    also available.
 
                     Only available in a mix project with Ecto.
 
@@ -302,7 +305,5 @@ COMMANDS                                    *mixer-commands*
                       secret.guardian secret.phx
 <
                     Tasks are sorted by their non-namespaced names.
-
-                    Only available in a mix project.
 
   vim:tw=78:et:ft=help:norl:
