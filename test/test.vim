@@ -30,19 +30,23 @@ function! GetBuf()
 endfunction!
 
 let fails = []
-let fail_proto = {"file": "", "cmds": [], "cursor": []}
+let fail_proto = {"file": "", "lnr": 0, "message": "", "cmds": [], "cursor": []}
 
 for file in readdir('tests')
-  let file = join(readfile('./tests/'.file), "\n")
-  let testdata = split(file, '#===')
+  let contents = join(readfile('./tests/'.file), "\n")
+  let testdata = split(contents, '#===')
 
   let buffer = split(testdata[0], "\n")
   let cases = testdata[1:]
+  let lnr = len(buffer)
 
   for lines in cases
     let instructions = ParseLines(split(lines, "\n"))
+    let lnr += len(instructions)
 
     for cursor in instructions.cursors
+      let lnr += 1
+
       new
       set ft=elixir
 
@@ -56,9 +60,13 @@ for file in readdir('tests')
         exec cmd
       endfor
 
-      if GetBuf() != instructions.expected
+      let expected = instructions.expected
+
+      if GetBuf() != expected
         let fail = copy(fail_proto)
         let fail.file = file
+        let fail.lnr = lnr + 1
+        let fail.message = getline(lnr + 1)
         let fail.cmds = instructions.cmds
         let fail.cursor = cursor
         call add(fails, fail)
@@ -70,7 +78,8 @@ for file in readdir('tests')
 endfor
 
 if len(fails)
-  call writefile(['ya goofed'], '/dev/stderr', 'a')
+  let output = map(fails, {-> v:val.file.":".v:val.lnr." ".v:val.message})
+  call writefile(output, 'fails')
   cquit!
 else
   qall!

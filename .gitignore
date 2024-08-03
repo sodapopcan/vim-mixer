@@ -1,3 +1,2 @@
 /doc/tags
-/.vim-flavor
-Flavorfile.lock
+/test/fails
