@@ -258,7 +258,13 @@ function! s:cursor_char(...)
 endfunction
 
 function! s:cursor_syn_name()
-  return s:sub(synIDattr(synID(line('.'), col('.'), 0), "name"), '^elixir', '')
+  " return s:sub(synIDattr(synID(line('.'), col('.'), 0), "name"), '^elixir', '')
+  let names = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+  if len(names)
+    return s:sub(names[-1], 'elixir', '')
+  else
+    return ''
+  endif
 endfunction
 
 function! s:cursor_in_gutter()
@@ -371,7 +377,9 @@ function! s:find_do_block_head(do_pos, flags)
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
 
-  return searchpos('\zs\%(\<\k\+\>\%(\s\|(\)\)'.'\%(=\|<\|>\|\!\|&\||\|\<when\>\|\<in\>\)\@!', a:flags, 0, 0, Skip)
+  let func_call = '\%(\%(\%([A-Z][a-z\.]\+\)\+\)\?\<\k\+\>'
+
+  return searchpos('\zs'.func_call.'\%(\s\|(\)\)'.'\%(=\|<\|>\|\!\|&\||\|\<when\>\|\<in\>\)\@!', a:flags, 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
@@ -405,23 +413,50 @@ function! s:is_lambda_end(do_pos)
   return 0
 endfunction
 
+function! s:do_find_end() abort
+  call search('(\|{\|\[', 'W', line('.')) " Check if do block is a construct or function call
+
+  if expand('<cWORD>') =~ '\<\k\+\>:'
+    " Not a construct or function call
+    return search(')\|,\|\n', 'W', 0, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|Atom\|Sigil\|Number'})
+  else
+    let open_char = s:cursor_char()
+    let close_char = s:get_pair(open_char)
+
+    if searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'W', {-> s:is_string_or_comment()})
+      if getline('.')[col('.')] ==# ','
+        normal! l
+      endif
+    endif
+
+    return 1
+  endif
+endfunction
+
 function! s:find_end_pos(do_pos) abort
   call cursor(a:do_pos)
 
   let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda_end(a:do_pos)}
 
   if expand('<cWORD>') ==# 'do:'
-    call search('(\|{\|\[', 'W', line('.'))
-
-    if expand('<cWORD>') ==# 'do:'
-      normal! $
-      return s:get_cursor_pos()
-    else
-      let open_char = s:cursor_char()
-      let close_char = s:get_pair(open_char)
-
-      return searchpairpos(escape(open_char, '['), '', escape(close_char, ']'), 'W', Skip)
-    endif
+    while s:do_find_end()
+      if s:cursor_char() ==# ','
+        normal! w
+        if expand('<cWORD>') =~ '\<\k\+\>:'
+          continue
+        else
+          normal! ge
+          return s:get_cursor_pos()
+        endif
+      elseif s:cursor_char() ==# ')'
+        " let open_pos = searchpairpos('(', '', ')', 'Wbn', {-> s:is_string_or_comment()})
+        " if s:in_range(a:do_pos, open_pos, s:get_cursor_pos())
+          return s:get_cursor_pos()
+        " endif
+      else
+        return s:get_cursor_pos()
+      endif
+    endwhile
   else
     let pos = searchpairpos('\<do\>:\@!', '', '\<end\>', 'W', Skip)
     let pos[1] += 2

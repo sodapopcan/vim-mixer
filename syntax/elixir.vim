@@ -4,60 +4,59 @@
 " (https://github.com/elixir-editors/vim-elixir).
 
 " Unavailable in elixir.vim
-syn region elixirMixerLambda start="\<fn\>" end="\<end\>" keepend transparent
-" syn region elixirMixerMap matchgroup=elixirMapDelimiter start="%{" end="}" transparent
-syn region elixirMixerStruct matchgroup=elixirMixerStructDelimiters start="%\%(\w\|\.\)\+"hs=s+1 end="}"he=e-1 transparent
-hi link elixirMixerStructDelimiters Type
-syn region elixirMixerMap matchgroup=NONE start="%{" end="}" keepend transparent
+" syn region elixirLambda start="\<fn\>" end="\<end\>" keepend transparent
+" syn region elixirMap matchgroup=elixirMapDelimiter start="%{" end="}" transparent
+syn region elixirStruct matchgroup=elixirStructDelimiters start="%\%(\w\|\.\)\+"hs=s+1 end="}"he=e-1 transparent
+hi link elixirStructDelimiters Type
 
 if !hlexists('elixirSigil')
-  syn match elixirMixerDelimEscape "\\[(<{\[)>}\]/\"'|]" transparent display contained contains=NONE
+  syn match elixirDelimEscape "\\[(<{\[)>}\]/\"'|]" transparent display contained contains=NONE
 
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1" contains=elixirMixerDelimEscape transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+{"                end="}"   skip="\\\\\|\\}"   contains=elixirMixerDelimEscape transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+<"                end=">"   skip="\\\\\|\\>"   contains=elixirMixerDelimEscape transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirMixerDelimEscape transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\u\+("                end=")"   skip="\\\\\|\\)"   contains=elixirMixerDelimEscape transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\u\+\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1" contains=elixirDelimEscape transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\u\+{"                end="}"   skip="\\\\\|\\}"   contains=elixirDelimEscape transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\u\+<"                end=">"   skip="\\\\\|\\>"   contains=elixirDelimEscape transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\u\+\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirDelimEscape transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\u\+("                end=")"   skip="\\\\\|\\)"   contains=elixirDelimEscape transparent
 
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"                                            transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l{"                end="}"   skip="\\\\\|\\}"   contains=elixirMixerRegexEscapePunctuation transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l<"                end=">"   skip="\\\\\|\\>"   contains=elixirMixerRegexEscapePunctuation transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirMixerRegexEscapePunctuation transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l("                end=")"   skip="\\\\\|\\)"   contains=elixirMixerRegexEscapePunctuation transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start="\~\l\/"               end="\/"  skip="\\\\\|\\\/"  contains=elixirMixerRegexEscapePunctuation transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\l\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"                                            transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\l{"                end="}"   skip="\\\\\|\\}"   contains=elixirRegexEscapePunctuation transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\l<"                end=">"   skip="\\\\\|\\>"   contains=elixirRegexEscapePunctuation transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\l\["               end="\]"  skip="\\\\\|\\\]"  contains=elixirRegexEscapePunctuation transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\l("                end=")"   skip="\\\\\|\\)"   contains=elixirRegexEscapePunctuation transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start="\~\l\/"               end="\/"  skip="\\\\\|\\\/"  contains=elixirRegexEscapePunctuation transparent
 
   " Sigils surrounded with heredoc
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start=+\~\a\z("""\)+ end=+^\s*\z1+ skip=+\\"+  transparent
-  syn region elixirMixerSigil matchgroup=elixirMixerSigilDelimiter start=+\~\a\z('''\)+ end=+^\s*\z1+ skip=+\\'+  transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start=+\~\a\z("""\)+ end=+^\s*\z1+ skip=+\\"+  transparent
+  syn region elixirSigil matchgroup=elixirSigilDelimiter start=+\~\a\z('''\)+ end=+^\s*\z1+ skip=+\\'+  transparent
 endif
 
 if !hlexists('elixirRegexEscapePunctuation')
-  syn match elixirMixerRegexEscapePunctuation "?\|\\.\|*\|\\\[\|\\\]\|+\|\\^\|\\\$\|\\|\|\\(\|\\)\|\\{\|\\}" contained transparent
+  syn match elixirRegexEscapePunctuation "?\|\\.\|*\|\\\[\|\\\]\|+\|\\^\|\\\$\|\\|\|\\(\|\\)\|\\{\|\\}" contained transparent
 endif
 
 if !hlexists('elixirAtom')
-  syn match elixirMixerAtom '\(:\)\@<!:\%([a-zA-Z_*]\w*\%([?!]\|=[>=]\@!\)\?\|<>\|===\?\|>=\?\|<=\?\)' contains=elixirAtom transparent
-  syn match elixirMixerAtom '\(:\)\@<!:\%(<=>\|&&\?\|%\(()\|\[\]\|{}\)\|++\?\|--\?\|||\?\|!\|//\|[%&`/|]\)' contains=elixirAtom transparent
-  syn match elixirMixerAtom "\%([a-zA-Z_]\w*[?!]\?\):\(:\)\@!" transparent
+  syn match elixirAtom '\(:\)\@<!:\%([a-zA-Z_*]\w*\%([?!]\|=[>=]\@!\)\?\|<>\|===\?\|>=\?\|<=\?\)' contains=elixirAtom transparent
+  syn match elixirAtom '\(:\)\@<!:\%(<=>\|&&\?\|%\(()\|\[\]\|{}\)\|++\?\|--\?\|||\?\|!\|//\|[%&`/|]\)' contains=elixirAtom transparent
+  syn match elixirAtom "\%([a-zA-Z_]\w*[?!]\?\):\(:\)\@!" transparent
 endif
 
 if !hlexists('elixirComment')
-  syn match elixirMixerComment '#.*' transparent
+  syn match elixirComment '#.*' transparent
 endif
 
 if !hlexists('elixirDocString')
-  syn region elixirMixerDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"  transparent
-  syn region elixirMixerDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]{"                end="}"   skip="\\\\\|\\}"    transparent
-  syn region elixirMixerDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]<"                end=">"   skip="\\\\\|\\>"    transparent
-  syn region elixirMixerDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\["               end="\]"  skip="\\\\\|\\\]"   transparent
-  syn region elixirMixerDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]("                end=")"   skip="\\\\\|\\)"    transparent
-  syn region elixirMixerDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\z("\)+                 end=+\z1+ skip=+\\\\\|\\\z1+  transparent
-  syn region elixirMixerDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\z("""\)+               end=+^\s*\z1+                 transparent
-  syn region elixirMixerDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\z('''\)+         end=+^\s*\z1+                 transparent
-  syn region elixirMixerDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\z("""\)+         end=+^\s*\z1+                 transparent
+  syn region elixirDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\z(/\|\"\|'\||\)" end="\z1" skip="\\\\\|\\\z1"  transparent
+  syn region elixirDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]{"                end="}"   skip="\\\\\|\\}"    transparent
+  syn region elixirDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]<"                end=">"   skip="\\\\\|\\>"    transparent
+  syn region elixirDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\["               end="\]"  skip="\\\\\|\\\]"   transparent
+  syn region elixirDocString matchgroup=NONE start="\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]("                end=")"   skip="\\\\\|\\)"    transparent
+  syn region elixirDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\z("\)+                 end=+\z1+ skip=+\\\\\|\\\z1+  transparent
+  syn region elixirDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\z("""\)+               end=+^\s*\z1+                 transparent
+  syn region elixirDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\z('''\)+         end=+^\s*\z1+                 transparent
+  syn region elixirDocString matchgroup=NONE start=+\%(@\w*doc\(\s\|(\)\+\)\@<=\~[Ss]\z("""\)+         end=+^\s*\z1+                 transparent
 endif
 
 if !hlexists('elixirVariable')
-  syn match elixirMixerVariable '@[a-z]\w*'
-  syn match elixirMixerVariable '&\d\+'
+  syn match elixirVariable '@[a-z]\w*'
+  syn match elixirVariable '&\d\+'
 endif
