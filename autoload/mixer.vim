@@ -914,7 +914,7 @@ function! s:adjust_whitespace(start_pos)
   return [start_lnr, start_col]
 endfunction
 
-function! s:adjust_block_region(inner, start_pos, end_pos) abort
+function! s:adjust_block_region(inner, leave_end_col, start_pos, end_pos) abort
   if v:operator ==# 'c' && !a:inner
     return [a:start_pos, a:end_pos]
   endif
@@ -941,7 +941,9 @@ function! s:adjust_block_region(inner, start_pos, end_pos) abort
       let start_col = 1
     endif
 
-    let end_col = len(getline(end_lnr)) + 1 " Include \n
+    if !a:leave_end_col
+      let end_col = len(getline(end_lnr)) + 1 " Include \n
+    endif
 
     exec start_lnr
   endif
@@ -978,9 +980,9 @@ function! s:textobj_block(inner) abort
   endif
 
   if !s:in_range(origin, func_pos, end_pos)
-    call cursor(func_pos)
+    call cursor(origin)
 
-    let do_pos = s:find_do('Wb')
+    let do_pos = s:find_do('W')
     let func_pos = s:find_do_block_head(do_pos, 'Wbc')
     let end_pos = s:find_end_pos(func_pos, do_pos)
   endif
@@ -999,7 +1001,7 @@ function! s:textobj_block(inner) abort
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
-    let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, do ==# 'do:', start_pos, end_pos)
   endif
 
   let view.lnum = start_pos[0]
@@ -1011,14 +1013,14 @@ endfunction
 " Text Objects: def {{{1
 
 function! s:textobj_def(keyword, inner, include_annotations) abort
-  let known_annotations = '@doc\>\|@spec\>\|@tag\>\|\<@requirements\>\|\<attr\>\|\<slot\>'
+  let known_annotations = '@doc\>\|@spec\>\|@tag\>\|@requirements\>\|\<attr\>\|\<slot\>'
   let user_annotations = get(g:, 'mixer_known_annotations')
 
   if user_annotations
     let known_annotations = join([known_annotations, user_annotations], '\|')
   endif
 
-  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda()}
+  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment'}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
 
@@ -1082,7 +1084,11 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
-    let [start_pos, end_pos] = s:adjust_block_region(a:inner, start_pos, end_pos)
+    if a:inner
+      let start_pos = do_pos
+      let start_pos[1] = 1
+    endif
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 1, start_pos, end_pos)
   endif
 
   let view.lnum = start_pos[0]
