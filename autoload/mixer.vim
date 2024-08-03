@@ -354,11 +354,8 @@ endfunction
 function! s:paren_in_range(do_pos)
   if expand('<cWORD>') =~ '\<\k\+\>('
     normal! f(
-
     let open_pos = s:get_cursor_pos()
-
     let pair_pos = searchpairpos('(', '', ')', 'Wn', {-> s:is_string_or_comment()})
-
     normal! b
 
     return s:in_range(a:do_pos, open_pos, pair_pos)
@@ -367,12 +364,10 @@ function! s:paren_in_range(do_pos)
   endif
 endfunction
 
-function! s:find_do_block_head(flags)
-  let do_pos = s:get_cursor_pos()
-
+function! s:find_do_block_head(do_pos, flags)
   let Skip = {->
         \ expand('<cword>') =~ '\<when\>\|\<in\>' ||
-        \ !s:paren_in_range(do_pos) ||
+        \ !s:paren_in_range(a:do_pos) ||
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
 
@@ -919,7 +914,7 @@ function! s:textobj_block(inner) abort
   let origin = s:get_cursor_pos()
   let do_pos = s:find_do('Wc')
 
-  let func_pos = s:find_do_block_head('Wb')
+  let func_pos = s:find_do_block_head(do_pos, 'Wb')
 
   if s:in_range(origin, func_pos, do_pos)
     let end_pos = s:find_end_pos(do_pos)
@@ -932,7 +927,7 @@ function! s:textobj_block(inner) abort
       return winrestview(view)
     endif
 
-    let func_pos = s:find_do_block_head('Wb')
+    let func_pos = s:find_do_block_head(do_pos, 'Wb')
 
     let end_pos = s:find_end_pos(do_pos)
   endif
@@ -941,7 +936,7 @@ function! s:textobj_block(inner) abort
     call cursor(func_pos)
 
     let do_pos = s:find_do('Wb')
-    let func_pos = s:find_do_block_head('Wbc')
+    let func_pos = s:find_do_block_head(do_pos, 'Wbc')
     let end_pos = s:find_end_pos(do_pos)
   endif
 
