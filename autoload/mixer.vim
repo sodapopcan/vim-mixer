@@ -402,7 +402,7 @@ function! s:find_do_block_head(do_pos, flags)
   " let start = '\%(\<end\>\s\+\)\@!\zs'
   let start = ''
   let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
-  let no_follow = '\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\|\<not\>\)\@!'
+  let no_follow = '\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\)\@!'
 
   let foo = searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
   return foo
@@ -969,7 +969,7 @@ endfunction
 
 function! s:adjust_block_region(inner, leave_end_col, start_pos, end_pos) abort
   if v:operator ==# 'c' && !a:inner
-    " We want a blank line left for insert mode
+    " We want a blank line left for insert mode so don't adjust anything
     return [a:start_pos, a:end_pos]
   endif
 
@@ -1054,7 +1054,7 @@ function! s:textobj_block(inner) abort
   let do = expand('<cWORD>')
 
   if a:inner && do ==# 'do:'
-    " Clear `do:` When switching to insert, leave a space after it otherwise do not.
+    " Clear `do:` When switching to insert, leaving a space after it.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
     let [start_pos, end_pos] = s:adjust_block_region(a:inner, do ==# 'do:', start_pos, end_pos)
