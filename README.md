@@ -6,24 +6,38 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
 
 ## Features
 
-- Text objects!
-  - `ad`/`id` (do block)
-  - `af`/`if` (function/macro definition)
-  - `iS` (sigil)
-  - `im` (map)
-  - `ic` (comment)
-- `:Mix` for runnings mix commands with autocomplete.  Uses [dispatch](https://github.com/tpope/vim-dispatch)
-  if available.
-- `:Deps` for added `mix deps` functionality, like dynamically adding
-  packages.
-- `:Gen` is a unified generator commands, eg:
-  - `:Gen migration add_name_to_users`
-  - `:Gen live Accounts User users name:string age:integer`
-- `:R` for jumping between controllers and templates
-  - If the module has a `render/1` function, it will jump to those and back to
-    where you were before.
+- Text objects
+  - `ad`/`id` - Any macro with a `do` block.  Works on user-defined macros as
+    well as keyword syntax.
+  - `af`/`if` - A function/macro definition
+  - `aF` - A function/macro definition including all heads, docs, and annotations (`iF` exists for convenience but is identical to `if`).
+  - `iS`/`aS`- A sigil
+  - `im`/`am`- A map or struct
+  - `iM`/`aM`- A module
+  - `ic`/`ac`- A comment
+
+- Conveniences
+  - If using matchit.vim, `b:match_words` is dynamically set for HTML when
+    moving your cursor into an embedded HEEx or Surface template.
+  - Automatically sets `:compiler` if the appropriate plugin is found.
+    (for Vim users, this requires elixir.vim)
+
+- Commands
+  - `:Mix` for runnings mix commands with autocomplete.  Uses [dispatch](https://github.com/tpope/vim-dispatch)
+    if available.  PRs for other popular async runners are welcome.
+  - `:Deps` for added `:Mix deps` functionality, like dynamically adding
+    packages or just jumping to your `deps` function (no matter what you've call it).
+  - `:Gen` is a unified command for running `gen` tasks, eg:
+    - `:Gen migration add_name_to_users`
+    - `:Gen live Accounts User users name:string age:integer`
+  - `:R` for jumping between controllers and templates
+    - If the module has a `render/1` function, it will jump to those and back to
+      where you were before.
+
 - [Projectionist](https://github.com/tpope) support with dynamic definitions
   based on your project's name.
+
+See `:help mixer` for full details.
 
 ## Recommended Plugins
 
