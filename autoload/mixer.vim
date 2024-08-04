@@ -558,7 +558,7 @@ function! s:init_mix_project(mix_file) abort
       let s:html_match_words = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
     endif
 
-    autocmd! FileType elixir let b:elixir_match_words = b:match_words
+    autocmd! BufReadPost .ex let b:elixir_match_words = b:match_words
     autocmd! BufReadPost,CursorMoved *.ex
           \ if s:cursor_outer_syn_name() =~ 'Heex\|Surface' |
           \   let b:match_words = s:html_match_words |
