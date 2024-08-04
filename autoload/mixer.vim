@@ -381,17 +381,31 @@ function! s:find_do_block_head(do_pos, flags)
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
 
-  let no_args = '\%(>\|=\|\%(\s\+\)\)\s\+\zs\<\k\+\>\s\+\<do\>:\?'
-  if getline('.') =~ no_args
-    " wiiiip
+  let func_pos = searchpos('\%(>\|=\|\%(\s\+\)\)\s\+\zs\<\k\+\>\s\+\<do\>:\?', 'Wb', line('.'))
+  if line('.') == func_pos[0]
+    " We're going to do the bone-headed thing here and walk up until we find
+    " a non-blank line then see if it ends in a comma.
+    normal! k
+    while s:is_blank()
+      if line('.') == 1 | return | endif
+      normal! k
+    endwhile
+
+    if getline('.') !~ ',$'
+      call cursor(func_pos)
+
+      return func_pos
+    endif
   endif
 
+  " '\%(\<end\>\|\%(,$\)\)'
   " let start = '\%(\<end\>\s\+\)\@!\zs'
   let start = ''
   let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
   let no_follow = '\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\|\<not\>\)\@!'
 
-  return searchpos(star.func_call.no_follow, a:flags, 0, 0, Skip)
+  let foo = searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
+  return foo
 endfunction
 
 " TODO: Take arity into account.
