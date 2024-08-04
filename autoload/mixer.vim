@@ -372,14 +372,14 @@ endfunction
 
 function! s:find_do_block_head(do_pos, flags)
   let Skip = {->
-        \ expand('<cword>') =~ '\<when\>\|\<in\>' ||
+        \ expand('<cword>') =~ '\<when\>\|\<in\>\|\<not\>' ||
         \ !s:paren_in_range(a:do_pos) ||
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
 
-  let func_call = '\%(\%(\%([A-Z][a-z\.]\+\)\+\)\?\<\k\+\>'
+  let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
-  return searchpos('\zs'.func_call.'\%(\s\|(\)\)'.'\%(=\|<\|>\|\!\|&\||\|\<when\>\|\<in\>\)\@!', a:flags, 0, 0, Skip)
+  return searchpos('\zs'.func_call.'\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<when\>\|\<not\>\|\<in\>\|\<not\>\)\@!', a:flags, 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
@@ -906,9 +906,12 @@ function! s:adjust_whitespace(start_pos)
   let [start_lnr, start_col] = a:start_pos
 
   let start_line = getline(start_lnr)
+  let prev_blank = s:is_blank(getline(start_lnr - 1))
+  let empty_gutter = start_line[0:start_col - 2] =~ '^\s*$'
 
-  if start_lnr > 1 && s:is_blank(getline(start_lnr - 1)) && start_col == 1
+  if start_lnr > 1 && prev_blank && empty_gutter
     let start_lnr -=1
+    let start_col = 1
   endif
 
   return [start_lnr, start_col]
@@ -916,6 +919,7 @@ endfunction
 
 function! s:adjust_block_region(inner, leave_end_col, start_pos, end_pos) abort
   if v:operator ==# 'c' && !a:inner
+    " We want a blank line left for insert mode
     return [a:start_pos, a:end_pos]
   endif
 
@@ -1080,15 +1084,16 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     let start_pos = s:get_cursor_pos()
   endif
 
+  if a:inner
+    let start_pos = do_pos
+    let start_pos[1] = 1
+  endif
+
   if a:inner && first_head_has_keyword_do
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
-    if a:inner
-      let start_pos = do_pos
-      let start_pos[1] = 1
-    endif
-    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 1, start_pos, end_pos)
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 0, 1, start_pos, end_pos)
   endif
 
   let view.lnum = start_pos[0]
