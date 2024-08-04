@@ -371,15 +371,27 @@ function! s:paren_in_range(do_pos)
 endfunction
 
 function! s:find_do_block_head(do_pos, flags)
+  " This is a bit nuts because we want to be able to find user-defined macro
+  " calls, not just the builtins.
+
+  " let stop = search('\%(\<end\>\|^\s*$\)', 'Wbn')
   let Skip = {->
         \ expand('<cword>') =~ '\<when\>\|\<in\>\|\<not\>' ||
         \ !s:paren_in_range(a:do_pos) ||
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
 
-  let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+  let no_args = '\%(>\|=\|\%(\s\+\)\)\s\+\zs\<\k\+\>\s\+\<do\>:\?'
+  if getline('.') =~ no_args
+    " wiiiip
+  endif
 
-  return searchpos('\zs'.func_call.'\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<when\>\|\<not\>\|\<in\>\|\<not\>\)\@!', a:flags, 0, 0, Skip)
+  " let start = '\%(\<end\>\s\+\)\@!\zs'
+  let start = ''
+  let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+  let no_follow = '\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\|\<not\>\)\@!'
+
+  return searchpos(star.func_call.no_follow, a:flags, 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
@@ -990,6 +1002,8 @@ function! s:textobj_block(inner) abort
     let func_pos = s:find_do_block_head(do_pos, 'Wbc')
     let end_pos = s:find_end_pos(func_pos, do_pos)
   endif
+
+  if func_pos == [0, 0] | return winrestview(view) | endif
 
   if a:inner
     let start_pos = copy(do_pos)
