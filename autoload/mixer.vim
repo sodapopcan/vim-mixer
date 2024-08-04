@@ -539,6 +539,20 @@ function! s:init_mix_project(mix_file) abort
 
   autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
 
+  if exists('g:loaded_matchit')
+    if !exists('s:html_match_words')
+      let s:html_match_words = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
+    endif
+
+    autocmd! FileType elixir let b:elixir_match_words = b:match_words
+    autocmd! BufReadPost,CursorMoved *.ex
+          \ if s:cursor_outer_syn_name() =~ 'Heex\|Surface' |
+          \   let b:match_words = s:html_match_words |
+          \ else |
+          \   let b:match_words = b:elixir_match_words |
+          \ endif
+  endif
+
   let g:mix_projections = get(g:, "mix_projections", "replace")
 
   if g:mix_projections !=# "disable"
