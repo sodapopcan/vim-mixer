@@ -555,16 +555,26 @@ function! s:init_mix_project(mix_file) abort
 
   if exists('g:loaded_matchit')
     if !exists('s:html_match_words')
+      " This is ripped straight from matchit since I don't know of a way to see
+      " what is globally defined.
       let s:html_match_words = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
     endif
 
-    autocmd! BufReadPost .ex let b:elixir_match_words = b:match_words
-    autocmd! BufReadPost,CursorMoved *.ex
-          \ if s:cursor_outer_syn_name() =~ 'Heex\|Surface' |
-          \   let b:match_words = s:html_match_words |
-          \ else |
-          \   let b:match_words = b:elixir_match_words |
-          \ endif
+    function! s:do_match_words()
+      if exists('b:match_words') && !exists('b:elixir_match_words')
+        let b:elixir_match_words = b:match_words
+      endif
+
+      if !exists('b:elixir_match_words') | return | endif
+
+      if s:cursor_outer_syn_name() =~ 'Heex\|Surface'
+        let b:match_words = s:html_match_words
+      else
+        let b:match_words = b:elixir_match_words
+      endif
+    endfunction
+
+    autocmd! CursorMoved *.ex call s:do_match_words()
   endif
 
   let g:mix_projections = get(g:, "mix_projections", "replace")
