@@ -587,7 +587,7 @@ endfunction
 " Mix: Tasks {{{1
 
 function! s:populate_mix_tasks()
-  " Thanks @mhandberg for the awk stuff
+  " Awk is from @mhandberg
   let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
 
   call s:async_append(mix_help, b:mix_project.tasks)
