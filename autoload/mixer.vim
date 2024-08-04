@@ -404,7 +404,7 @@ endfunction
 
 function! s:find_last_func_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+'.func_name, 'W') | endwhile
+  while search('def\%(\l\+\)\?\s\+\<'.func_name.'\>', 'W') | endwhile
 
   return s:get_cursor_pos()
 endfunction
@@ -1121,7 +1121,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
-    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 0, 1, start_pos, end_pos)
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 0, start_pos, end_pos)
   endif
 
   let view.lnum = start_pos[0]
