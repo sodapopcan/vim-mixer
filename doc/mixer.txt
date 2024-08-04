@@ -246,10 +246,10 @@ COMMANDS                                    *mixer-commands*
 <
                     This is really more of a party trick as it's probably
                     pretty rare that the deps you want to update will be right
-                    next to each other but het, here we are... !
+                    next to each other but hey, there it is!
 
-                    This command's bang [!] behaviour  works the same as it
-                    does for |:Mix|.  The environment flags (`-` and `+`) are
+                    This command's bang [!] behaviour works the same as it
+                    does for |:Mix|.  Environment flags via `-` and `+` are
                     also available.
 
 
@@ -261,15 +261,10 @@ COMMANDS                                    *mixer-commands*
                     a path to or filename of a migration which will be passed
                     to `--to`.  This can be a relative or absolute path, or
                     simply the migration name.  The former does not work in
-                    umbrella apps unless your cwd an app.
+                    umbrella apps unless your cd into the app.
 
-                    For example, if the current buffer is a migration you want
-                    to migrate `--to`, you may do so with:
->
-                      :Migrate %
-<
                     This command's bang [!] behaviour  works the same as it
-                    does for |:Mix|.  The environment flags (`-` and `+`) are
+                    does for |:Mix|.  Environment flags via `-` and `+` are
                     also available.
 
                     Only available in a mix project with Ecto.
@@ -282,13 +277,23 @@ COMMANDS                                    *mixer-commands*
 
                     Works just like |:Migrate| in reverse.
 
+                    A fun trick with `:Rollback` is to navigate to a migration
+                    file you want to rollback to and issue:
+>
+                      :Rollback %
+<
+                    This will rollback to this migration.  `:Migrate` works
+                    the same way should you find yourself not wanting to fully
+                    migrate back to latest.
+
                     Only available in a mix project with Ecto.
 
 
                                             *mixer-:Gen* *:Gen*
 :Gen                Unified generator command with autocomplete.
 
-                    Run any `*.gen.*` task in your project without namesapce.
+                    Run any `*.gen.*` task in your project without having to
+                    provide its namesapce.
 
                     For example:
 >
