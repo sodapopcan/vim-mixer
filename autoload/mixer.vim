@@ -592,6 +592,13 @@ function! s:populate_mix_tasks()
   call s:async_append(mix_help, b:mix_project.tasks)
 endfunction
 
+function! s:get_mix_tasks()
+  " Awk is from @mhandberg
+  let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
+
+  return system(mix_help)
+endfunction
+
 function! s:gather_mix_tasks(_channel, result)
   let g:mixer_tasks = get(g:, "mixer_tasks", [])
   call add(g:mixer_tasks, a:result)
@@ -658,7 +665,11 @@ function! s:Mix(bang, ...) abort
 endfunction
 
 function! MixerMixComplete(A, L, P) abort
-  return join(b:mix_project.tasks, "\n")
+  if exists('b:mix_project')
+    return join(b:mix_project.tasks, "\n")
+  else
+    return s:get_mix_tasks()
+  endif
 endfunction
 
 " Mix: :Deps {{{1
