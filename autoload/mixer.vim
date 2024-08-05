@@ -418,37 +418,6 @@ function! s:find_do_block_head(do_pos, flags)
   return searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
 endfunction
 
-" TODO: Take arity into account.
-function! s:find_first_func_head(def_pos) abort
-  let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
-
-  return s:get_cursor_pos()
-endfunction
-
-function! s:find_last_func_head(def_pos) abort
-  let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+\<'.func_name.'\>', 'W') | endwhile
-
-  return s:get_cursor_pos()
-endfunction
-
-function! s:get_func_name(def_pos) abort
-  call cursor(a:def_pos)
-  normal! W
-  let func_name = expand('<cword>')
-  normal! ^
-  return func_name
-endfunction
-
-function! s:is_lambda_end(do_pos)
-  if expand('<cword>') ==# 'end'
-    return searchpair('\<fn\>', '', '\<end\>', 'Wbn', {-> s:is_string_or_comment()}, a:do_pos[0])
-  endif
-
-  return 0
-endfunction
-
 function! s:do_find_end() abort
   call search('(\|{\|\[', 'W', line('.')) " Check if do block is a construct or function call
 
@@ -501,6 +470,37 @@ function! s:find_end_pos(func_pos, do_pos) abort
 
     return pos
   end
+endfunction
+
+" TODO: Take arity into account.
+function! s:find_first_func_head(def_pos) abort
+  let func_name = s:get_func_name(a:def_pos)
+  while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
+
+  return s:get_cursor_pos()
+endfunction
+
+function! s:find_last_func_head(def_pos) abort
+  let func_name = s:get_func_name(a:def_pos)
+  while search('def\%(\l\+\)\?\s\+\<'.func_name.'\>', 'W') | endwhile
+
+  return s:get_cursor_pos()
+endfunction
+
+function! s:get_func_name(def_pos) abort
+  call cursor(a:def_pos)
+  normal! W
+  let func_name = expand('<cword>')
+  normal! ^
+  return func_name
+endfunction
+
+function! s:is_lambda_end(do_pos)
+  if expand('<cword>') ==# 'end'
+    return searchpair('\<fn\>', '', '\<end\>', 'Wbn', {-> s:is_string_or_comment()}, a:do_pos[0])
+  endif
+
+  return 0
 endfunction
 
 function! s:check_for_meta(known_annotations)
