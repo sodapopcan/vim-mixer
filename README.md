@@ -17,10 +17,10 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
   - `ic`/`ac`- A comment
 
 - Conveniences
-  - If using matchit.vim, `b:match_words` is dynamically set for HTML when
-    moving your cursor into an embedded HEEx or Surface template.
-  - Automatically sets `:compiler` if the appropriate plugin is found.
-    (for Vim users, this requires elixir.vim)
+  - [matchit](https://www.vim.org/scripts/script.php?script_id=39) works in
+    HEEx/Surface templates.
+  - Automatically sets `:compiler` if the appropriate plugin is found.  (for Vim
+    users, this requires elixir.vim)
 
 - Commands
   - `:Mix` for runnings mix commands with autocomplete.  Uses [dispatch](https://github.com/tpope/vim-dispatch)
