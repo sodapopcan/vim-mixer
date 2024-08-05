@@ -536,8 +536,6 @@ function! s:check_for_meta(known_annotations)
         \ WORD =~ a:known_annotations
 endfunction
 
-" }}}
-" ----------- Mix --------
 " Mix: Project {{{1
 
 function! s:init_mix_project(mix_file) abort
