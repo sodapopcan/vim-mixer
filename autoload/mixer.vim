@@ -137,7 +137,7 @@ function! mixer#init() abort
   endif
 
   if !s:command_exists("Deps")
-    command -buffer -complete=customlist,s:MixerDepsComplete -bang -nargs=* -range Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+    command -buffer -complete=customlist,s:MixerDepsComplete -range -bang -nargs=* Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
   endif
 
   if !s:command_exists("Gen")
@@ -145,7 +145,7 @@ function! mixer#init() abort
   endif
 
   if !s:command_exists("Migrate")
-    command -buffer -complete=customlist,s:MixerMigrationComplete -nargs=* Migrate call s:Migrate(<f-args>)
+    command -buffer -complete=customlist,s:MixerMigrationComplete -count=1 -bang -nargs=* Migrate call s:Migrate(<bang>0, <count>, <f-args>)
   endif
 endfunction
 
@@ -904,7 +904,10 @@ endfunction
 
 " :Migrate {{{1
 
-function! s:Migrate(bang, count, args) abort
+function! s:Migrate(bang, count, ...) abort
+  let [meta, args] = s:remove_mixer_meta(a:000)
+
+  echom a:count
 endfunction
 
 let s:migrate_opts = [
@@ -938,6 +941,7 @@ function! s:MixerMigrationComplete(A, L, P) abort
   let completions = glob(b:mix_project.root.prefix."/*")
   let completions = split(completions, '\n')
   let completions = map(completions, {-> s:sub(v:val, '^\.'.escape(prefix, '/').'\/', '')})
+  let completions = map(completions, {-> s:sub(v:val, '\.exs$', '')})
   let completions = filter(completions, {-> v:val =~ a:A})
 
   return completions

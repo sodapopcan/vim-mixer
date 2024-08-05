@@ -177,7 +177,7 @@ COMMANDS                                    *mixer-commands*
 >
                       let g:mixer_async_command = 'Make'
 <
-                    You can specify the environment like so:
+                    The environment can be specified like so:
 >
                       :Mix -test mix compile
 <
