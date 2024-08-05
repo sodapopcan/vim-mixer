@@ -44,9 +44,9 @@ Here is an overview:
     Elixir construct    | Text Object  (mneumonic/notes)
     --------------------+------------------------------------------------
     do/end blocks       | d  (do)
-    do/end blocks       | D  (targets context like assignment)
+    do/end blocks       | D  (includes assignment and comments)
     def[p]/defmarco[p]  | f
-    def[p]/defmacro[p]  | F  (targets annotations and all function heads)
+    def[p]/defmacro[p]  | F  (includes annotations and all function heads)
     defmodule           | M
     %{}/%Fooi.Bar{}     | m  (maps and structs)
     Sigils              | S  (note the uppercase)
@@ -153,7 +153,7 @@ Now your cursor must be on an object to operate on it.
 Fine-grained control over which objects use seek is possible by providing
 a comma comma-separate string where the possible values are:
 >
-  let g:mixer_textobj_seek_block = "block,module,map,sigil,comment"
+  let g:mixer_textobj_seek = "block,module,map,sigil,comment"
 <
 This is the default.
 
