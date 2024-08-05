@@ -978,10 +978,15 @@ function! s:adjust_whitespace(start_pos)
 
   let start_line = getline(start_lnr)
   let prev_blank = s:is_blank(getline(start_lnr - 1))
-  let empty_gutter = start_line[0:start_col - 2] =~ '^\s*$'
+  if start_col > 2
+    let offset = start_col - 2
+  else
+    let offset = 0
+  endif
+  let empty_gutter = start_line[0:offset] =~ '^\s*$'
 
   if start_lnr > 1 && prev_blank && empty_gutter
-    let start_lnr -=1
+    let start_lnr -= 1
     let start_col = 1
   endif
 
