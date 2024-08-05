@@ -404,8 +404,7 @@ function! s:find_do_block_head(do_pos, flags)
   let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
   let no_follow = '\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\)\@!'
 
-  let foo = searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
-  return foo
+  return searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
 endfunction
 
 " TODO: Take arity into account.
