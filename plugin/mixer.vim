@@ -39,3 +39,4 @@ endfunction
 " Options {{{1
 
 let g:mixer_enable_textobj_arg = get(g:, 'mixer_enable_textobj_arg', 1)
+let g:mixer_async_command = get(g:, 'mixer_async_command', "Dispatch")

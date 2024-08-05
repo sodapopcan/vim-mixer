@@ -135,7 +135,7 @@ function! mixer#init() abort
   endif
 
   if !s:command_exists("Gen")
-    command -buffer -complete=customlist,s:MixerGenComplete -nargs=1 Gen call s:Gen(<f-args>)
+    command -buffer -complete=customlist,s:MixerGenComplete -bang -nargs=* Gen call s:Gen(<bang>0, <f-args>)
   endif
 
   if !s:command_exists("Migrate")
@@ -645,7 +645,7 @@ function! s:run_mix_command(bang, cmd, args) abort
   let args = copy(a:args)
 
   let async = 1
-  if args[0] ==# '!'
+  if a:0 && args[0] ==# '!'
     let async = 0
     let args = args[1:]
   end
@@ -683,7 +683,7 @@ function! s:run_mix_command(bang, cmd, args) abort
   endfor
 
   let mix_cmd = join(mix_tasks, " && ")
-  let async_cmd = get(g:, 'mixer_async_command', 'Dispatch')
+  let async_cmd = g:mixer_async_command
 
   if s:command_exists(async_cmd) && async
     if a:bang
@@ -694,6 +694,25 @@ function! s:run_mix_command(bang, cmd, args) abort
   else
     exec "!" mix_cmd
   endif
+endfunction
+
+" This filters out `!` and env args to use them in Mix wrapper functions.
+" I should come up with something better than this.
+function! s:remove_mixer_meta(args)
+  let args = copy(a:args)
+  let meta = []
+
+  for arg in a:args
+    if arg =~ '^!\|+\|-'
+      call add(meta, arg)
+      call remove(args, 0)
+    else
+      break
+    endif
+  endfor
+  echom args
+
+  return [meta, args]
 endfunction
 
 
@@ -716,17 +735,7 @@ endfunction
 " Mix: :Deps {{{1
 
 function! s:Deps(bang, mods, range, line1, line2, ...) abort
-  let args = copy(a:000)
-  let envs = []
-
-  for arg in a:000
-    if arg =~ '^+\|-'
-      call add(envs, arg)
-      call remove(args, 0)
-    else
-      break
-    endif
-  endfor
+  let [meta, args] = s:remove_mixer_meta(a:000)
 
   if !a:0
     if a:mods =~ 'hor\|vert'
@@ -764,7 +773,7 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
     endfor
   endif
 
-  let args = extend(envs, args)
+  let args = extend(meta, args)
 
   let task = join(["deps", task_fragment], ".")
 
@@ -828,19 +837,17 @@ endfunction
 
 " Mix: :Gen {{{1
 
-function! s:Gen(...) abort
+function! s:Gen(bang, ...) abort
   let tasks = s:get_gen_tasks()
-  let task = a:1
+  let [meta, args] = s:remove_mixer_meta(a:000)
+
+  let task = args[0]
 
   if !has_key(tasks, task)
     echom "No task with that name" | return
   endif
 
-  if s:command_exists("Dispatch")
-    exec "Dispatch mix ".tasks[task]." ".join(a:000[1:])
-  else
-    call system("mix ".tasks[task]." ".join(a:000[1:]))
-  endif
+  call s:run_mix_command(a:bang, tasks[task], extend(meta, args[1:]))
 endfunction
 
 function! s:MixerGenComplete(A, L, P) abort
