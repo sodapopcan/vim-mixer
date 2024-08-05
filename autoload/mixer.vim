@@ -472,7 +472,7 @@ function! s:find_end_pos(func_pos, do_pos) abort
   end
 endfunction
 
-" TODO: Take arity into account.
+" TODO: Maybe take arity into account.
 function! s:find_first_func_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
   while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
