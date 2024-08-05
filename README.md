@@ -23,8 +23,11 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
     users, this requires elixir.vim)
 
 - Commands
-  - `:Mix` for runnings mix commands with autocomplete.  Uses [dispatch](https://github.com/tpope/vim-dispatch)
-    if available.  PRs for other popular async runners are welcome.
+  - `:Mix`: Run a mix command with autocomplete.  Uses
+    [dispatch](https://github.com/tpope/vim-dispatch) or
+    [asyncrun](https://github.com/skywind3000/asyncrun.vim)if available.  PRs
+    for other popular async runners are welcome.  See
+    [CONTRIBUTING](./CONTRIBUTING.md)
   - `:Deps` for added `:Mix deps` functionality, like dynamically adding
     packages or just jumping to your `deps` function (no matter what you've call it).
   - `:Gen` is a unified command for running `gen` tasks, eg:
