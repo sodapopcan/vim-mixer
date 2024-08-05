@@ -169,10 +169,15 @@ function mixer#define_mappings()
   onoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
   onoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
 
-  vnoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1)<cr>
-  vnoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0)<cr>
-  onoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1)<cr>
-  onoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0)<cr>
+  vnoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1, 0)<cr>
+  vnoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0, 0)<cr>
+  onoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1, 0)<cr>
+  onoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0, 0)<cr>
+
+  vnoremap <silent> <buffer> iD :<c-u>call <sid>textobj_block(1, 0)<cr>
+  vnoremap <silent> <buffer> aD :<c-u>call <sid>textobj_block(0, 1)<cr>
+  onoremap <silent> <buffer> iD :<c-u>call <sid>textobj_block(1, 0)<cr>
+  onoremap <silent> <buffer> aD :<c-u>call <sid>textobj_block(0, 1)<cr>
 
   vnoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
   vnoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
@@ -257,9 +262,15 @@ function! s:cursor_char(...)
   endif
 endfunction
 
-function! s:cursor_syn_name()
+function! s:cursor_syn_name(...)
   " return s:sub(synIDattr(synID(line('.'), col('.'), 0), "name"), '^elixir', '')
-  let names = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
+  if a:0
+    let [line, col] = [a:1, a:2]
+  else
+    let [line, col] = s:get_cursor_pos()
+  endif
+
+  let names = map(synstack(line, col), 'synIDattr(v:val,"name")')
   if len(names)
     return s:sub(names[-1], 'elixir', '')
   else
@@ -402,7 +413,7 @@ function! s:find_do_block_head(do_pos, flags)
   " let start = '\%(\<end\>\s\+\)\@!\zs'
   let start = ''
   let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
-  let no_follow = '\%(=\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\)\@!'
+  let no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\)\@!'
 
   return searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
 endfunction
@@ -1018,7 +1029,7 @@ endfunction
 
 " Text Objects: block {{{1
 
-function! s:textobj_block(inner) abort
+function! s:textobj_block(inner, include_meta) abort
   let view = winsaveview()
 
   " First check if we are between a function call and a `do`
@@ -1062,6 +1073,32 @@ function! s:textobj_block(inner) abort
 
   call cursor(do_pos)
   let do = expand('<cWORD>')
+
+  if !a:inner && a:include_meta
+    call cursor(start_pos)
+
+    normal! b
+    if s:cursor_char() !=# "="
+      normal! w
+    else
+      normal! b
+      if s:cursor_char() =~ ')\}\|\|\]'
+        let close_char = s:cursor_char()
+        let open_char = s:get_pair(close_char)
+        let start_pos = searchpairpos(open_char, '', close_char, 'Wb', {-> s:is_string_or_comment()})
+        normal! F%
+        let start_pos[1] = col('.')
+      endif
+    endif
+
+    while getline(line('.') - 1) =~ '^\%(\s\+\)\?#'
+      normal! k
+    endwhile
+
+    let start_pos = [line('.'), 1]
+
+    call cursor(do_pos)
+  endif
 
   if a:inner && do ==# 'do:'
     " Clear `do:` When switching to insert, leaving a space after it.

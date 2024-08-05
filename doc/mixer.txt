@@ -66,16 +66,23 @@ aD                  A do/end block including function call.
                     builtins.  They work with both `do`/`end` syntax as
                     well as keyword syntax (`do: ...`).
 
-                    The "aD" and "iD" versions will take extra context into
-                    account.  For exampe, in the following code with the
-                    cursor represented by `*`:
+                    "aD" will include assignment (pattern matching) and
+                    any comments.  For example, in the following code with the
+                    cursor represented by `\%#`, typing `daD` will delete all
+                    of the following:
+
+
 >
+                      # Set foo to bar()
+                      # if `condition?` is `true`
                       let foo =
                         if condition? do
-                          bar(*)
+                          bar\%#()
                         end
 <
-                    typing `daD` will include the `let foo =` line.
+                    Note that for comments to be included, they must be
+                    touching the code block.  If separated by a blank line
+                    they will be left alone.
 
 
                     function and macro definitions~
