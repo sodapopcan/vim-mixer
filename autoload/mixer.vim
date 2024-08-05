@@ -638,6 +638,11 @@ endfunction
 
 " Mix: helpers {{{1
 
+let s:async_runners = [
+      \   'Dispatch',
+      \   'AsyncRunner',
+      \ ]
+
 function! s:run_mix_command(bang, cmd, args) abort
   let envs = []
   let default_env = 'dev'
@@ -645,7 +650,7 @@ function! s:run_mix_command(bang, cmd, args) abort
   let args = copy(a:args)
 
   let async = 1
-  if a:0 && args[0] ==# '!'
+  if len(args) && args[0] ==# "!"
     let async = 0
     let args = args[1:]
   end
@@ -685,7 +690,16 @@ function! s:run_mix_command(bang, cmd, args) abort
   let mix_cmd = join(mix_tasks, " && ")
   let async_cmd = g:mixer_async_command
 
-  if s:command_exists(async_cmd) && async
+  if !async_cmd
+    for runner in s:async_runners
+      if s:command_exists(runner)
+        let async_cmd = runner
+        break
+      endif
+    endfor
+  endif
+
+  if !empty(async_cmd) && async
     if a:bang
       let async_cmd = async_cmd.'!'
     endif
@@ -710,7 +724,6 @@ function! s:remove_mixer_meta(args)
       break
     endif
   endfor
-  echom args
 
   return [meta, args]
 endfunction

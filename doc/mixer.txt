@@ -168,11 +168,14 @@ COMMANDS                                    *mixer-commands*
                     Run a mix command with autocomplete.
 
                     It will use an async library if available.  Currently,
-                    it's only aware of |dispatch| though PRs for others are
-                    welcome (see: https://github.com/sodapopcan/vim-mixer).
-                    When called with a bang [!] it will call `:MyAsyncRunner!`
-                    if supported.
+                    it's aware of |dispatch| and |async_runner| though PRs for
+                    others are welcome.  When called with a bang [!] it will
+                    call `:MyAsyncRunner!`.
 
+                    You can configure it to use any command you want:
+>
+                      let g:mixer_async_command = 'Make'
+<
                     You can specify the environment like so:
 >
                       :Mix -test mix compile
