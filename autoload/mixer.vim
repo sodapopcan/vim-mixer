@@ -26,7 +26,7 @@ function! s:file_exists(glob)
 endfunction
 
 function! s:matches(str, pat)
-  return match(str, path) >= 0
+  return match(a:str, a:pat) >= 0
 endfunction
 
 function! s:is_blank(...)
@@ -204,7 +204,34 @@ function mixer#define_mappings()
   onoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
   onoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
 
+  nnoremap <silent> <buffer> <c-]> :call <sid>find_event()<cr>
+
   call s:define_argument_mappings()
+endfunction
+
+function! s:find_event()
+  let cursor_word = expand('<cWORD>')
+
+  if cursor_word !~ '^phx-'
+    exec "normal! \<c-]>"
+  endif
+
+  if s:matches(cursor_word, 'phx-.\+=''')
+    let char = ''''
+  elseif s:matches(cursor_word, 'phx-.\+="')
+    let char = '"'
+  else
+    exec "normal! \<c-]>"
+    return
+  endif
+
+  let save_i = @i
+  exec 'normal! "iyi'.char
+  let token = @i
+  let @i = save_i
+
+  call search('handle_event("'.token)
+  normal! zz
 endfunction
 
 function! s:define_argument_mappings()
