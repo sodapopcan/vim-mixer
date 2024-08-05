@@ -183,17 +183,28 @@ COMMANDS                                    *mixer-commands*
                       $ MIX_ENV=dev mix compile && MIX_ENV=test mix compile
 <
                     If you are using an async runner and wish to run a command
-                    synchronously using :Mix you may do so like this:
+                    synchronously using `:Mix` (ie, get the output in the
+                    terminal session), you may do so like this:
 >
                       :Mix ! deps.get
 <
-                    Due to how vim commands are parsed, you can also call it
-                    like this:
+                    Due to how Vim commands are parsed, you can also call it
+                    as:
 >
                       :Mix!! deps.get
 <
                     The only difference between this and `:!mix` is that you
                     get autocomplete and environment flags.
+
+                    This command is always available, even when not editing an
+                    Elixir file.
+
+                    A note on autocomplete: When editing a file in a Mix
+                    project, its tasks will be populated and cached in the
+                    background so that autocomplete is instant from first use.
+                    When used outside of a mix project, there will be a slight
+                    delay the first time you hit `<tab>` while it populates
+                    the tasks.
 
 
                                             *mixer-:Deps* *:Deps*
