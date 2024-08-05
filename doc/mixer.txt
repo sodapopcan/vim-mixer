@@ -168,11 +168,12 @@ COMMANDS                                    *mixer-commands*
                     Run a mix command with autocomplete.
 
                     It will use an async library if available.  Currently,
-                    it's aware of |dispatch| and |asyncrun| though PRs for
-                    others are welcome.  When called with a bang [!] it will
-                    call `:MyAsyncRunner!`.
-
-                    You can configure it to use any command you want:
+                    it's aware of |dispatch|, |asyncrun|, and the lesser known
+                    |asyncdo|.  The latter is by Elixir community member
+                    @hauleth so I figured I'd include it :)  PRs for others
+                    are welcome.  When called with a bang [!] it will call
+                    `:MyAsyncRunner!`.  You may also configure it to use any
+                    command you want:
 >
                       let g:mixer_async_command = 'Make'
 <

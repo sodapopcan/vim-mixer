@@ -5,6 +5,12 @@
 
 let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
+let s:async_runners = [
+      \   'Dispatch',
+      \   'AsyncRunner',
+      \   'AsyncDo'
+      \ ]
+
 " Utility {{{1
 
 function! s:sub(str, pat, rep)
@@ -637,11 +643,6 @@ function! s:gather_mix_tasks(_channel, result)
 endfunction
 
 " Mix: helpers {{{1
-
-let s:async_runners = [
-      \   'Dispatch',
-      \   'AsyncRunner',
-      \ ]
 
 function! s:run_mix_command(bang, cmd, args) abort
   let envs = []
