@@ -99,7 +99,7 @@ endfunction
 
 function! mixer#init() abort
   if !s:command_exists("Mix")
-    command -buffer -bang -complete=custom,MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
+    command -buffer -bang -complete=customlist,s:MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
   endif
 
   let mix_file = findfile("mix.exs", ".;")
@@ -131,15 +131,15 @@ function! mixer#init() abort
   endif
 
   if !s:command_exists("Deps")
-    command -buffer -complete=custom,MixerDepsComplete -bang -nargs=* -range Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+    command -buffer -complete=customlist,s:MixerDepsComplete -bang -nargs=* -range Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
   endif
 
   if !s:command_exists("Gen")
-    command -buffer -complete=custom,MixerGenComplete -nargs=1 Gen call s:Gen(<f-args>)
+    command -buffer -complete=customlist,s:MixerGenComplete -nargs=1 Gen call s:Gen(<f-args>)
   endif
 
   if !s:command_exists("Migrate")
-    command -buffer -complete=custom,MixerMigrationComplete -nargs=* Migrate call s:Migrate(<f-args>)
+    command -buffer -complete=customlist,s:MixerMigrationComplete -nargs=* Migrate call s:Migrate(<f-args>)
   endif
 endfunction
 
@@ -628,7 +628,7 @@ function! s:get_mix_tasks()
   " Awk is from @mhandberg
   let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
 
-  return system(mix_help)
+  return split(system(mix_help), '\n')
 endfunction
 
 function! s:gather_mix_tasks(_channel, result)
@@ -703,12 +703,14 @@ function! s:Mix(bang, ...) abort
   call s:run_mix_command(a:bang, "", a:000)
 endfunction
 
-function! MixerMixComplete(A, L, P) abort
+function! s:MixerMixComplete(A, L, P) abort
   if exists('b:mix_project')
-    return join(b:mix_project.tasks, "\n")
+    let tasks = copy(b:mix_project.tasks)
   else
-    return s:get_mix_tasks()
+    let tasks = s:get_mix_tasks()
   endif
+
+  return filter(tasks, {-> v:val =~ a:A})
 endfunction
 
 " Mix: :Deps {{{1
@@ -816,11 +818,12 @@ function! s:append_dep(_id, _status) abort
   write
 endfunction
 
-function! MixerDepsComplete(A, L, P) abort
-  let deps_tasks = filter(b:mix_project.tasks, {-> v:val =~ '^deps' && v:val !=# 'deps'})
+function! s:MixerDepsComplete(A, L, P)
+  let deps_tasks = filter(copy(b:mix_project.tasks), {-> v:val =~ '^deps' && v:val !=# 'deps'})
   let bare_tasks = map(deps_tasks, {-> s:sub(v:val, '^deps\.', '')})
+  let bare_tasks = filter(bare_tasks, {-> v:val =~ a:A})
 
-  return join(bare_tasks, "\n")
+  return bare_tasks
 endfunction
 
 " Mix: :Gen {{{1
@@ -840,18 +843,19 @@ function! s:Gen(...) abort
   endif
 endfunction
 
-function! MixerGenComplete(A, L, P) abort
+function! s:MixerGenComplete(A, L, P) abort
   let tasks = keys(s:get_gen_tasks())
   let tasks = sort(tasks)
+  let tasks = filter(tasks, {-> v:val =~ a:A})
 
-  return join(tasks, "\n")
+  return tasks
 endfunction
 
 function! s:get_gen_tasks() abort
   let PackageName = {task -> matchstr(task, '^\l\+')}
   let gen_tasks = {}
   let dup_keys = []
-  let all_tasks = b:mix_project.tasks
+  let all_tasks = copy(b:mix_project.tasks)
 
   for task in filter(all_tasks, {-> v:val =~ '\.gen\.'})
     let task_key = matchstr(task, '\.gen\.\zs.*$')
@@ -902,41 +906,46 @@ let s:migrate_opts = [
       \   "-n"
       \ ]
 
-function! MixerMigrationComplete(A, L, _) abort
+function! s:MixerMigrationComplete(A, L, P) abort
   if a:L =~ "-"
-    return join(s:migrate_opts, "\n")
+    let opts = copy(s:migrate_opts)
+
+    return filter(opts, {-> v:val =~ a:A})
   endif
 
-  " let prefix = "/priv/repo/migrations"
-  " let completions = glob(b:mix_project.root.prefix."/*"), "\n"
+  let prefix = "/priv/repo/migrations"
+  let completions = glob(b:mix_project.root.prefix."/*")
+  let completions = split(completions, '\n')
+  let completions = map(completions, {-> s:sub(v:val, '^\.'.escape(prefix, '/').'\/', '')})
+  let completions = filter(completions, {-> v:val =~ a:A})
 
-  return ""
+  return completions
 endfunction
 
 " Phoenix: :R {{{1
 
 function!  s:has_render() abort
   return  search('^\s\+def render(', 'wn')
-endfuncti on
+  endfuncti on
 
-function!  s:in_render() abort
-  let Ski p = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
-  let vie w = winsaveview()
+  function!  s:in_render() abort
+    let Ski p = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
+    let vie w = winsaveview()
 
-  if !sea rch('def render(', 'Wb', 0, 0, Skip)
-    return 0
-  end
+    if !sea rch('def render(', 'Wb', 0, 0, Skip)
+      return 0
+    end
 
-  let start_pos = s:get_cursor_pos()
+    let start_pos = s:get_cursor_pos()
 
-  call search('\<do\>', 'W', 0, 0, Skip)
+    call search('\<do\>', 'W', 0, 0, Skip)
 
-  call searchpair('\<do\>', '', '\<end\>', 'W', Skip)
-  let end_pos = s:get_cursor_pos()
+    call searchpair('\<do\>', '', '\<end\>', 'W', Skip)
+    let end_pos = s:get_cursor_pos()
 
-  call winrestview(view)
+    call winrestview(view)
 
-  return s:in_range(s:get_cursor_pos(), start_pos, end_pos)
+    return s:in_range(s:get_cursor_pos(), start_pos, end_pos)
 endfunction
 
 function! s:R(type) abort
