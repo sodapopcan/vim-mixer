@@ -157,7 +157,7 @@ COMMANDS                                    *mixer-commands*
                                             *mixer-commands-mix*
                                             *mixer-:Mix*
                                             *:Mix*
-:Mix[!] {flags} {args}
+:Mix[!] {-env}{+env} {args}
                     Run a mix command with autocomplete.
 
                     It will use an async library if available.  Currently,
