@@ -1,6 +1,10 @@
 " Location:     autoload/mixer.vim
 " Maintainer:   Andrew Haust <https://andrew.hau.st>
 
+" Variables {{{1
+
+let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+
 " Utility {{{1
 
 function! s:sub(str, pat, rep)
@@ -412,10 +416,9 @@ function! s:find_do_block_head(do_pos, flags)
   " '\%(\<end\>\|\%(,$\)\)'
   " let start = '\%(\<end\>\s\+\)\@!\zs'
   let start = ''
-  let func_call = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
   let no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\)\@!'
 
-  return searchpos(start.func_call.no_follow, a:flags, 0, 0, Skip)
+  return searchpos(start.s:func_call_regex.no_follow, a:flags, 0, 0, Skip)
 endfunction
 
 function! s:do_find_end() abort
@@ -444,6 +447,17 @@ function! s:find_end_pos(func_pos, do_pos) abort
   let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda_end(a:do_pos)}
 
   if expand('<cWORD>') ==# 'do:'
+    " First we can check if if it's call with parens as that is easy to find the
+    " end:
+    call cursor(a:func_pos)
+    if getline(line('.')) =~ '\#%'.s:func_call_regex.'('
+      normal! f(
+
+      return searchpairpos('(', '', ')', 'W', {-> s:is_string_or_comment()})
+    else
+      call cursor(a:do_pos)
+    endif
+
     while s:do_find_end()
       if s:cursor_char() ==# ','
         normal! w
