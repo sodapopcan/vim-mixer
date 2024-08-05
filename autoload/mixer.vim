@@ -441,6 +441,14 @@ function! s:do_find_end() abort
   endif
 endfunction
 
+function! s:get_end_pos()
+  while s:cursor_char() =~ '}\|\]'
+    normal! h
+  endwhile
+
+  return s:get_cursor_pos()
+endfunction
+
 function! s:find_end_pos(func_pos, do_pos) abort
   call cursor(a:do_pos)
 
@@ -464,8 +472,9 @@ function! s:find_end_pos(func_pos, do_pos) abort
         if expand('<cWORD>') =~ '\<\k\+\>:'
           continue
         else
-          normal! ge
-          return s:get_cursor_pos()
+          normal! geh
+
+          return s:get_end_pos()
         endif
       elseif s:cursor_char() ==# ')'
         let open_pos = searchpairpos('(', '', ')', 'Wbn', {-> s:is_string_or_comment()})
@@ -473,9 +482,9 @@ function! s:find_end_pos(func_pos, do_pos) abort
           normal! h
         endif
 
-        return s:get_cursor_pos()
+        return s:get_end_pos()
       else
-        return s:get_cursor_pos()
+        return s:get_end_pos()
       endif
     endwhile
   else
@@ -633,7 +642,7 @@ endfunction
 
 function! s:run_mix_command(bang, cmd, args) abort
   let envs = []
-  let index = 0
+  let default_env = 'dev'
 
   let args = copy(a:args)
 
@@ -643,18 +652,26 @@ function! s:run_mix_command(bang, cmd, args) abort
     let args = args[1:]
   end
 
-  let args_rest = copy(args)
+  let rest_args = copy(args)
 
-  for arg in args_rest
-    if (index == 0 || len(envs)) && arg =~ '^+'
-      call remove(args, 0)
+  for arg in rest_args
+    if arg =~ '^+'
+      if empty(envs)
+        call add(envs, default_env)
+      endif
+
+      let env = remove(args, 0)
+      call add(envs, s:sub(env, '^+', ''))
+    elseif arg =~ '^-'
+      let env = remove(args, 0)
+      call add(envs, s:sub(env, '^-', ''))
     else
       break
     endif
   endfor
 
   if empty(envs)
-    call add(envs, 'dev')
+    call add(envs, default_env)
   endif
 
   if a:cmd != ""
@@ -667,8 +684,7 @@ function! s:run_mix_command(bang, cmd, args) abort
     call add(mix_tasks, "MIX_ENV=".env." mix ".join(args, " "))
   endfor
 
-  let mix_command = join(mix_tasks, " && ")
-
+  let mix_cmd = join(mix_tasks, " && ")
   let async_cmd = get(g:, 'mixer_async_command', 'Dispatch')
 
   if s:command_exists(async_cmd) && async
@@ -676,9 +692,9 @@ function! s:run_mix_command(bang, cmd, args) abort
       let async_cmd = async_cmd.'!'
     endif
 
-    exec async_cmd mix_command
+    exec async_cmd mix_cmd
   else
-    exec "!" mix_command
+    exec "!" mix_cmd
   endif
 endfunction
 
@@ -700,13 +716,19 @@ endfunction
 " Mix: :Deps {{{1
 
 function! s:Deps(bang, mods, range, line1, line2, ...) abort
-  let buf_is_mix = expand('%t') =~ "mix.exs"
-
   let args = copy(a:000)
+  let envs = []
 
-  if !a:0 && buf_is_mix
-    let task_fragment = "get"
-  elseif !a:0 && !buf_is_mix
+  for arg in a:000
+    if arg =~ '^+\|-'
+      call add(envs, arg)
+      call remove(args, 0)
+    else
+      break
+    endif
+  endfor
+
+  if !a:0
     if a:mods =~ 'hor\|vert'
       let cmd = 'split'
     else
@@ -718,12 +740,12 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
     exec "normal! z\<cr>"
 
     return
-  elseif a:0 && a:1 == 'add'
+  elseif a:0 && args[0] ==# 'add'
     if a:0 == 1
       echom "What do you want me to add?" | return
     endif
 
-    return s:find_dep(a:2)
+    return s:find_dep(args[1])
   elseif a:0
     let task_fragment = args[0]
     let args = args[1:]
@@ -732,7 +754,7 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
     let args = []
   endif
 
-  if buf_is_mix && getbufinfo(bufnr())[0].changed
+  if expand('%t') =~ "mix.exs" && getbufinfo(bufnr())[0].changed
     write
   endif
 
@@ -741,6 +763,8 @@ function! s:Deps(bang, mods, range, line1, line2, ...) abort
       call add(args, matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+'))
     endfor
   endif
+
+  let args = extend(envs, args)
 
   let task = join(["deps", task_fragment], ".")
 
