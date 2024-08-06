@@ -105,7 +105,13 @@ function! mixer#init() abort
   let mix_file = findfile("mix.exs", ".;")
 
   if empty(mix_file)
+    call s:set_compiler('.')
+
     return 0
+  else
+    let root = fnamemodify(mix_file, ':p:h')
+
+    call s:set_compiler(root)
   endif
 
   call s:init_mix_project(mix_file)
@@ -145,6 +151,16 @@ endfunction
 
 function! s:unmapped(map, type)
   return empty(maparg(a:map, a:type))
+endfunction
+
+function! s:set_compiler(root)
+  if !empty(glob(a:root.'/Makefile')) && &makeprg ==# 'make'
+    return
+  elseif &ft =~ 'elixir' && expand('%:p') =~ '_test.exs$' && !empty(globpath(&rtp, 'compiler/exunit.vim'))
+    compiler exunit
+  elseif &ft =~ 'elixir' && !empty(globpath(&rtp, 'compiler/mix.vim'))
+    compiler mix
+  endif
 endfunction
 
 
@@ -581,7 +597,7 @@ function! s:init_mix_project(mix_file) abort
 
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
-  let project_root = s:sub(mix_file, 'mix.exs$', '')
+  let project_root = fnamemodify(mix_file, '%:p:h')
 
   if project_root ==# ""
     let project_root = "."
