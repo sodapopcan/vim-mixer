@@ -7,6 +7,12 @@ if exists('g:loaded_mixer') || &cp
 endif
 let g:loaded_mixer = 1
 
+let g:async_runners = [
+      \   'Dispatch',
+      \   'AsyncRunner',
+      \   'AsyncDo'
+      \ ]
+
 augroup mixer
   autocmd!
   autocmd FileType elixir,eelixir call mixer#define_mappings()

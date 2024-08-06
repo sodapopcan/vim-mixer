@@ -28,4 +28,5 @@ PR, but I will fix them on my own in a subsequent commit.
 ## Adding an async runner
 
 If you're making a pull request to add an async runner, look for a variable
-called `s:async_runners`.  Add the command to the list without the preceeding `:`.
+called `s:async_runners` (which is defined near the top of `plugin/mixer.vim`)
+and add it to the end.

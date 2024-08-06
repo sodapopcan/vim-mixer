@@ -5,12 +5,6 @@
 
 let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
-let s:async_runners = [
-      \   'Dispatch',
-      \   'AsyncRunner',
-      \   'AsyncDo'
-      \ ]
-
 " Utility {{{1
 
 function! s:sub(str, pat, rep)
@@ -719,7 +713,7 @@ function! s:run_mix_command(bang, cmd, args) abort
   let async_cmd = g:mixer_async_command
 
   if !async_cmd
-    for runner in s:async_runners
+    for runner in g:async_runners
       if s:command_exists(runner)
         let async_cmd = runner
         break
