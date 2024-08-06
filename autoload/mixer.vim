@@ -646,8 +646,10 @@ function! s:init_mix_project(mix_file) abort
 
       if s:cursor_outer_syn_name() =~ 'Heex\|Surface'
         let b:match_words = s:html_match_words
+        setlocal commentstring=<%!--\ %s\ --%>
       else
         let b:match_words = b:elixir_match_words
+        setlocal commentstring=#\ %s
       endif
     endfunction
 
