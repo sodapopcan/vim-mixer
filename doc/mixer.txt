@@ -247,6 +247,9 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
                     attempt to find JS hook definitions from
                     `phx-hook="MyHook"`.  It otherwise works as normal.
 
+                    This command is only available if your project is being
+                    tracked by git.  Hopefully this will change at some point.
+
 
 
 TEXT OBJECTS                                *mixer-text-objects*

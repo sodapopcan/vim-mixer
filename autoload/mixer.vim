@@ -11,6 +11,10 @@ function! s:sub(str, pat, rep)
   return substitute(a:str, a:pat, a:rep, '')
 endfunction
 
+function! s:gsub(str, pat, rep)
+  return substitute(a:str, a:pat, a:rep, 'g')
+endfunction
+
 function! s:includes(list, member)
   return index(a:list, a:member) != -1
 endfunction
@@ -34,13 +38,14 @@ function! s:to_elixir_alias(word)
   return substitute(s:camelcase(a:word),'^.','\u&','')
 endfunction
 
-function! s:camelcase(word) " From tpope
+" Taken from @tpope's abolish.vim
+function! s:camelcase(word)
   let word = substitute(a:word, '-', '_', 'g')
 
   if word !~# '_' && word =~# '\l'
-    return substitute(word,'^.','\l&','')
+    return substitute(word, '^.', '\l&', '')
   else
-    return substitute(word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
+    return substitute(word, '\C\(_\)\=\(.\)', '\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))', 'g')
   endif
 endfunction
 
@@ -214,14 +219,16 @@ function mixer#define_mappings()
   onoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
   onoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
 
-  nnoremap <silent> <buffer> <c-]> :call <sid>find_event()<cr>
+  if !empty(system('command -v git'))
+    nnoremap <silent> <buffer> <c-]> :call <sid>find_event()<cr>
+  endif
 
   call s:define_argument_mappings()
 endfunction
 
-"}}} Jump to event handler/hook {{{1
+" Jump to event handler/hook {{{1
 
-function! s:find_event()
+function! s:find_event() abort
   let cursor_word = expand('<cWORD>')
 
   if cursor_word !~ '^phx-'
@@ -234,15 +241,97 @@ function! s:find_event()
     let char = '"'
   else
     exec "normal! \<c-]>"
+
     return
   endif
 
+  let cursor = s:get_cursor_pos()
+
+  " Probably a better way to do this.
   let save_i = @i
   exec 'normal! "iyi'.char
   let token = @i
   let @i = save_i
 
-  call searchpos('def handle_event(\%(\%(\s\|\n\)\+\)\?"'.token, 's')
+  if cursor_word =~ '^phx-hook'
+    call s:handle_phx_hook(token, cursor)
+  else
+    call s:handle_phx_event(token, cursor)
+  endif
+endfunction
+
+function! s:handle_phx_hook(token, cursor)
+  let results = systemlist("git grep -n '".a:token." = ' -- :/'*.js' :/'*.ts'")
+
+  if len(results)
+    let result = split(results[0], ':')
+    let file = result[0]
+    let lnr = result[1]
+    normal! m'
+    exec "silent keepjumps edit" file
+    exec "keepjumps" lnr
+  else
+    if exists('b:mix_project')
+      let files = s:find_js_file(a:token)
+
+      if !empty(files)
+        normal! m'
+
+        exec "silent keepjumps edit" files[0]
+      else
+        call cursor(a:cursor)
+        echom "Can't find definition"
+
+        return
+      endif
+    else
+      call cursor(a:cursor)
+
+      echom "Not a mix project"
+    endif
+  end
+endfunction
+
+function! s:find_js_file(token)
+  let tracked = systemlist("git ls-files -- '*.js' ':!:priv/'")
+  let untracked = systemlist("git ls-files --others -- '*.js' ':!:deps/' ':!:priv/'")
+  let files = extend(tracked, untracked)
+
+  let token = s:gsub(a:token, '-\|_', '')
+  let files = matchfuzzy(files, token)
+
+  return files
+endfunction
+
+function! s:handle_phx_event(token, cursor)
+  let template = ''
+  let flags = 's'
+
+  if expand('%:e') =~ 'heex\|sface'
+    let template = expand('%')
+    let flags = ''
+    let exfile = s:sub(template, '\.html\.\<heex\|sface\>$', '\.ex')
+
+    if !empty(glob(exfile))
+      normal! m'
+
+      exec "silent keepjumps edit" exfile
+    else
+      echom "Cannot find Elixir file"
+
+      return
+    endif
+  endif
+
+  if !search('def handle_event(\%(\%(\s\|\n\)\+\)\?"\<'.a:token.'\>', flags)
+    echom "Cannot find definition"
+
+    if !empty(template)
+      exec "silent keepjumps edit" template
+    endif
+
+    call cursor(a:cursor)
+  endif
 endfunction
 
 " Sideways/SplitJoin integration {{{1
