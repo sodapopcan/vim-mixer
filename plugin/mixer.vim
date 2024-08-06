@@ -9,6 +9,7 @@ let g:loaded_mixer = 1
 
 let g:async_runners = [
       \   'Dispatch',
+      \   'Neomake',
       \   'AsyncRunner',
       \   'AsyncDo'
       \ ]

@@ -35,7 +35,7 @@ TEXT OBJECTS                                *mixer-text-objects*
 
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
-for the def* family of macros where the 'a' versions include specs,
+for the def* family of macros where the 'aF' version includes specs,
 docstrings, LiveView's `attr` and `slot`, as well as other meta.
 
 Here is an overview:
@@ -168,12 +168,12 @@ COMMANDS                                    *mixer-commands*
                     Run a mix command with autocomplete.
 
                     It will use an async library if available.  Currently,
-                    it's aware of |dispatch|, |asyncrun|, and the lesser known
-                    |asyncdo|.  The latter is by Elixir community member
-                    @hauleth so I figured I'd include it :)  PRs for others
-                    are welcome.  When called with a bang [!] it will call
-                    `:MyAsyncRunner!`.  You may also configure it to use any
-                    command you want:
+                    it's aware of |dispatch|, |neomake|, |asyncrun|, and the
+                    lesser known |asyncdo|.  The latter is by Elixir community
+                    member @hauleth so I figured I'd include it :)  PRs for
+                    others are welcome.  When called with a bang [!] it will
+                    call `:MyAsyncRunner!`.  You may also configure it to use
+                    any command you want:
 >
                       let g:mixer_async_command = 'Make'
 <
