@@ -224,8 +224,7 @@ function! s:find_event()
   let token = @i
   let @i = save_i
 
-  call search('handle_event("'.token)
-  normal! zz
+  call searchpos('def handle_event(\%(\%(\s\|\n\)\+\)\?"'.token, 's')
 endfunction
 
 function! s:define_argument_mappings()
