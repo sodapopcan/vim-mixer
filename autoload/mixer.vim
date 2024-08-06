@@ -597,7 +597,7 @@ function! s:init_mix_project(mix_file) abort
 
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
-  let project_root = fnamemodify(mix_file, '%:p:h')
+  let project_root = fnamemodify(mix_file, ':p:h')
 
   if project_root ==# ""
     let project_root = "."
@@ -628,7 +628,7 @@ function! s:init_mix_project(mix_file) abort
     let b:mix_project = g:mix_projects[project_root]
   endif
 
-  autocmd! DirChanged * let b:mix_project.root = s:sub(findfile("mix.exs", ".;"), 'mix.exs$', '')
+  autocmd! DirChanged * let b:mix_project.root = fnamemodify(findfile("mix.exs", ".;"), ':p:h')
 
   if exists('g:loaded_matchit')
     if !exists('s:html_match_words')
