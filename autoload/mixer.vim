@@ -975,26 +975,26 @@ endfunction
 
 function!  s:has_render() abort
   return  search('^\s\+def render(', 'wn')
-  endfuncti on
+endfunction
 
-  function!  s:in_render() abort
-    let Ski p = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
-    let vie w = winsaveview()
+function!  s:in_render() abort
+  let Skip = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
+  let view = winsaveview()
 
-    if !sea rch('def render(', 'Wb', 0, 0, Skip)
-      return 0
-    end
+  if !sea rch('def render(', 'Wb', 0, 0, Skip)
+    return 0
+  end
 
-    let start_pos = s:get_cursor_pos()
+  let start_pos = s:get_cursor_pos()
 
-    call search('\<do\>', 'W', 0, 0, Skip)
+  call search('\<do\>', 'W', 0, 0, Skip)
 
-    call searchpair('\<do\>', '', '\<end\>', 'W', Skip)
-    let end_pos = s:get_cursor_pos()
+  call searchpair('\<do\>', '', '\<end\>', 'W', Skip)
+  let end_pos = s:get_cursor_pos()
 
-    call winrestview(view)
+  call winrestview(view)
 
-    return s:in_range(s:get_cursor_pos(), start_pos, end_pos)
+  return s:in_range(s:get_cursor_pos(), start_pos, end_pos)
 endfunction
 
 function! s:R(type) abort
