@@ -1,4 +1,4 @@
-*mixer.txt*  *mixer* mixes mixes your mix so you can mix while you mix
+*mixer.txt*  *mixer* mixes your mix so you can mix while you mix
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
