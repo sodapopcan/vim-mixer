@@ -203,6 +203,8 @@ function mixer#define_mappings()
   call s:define_argument_mappings()
 endfunction
 
+"}}} Jump to event handler/hook {{{1
+
 function! s:find_event()
   let cursor_word = expand('<cWORD>')
 
@@ -226,6 +228,8 @@ function! s:find_event()
 
   call searchpos('def handle_event(\%(\%(\s\|\n\)\+\)\?"'.token, 's')
 endfunction
+
+" Sideways/SplitJoin integration {{{1
 
 function! s:define_argument_mappings()
   if exists('g:loaded_sideways') && get(g:, 'mixer_enable_textobj_arg')
