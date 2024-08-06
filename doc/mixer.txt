@@ -6,17 +6,22 @@ License: Same terms as Vim itself (see |license|)
 
 TABLE OF CONTENTS                           *mixer*
 
-INTRODUCTION                               |mixer-introduction|
-TEXT OBJECTS                               |mixer-text-objects|
-  # Do/end blocks                          |mixer-text-object-do-end|
-  * Functions                              |mixer-functions|
-  * Maps                                   |mixer-maps|
-  * Sigils                                 |mixer-sigils|
-  * Comments                               |mixer-comments|
-  * options                                |mixer-text-objects-options|
-MIX                                        |mixer-mix|
-  * Commands                               |mixer-mix-commands|
-  * Navigation                             |mixer-navigation|
+INTRODUCTION                                |mixer-introduction|
+COMMANDS                                    |mixer-mix-commands|
+  :Mix                                        |mixer-:Mix|
+  :Deps                                       |mixer-:Deps|
+  :Gen                                        |mixer-:Gen|
+  :Migrate                                    |mixer-:Migrate|
+  :Rollback                                   |mixer-:Rollback|
+MAPPINGS                                    |mixer-mappings|
+NAVIGATION                                  |mixer-navigation|
+TEXT OBJECTS                                |mixer-text-objects|
+  Do/end blocks                               |mixer-text-object-do-end|
+  Functions                                   |mixer-functions|
+  Maps                                        |mixer-maps|
+  Sigils                                      |mixer-sigils|
+  Comments                                    |mixer-comments|
+  options                                     |mixer-text-objects-options|
 
 
 INTRODUCTION                                *mixer-introduction*
@@ -29,133 +34,14 @@ elixir-tools.nvim <https://github.com/elixir-tools/elixir-tools.nvim>.  This
 plugin can be used along-side it.
 
 
-TEXT OBJECTS                                *mixer-text-objects*
-                                            *mixer-text-object*
-                                            *mixer-textobj*
 
-Text objects are defined for general Elixir blocks (do/end, fn/end), as well
-as maps, sigils, and comments/docstrings.  There are some specialized objects
-for the def* family of macros where the 'aF' version includes specs,
-docstrings, LiveView's `attr` and `slot`, as well as other meta.
+    PLEASE NOTE~
 
-Here is an overview:
+    Almost all commands and mappings are BUFFER LOCAL and only defined
+    if they are available!  This means you must edit an elixir, heex,
+    or surface file to get the appropriate functionality.
 
 
-    Elixir construct    | Text Object  (mneumonic/notes)
-    --------------------+------------------------------------------------
-    do/end blocks       | d  (do)
-    do/end blocks       | D  (includes assignment and comments)
-    def[p]/defmarco[p]  | f
-    def[p]/defmacro[p]  | F  (includes annotations and all function heads)
-    defmodule           | M
-    %{}/%Fooi.Bar{}     | m  (maps and structs)
-    Sigils              | S  (note the uppercase)
-    #/@doc """/etc      | c  (comment)
-
-
-                    do/end blocks~
-id                                          *mixer-ie* *mixer-ae*
-ad
-iD
-aD                  A do/end block including function call.
-
-                    Currently brings `else` along with it.
-
-                    A reasonable effort is made for these to be as general as
-                    possible and work with custom macros, not just the
-                    builtins.  They work with both `do`/`end` syntax as
-                    well as keyword syntax (`do: ...`).
-
-                    "aD" will include assignment (pattern matching) and
-                    any comments.  For example, in the following code with the
-                    cursor represented by `\%#`, typing `daD` will delete all
-                    of the following:
-
-
->
-                      # Set foo to bar()
-                      # if `condition?` is `true`
-                      let foo =
-                        if condition? do
-                          bar\%#()
-                        end
-<
-                    Note that for comments to be included, they must be
-                    touching the code block.  If separated by a blank line
-                    they will be left alone.
-
-
-                    function and macro definitions~
-if                                          *mixer-if* *mixer-af*
-af                                          *mixer-iF* *mixer-aF*
-iF
-aF                  A function definition including `def`, `defp`, `defmacro`, and
-                    `defmacrop` as well as `defn` for Nx'ers.
-
-                    "aF" will include any function annotations.  A small list
-                    of well-known annotations are considered (definitively:
-                    `@doc`, `@spec`, `@tag`, and `@requirements`) as well as
-                    LiveView's `attr` and `slot` macros.  Otherwise, anything
-                    between these and the function head and anything touching
-                    the function head (no blank lines) will be included.
-
-                    If necessary, it is possible to add your own by setting
-                    `g:mixer_known_annotations` to a regex.  For example:
->
-                      let g:mixer_known_annotations =
-                        \ '\<my_macro\>\|@my_attribute\>'
-<
-
-                    module definitions~
-iM                                          *mixer-iM* *mixer-aM*
-aM                  A module definition.
-
-
-                    maps and structs~
-im                                          *mixer-im* *mixer-am*
-am                  A map or struct.
-
-                    With a count of `0`, as in `0yam`, this will target the
-                    most outter map.
-
-
-                    sigils~
-iS                                          *mixer-i~* *mixer-a~*
-aS                  A sigil.  Works regardless of the delimiter.
-
-
-                    comments~
-ic                                          *mixer-ic* *mixer-ac*
-ac                  A comment.  Mostly just useful for formatting when
-                    a comment is touching some code.
-
-
-                    function arguments~
-ia                                          *mixer-text-objects-arguments*
-aa
-                    A function argument.
-
-                    These are only available if the plugin sideways.vim is
-                    installed.  You can find this on www.vim.org or on github
-                    at <https://github.com/AndrewRadev/sideways.vim>.
-
-
-                                            *mixer-text-objects-options*
-
-By default, text objects use the "seek" behaviour.  This means if you type
-`daf` outside of a function, it will delete the next function searching
-downward.  You may turn this off with the following setting:
->
-  let g:mixer_textobj_seek = 0
-<
-Now your cursor must be on an object to operate on it.
-
-Fine-grained control over which objects use seek is possible by providing
-a comma comma-separate string where the possible values are:
->
-  let g:mixer_textobj_seek = "block,module,map,sigil,comment"
-<
-This is the default.
 
 
 COMMANDS                                    *mixer-commands*
@@ -179,10 +65,10 @@ COMMANDS                                    *mixer-commands*
 <
                     The environment can be specified like so:
 >
-                      :Mix -test mix compile
+                      :Mix :test mix compile
 <
                     This works for any custom environment you have outside the
-                    standard "dev", "test", and "prod".  The `-` here simply
+                    standard "dev", "test", and "prod".  The `:` here simply
                     means "environment name."
 
                     You can also add environments onto the default like so:
@@ -275,6 +161,33 @@ COMMANDS                                    *mixer-commands*
                     also available.
 
 
+                                            *mixer-:Gen* *:Gen*
+:Gen                Unified generator command with autocomplete.
+
+                    Run any `*.gen.*` task in your project without having to
+                    provide its namesapce.
+
+                    For example:
+>
+                      :Gen live Accounts User users name:string age:integer
+                      :Gen migration add_name_to_users
+<
+
+                    Name collisions are resolved by appending the package
+                    prefix separated by a dot (`.`).  For example, if you have
+                    a Phoenix project that is using Guardian and you type
+                    `:Gen sec<tab>` you will see:
+>
+                      :Gen secret.
+                      secret.guardian secret.phx
+<
+                    Tasks are sorted by their non-namespaced names.
+
+                    This command's bang [!] behaviour works the same as it
+                    does for |:Mix|.  Environment flags via `-` and `+` are
+                    also available.
+
+
                                             *mixer-:Migrate* *:Migrate*
 :{count}Migrate[!] {arg}
                     Run migrations with autocomplete.
@@ -311,26 +224,148 @@ COMMANDS                                    *mixer-commands*
                     Only available in a mix project with Ecto.
 
 
-                                            *mixer-:Gen* *:Gen*
-:Gen                Unified generator command with autocomplete.
+MAPPINGS                                    *mixer-mappings*
 
-                    Run any `*.gen.*` task in your project without having to
-                    provide its namesapce.
+                                            *mixer-i_CTRL-]*
+i_CTRL-]            Remapped to be context aware in Phoenix files. Will
+                    jump from `phx-click="some-event"` to
+                    `handle_event("some-event"...`.  It will also
+                    attempt to find JS hook definitions from
+                    `phx-hook="MyHook"`.  It otherwise works as normal.
 
-                    For example:
+
+
+TEXT OBJECTS                                *mixer-text-objects*
+                                            *mixer-text-object*
+                                            *mixer-textobj*
+
+Text objects are defined for general Elixir blocks (do/end, fn/end), as well
+as maps, sigils, and comments/docstrings.  There are some specialized objects
+for the def* family of macros where the 'aF' version includes specs,
+docstrings, LiveView's `attr` and `slot`, as well as other meta.
+
+Here is an overview:
+
+
+    Elixir construct    | Text Object  (mneumonic/notes)
+    --------------------+------------------------------------------------
+    do/end blocks       | d  (do)
+    do/end blocks       | D  (includes assignment and comments)
+    def[p]/defmarco[p]  | f
+    def[p]/defmacro[p]  | F  (includes annotations and all function heads)
+    defmodule           | M
+    %{}/%Fooi.Bar{}     | m  (maps and structs)
+    Sigils              | S  (note the uppercase)
+    #/@doc """/etc      | c  (comment)
+
+
+                    do/end blocks~
+id                                          *mixer-ie* *mixer-ae*
+ad
+iD
+aD                  A do/end block including function call.
+
+                    Currently brings `else` along with it.
+
+                    A reasonable effort is made for these to be as general as
+                    possible and work with custom macros, not just the
+                    builtins.  They work with both `do`/`end` syntax as
+                    well as keyword syntax (`do: ...`).
+
+                    "aD" will include assignment (pattern matching) and
+                    any comments.  For example, in the following code with the
+                    cursor represented by `\%#`, typing `daD` will delete all
+                    of the following:
 >
-                      :Gen live Accounts User users name:string age:integer
-                      :Gen migration add_name_to_users
+                      # Set foo to bar()
+                      # if `condition?` is `true`
+                      let foo =
+                        if condition? do
+                          bar\%#()
+                        end
+<
+                    Note that for comments to be included, they must be
+                    touching the code block.  If separated by a blank line
+                    they will be left alone.
+
+
+                    function and macro definitions~
+
+if                                          *mixer-if* *mixer-af*
+af                                          *mixer-iF* *mixer-aF*
+iF
+aF                  A function definition including `def`, `defp`, `defmacro`, and
+                    `defmacrop` as well as `defn` for Nx'ers.
+
+                    "aF" will include any function annotations.  A small list
+                    of well-known annotations are considered (definitively:
+                    `@doc`, `@spec`, `@tag`, and `@requirements`) as well as
+                    LiveView's `attr` and `slot` macros.  Otherwise, anything
+                    between these and the function head and anything touching
+                    the function head (no blank lines) will be included.
+
+                    If necessary, it is possible to add your own by setting
+                    `g:mixer_known_annotations` to a regex.  For example:
+>
+                      let g:mixer_known_annotations =
+                        \ '\<my_macro\>\|@my_attribute\>'
 <
 
-                    Name collisions are resolved by appending the package
-                    prefix separated by a dot (`.`).  For example, if you have
-                    a Phoenix project that is using Guardian and you type
-                    `:Gen sec<tab>` you will see:
+                    module definitions~
+
+iM                                          *mixer-iM* *mixer-aM*
+aM                  A module definition.
+
+
+                    maps and structs~
+
+im                                          *mixer-im* *mixer-am*
+am                  A map or struct.
+
+                    With a count of `0`, as in `0yam`, this will target the
+                    most outter map.
+
+
+                    sigils~
+
+iS                                          *mixer-iS* *mixer-aS*
+aS                  A sigil.  Works regardless of the delimiter.
+
+
+                    comments~
+
+ic                                          *mixer-ic* *mixer-ac*
+ac                  A comment.  Mostly just useful for formatting when
+                    a comment is touching some code.
+
+
+                    function arguments~
+
+ia                                          *mixer-text-objects-arguments*
+aa
+                    A function argument.
+
+                    These are only available if the plugin sideways.vim is
+                    installed.  You can find this on www.vim.org or on github
+                    at <https://github.com/AndrewRadev/sideways.vim>.
+
+
+                                            *mixer-text-objects-options*
+
+By default, text objects use the "seek" behaviour.  This means if you type
+`daf` outside of a function, it will delete the next function searching
+downward.  You may turn this off with the following setting:
 >
-                      :Gen secret.
-                      secret.guardian secret.phx
+  let g:mixer_textobj_seek = 0
 <
-                    Tasks are sorted by their non-namespaced names.
+Now your cursor must be on an object to operate on it.
+
+Fine-grained control over which objects use seek is possible by providing
+a comma comma-separate string where the possible values are:
+>
+  let g:mixer_textobj_seek = "block,module,map,sigil,comment"
+<
+This is the default.
+
 
   vim:tw=78:et:ft=help:norl:
