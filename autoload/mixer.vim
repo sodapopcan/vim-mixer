@@ -106,36 +106,42 @@ function! mixer#init() abort
 
   call s:init_mix_project()
 
-  if !s:command_exists("R")
-    command -buffer -nargs=0 R call s:R('edit')
+  if exists('b:mix_project')
+    if !s:command_exists("Deps")
+      command -buffer -complete=customlist,s:MixerDepsComplete -range -bang -nargs=* Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+    endif
   endif
 
-  if !s:command_exists("RE")
-    command -buffer -nargs=0 RE call s:R('edit')
+  if exists('b:mix_project') && b:mix_project.has_phoenix
+    if !s:command_exists("R")
+      command -buffer -nargs=0 R call s:R('edit')
+    endif
+
+    if !s:command_exists("RE")
+      command -buffer -nargs=0 RE call s:R('edit')
+    endif
+
+    if !s:command_exists("RS")
+      command -buffer -nargs=0 RS call s:R('split')
+    endif
+
+    if !s:command_exists("RV")
+      command -buffer -nargs=0 RV call s:R('vsplit')
+    endif
+
+    if !s:command_exists("RT")
+      command -buffer -nargs=0 RT call s:R('tabedit')
+    endif
   endif
 
-  if !s:command_exists("RS")
-    command -buffer -nargs=0 RS call s:R('split')
-  endif
+  if exists('b:mix_project') && b:mix_project.has_ecto
+    if !s:command_exists("Gen")
+      command -buffer -complete=customlist,s:MixerGenComplete -bang -nargs=* Gen call s:Gen(<bang>0, <f-args>)
+    endif
 
-  if !s:command_exists("RV")
-    command -buffer -nargs=0 RV call s:R('vsplit')
-  endif
-
-  if !s:command_exists("RT")
-    command -buffer -nargs=0 RT call s:R('tabedit')
-  endif
-
-  if !s:command_exists("Deps")
-    command -buffer -complete=customlist,s:MixerDepsComplete -range -bang -nargs=* Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
-  endif
-
-  if !s:command_exists("Gen")
-    command -buffer -complete=customlist,s:MixerGenComplete -bang -nargs=* Gen call s:Gen(<bang>0, <f-args>)
-  endif
-
-  if !s:command_exists("Migrate")
-    command -buffer -complete=customlist,s:MixerMigrationComplete -count=1 -bang -nargs=* Migrate call s:Migrate(<bang>0, <count>, <f-args>)
+    if !s:command_exists("Migrate")
+      command -buffer -complete=customlist,s:MixerMigrationComplete -count=1 -bang -nargs=* Migrate call s:Migrate(<bang>0, <count>, <f-args>)
+    endif
   endif
 endfunction
 
