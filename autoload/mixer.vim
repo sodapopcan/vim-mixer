@@ -700,6 +700,9 @@ function! s:init_mix_project() abort
     let apps_path = ""
   endtry
 
+  let has_phoenix = s:file_exists(project_root."/deps/phoenix")
+  let has_ecto = s:file_exists(project_root."/deps/ecto_sql")
+
   let bindingPrefix = 'phx-'
 
   if empty(apps_path)
@@ -709,6 +712,8 @@ function! s:init_mix_project() abort
       if !empty(match)
         let bindingPrefix = match
       endif
+    catch
+      " Cool. caught it
     endtry
   endif
 
@@ -721,6 +726,8 @@ function! s:init_mix_project() abort
           \   "apps_path": apps_path,
           \   "nested": nested,
           \   "bindingPrefix": bindingPrefix,
+          \   "has_phoenix": has_phoenix,
+          \   "has_ecto": has_ecto,
           \   "tasks": []
           \ }
 
