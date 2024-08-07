@@ -225,6 +225,8 @@ function! s:find_event() abort
 
   if cursor_word !~ prefix
     exec "normal! \<c-]>"
+
+    return
   endif
 
   if s:matches(cursor_word, prefix.'.\+=''')
