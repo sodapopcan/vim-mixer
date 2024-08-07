@@ -1218,6 +1218,8 @@ function! s:adjust_whitespace(start_pos)
   if start_lnr > 1 && prev_blank && empty_gutter
     let start_lnr -= 1
     let start_col = 1
+  elseif start_lnr > 1 && empty_gutter
+    let start_col = 1
   endif
 
   return [start_lnr, start_col]
