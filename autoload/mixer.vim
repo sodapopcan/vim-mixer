@@ -1,7 +1,7 @@
 " Location:     autoload/mixer.vim
 " Maintainer:   Andrew Haust <https://andrew.hau.st>
 
-" Variables {{{1
+" Constants {{{1
 
 let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
