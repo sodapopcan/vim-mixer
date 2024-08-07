@@ -77,18 +77,18 @@ endfunction
 function! s:async_append(cmd, append_output_to)
   if exists("*job_start")
     call job_start(["sh", "-c", a:cmd], {
-          \   "out_cb": function("s:_gather_output", [a:append_output_to]),
+          \   "out_cb": function("s:gather_output", [a:append_output_to]),
           \   "mode": "nl"
           \ })
   elseif exists("*jobstart")
     call jobstart(["sh", "-c", a:mix_help], {
-          \   "on_stdout": function("s:_gather_output", [a:append_output_to]),
+          \   "on_stdout": function("s:gather_output", [a:append_output_to]),
           \   "mode": "nl"
           \ })
   endif
 endfunction
 
-function! s:_gather_output(collector, channel, result)
+function! s:gather_output(collector, channel, result)
   call add(a:collector, a:result)
 endfunction
 
