@@ -771,7 +771,7 @@ function! s:init_mix_project() abort
       endif
     endfunction
 
-    autocmd! CursorMoved *.ex call s:do_match_words()
+    autocmd! CursorHold *.ex call s:do_match_words()
   endif
 
   let g:mix_projections = get(g:, "mix_projections", "replace")
