@@ -107,19 +107,7 @@ function! mixer#init() abort
     command -buffer -bang -complete=customlist,s:MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
   endif
 
-  let mix_file = findfile("mix.exs", ".;")
-
-  if empty(mix_file)
-    call s:set_compiler('.')
-
-    return 0
-  else
-    let root = fnamemodify(mix_file, ':p:h')
-
-    call s:set_compiler(root)
-  endif
-
-  call s:init_mix_project(mix_file)
+  call s:init_mix_project()
 
   if !s:command_exists("R")
     command -buffer -nargs=0 R call s:R('edit')
@@ -673,15 +661,26 @@ endfunction
 
 " Mix: Project {{{1
 
-function! s:init_mix_project(mix_file) abort
-  let mix_file = a:mix_file
+function! s:init_mix_project() abort
+  " Check if in a nested or umbrella project
+  let mix_file = findfile("mix.exs", ".;", 2)
+  let nested = 1
 
-  if !exists("g:mix_projects")
-    let g:mix_projects = {}
+  if empty(mix_file)
+    let mix_file = findfile("mix.exs", ".;")
+    let nested = 0
   endif
 
-  if !exists("b:mix_project")
-    let b:mix_project = {}
+  if empty(mix_file)
+    return 0
+  endif
+
+  let root = fnamemodify(mix_file, ':p:h')
+
+  call s:set_compiler(root)
+
+  if !exists('g:mix_projects')
+    let g:mix_projects = {}
   endif
 
   let b:impl_lnr = 0
@@ -693,12 +692,14 @@ function! s:init_mix_project(mix_file) abort
   endif
 
   try
-    let contents = join(readfile(mix_file), "\n")
-    let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze,')
-    let deps_fun = matchstr(contents, 'def project\%(()\)\?\_.*deps:\s\+\zs\w\+\ze\%(()\)\?,')
+    let contents = join(readfile(mix_file), '\n')
+    let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze')
+    let deps_fun = matchstr(contents, 'def project\%(()\)\?\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
+    let apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zs[a-z][A-Za-z0-9_]\+\ze"')
   catch
     let project_name = ""
     let deps_fun = ""
+    let apps_path = ""
   endtry
 
   if !has_key(g:mix_projects, project_root)
@@ -707,6 +708,8 @@ function! s:init_mix_project(mix_file) abort
           \   "name": project_name,
           \   "alias": s:to_elixir_alias(project_name),
           \   "deps_fun": deps_fun,
+          \   "apps_path": apps_path,
+          \   "nested": nested,
           \   "tasks": []
           \ }
 
