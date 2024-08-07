@@ -218,14 +218,15 @@ endfunction
 
 function! s:find_event() abort
   let cursor_word = expand('<cWORD>')
+  let prefix = b:mix_project.bindingPrefix
 
-  if cursor_word !~ '^phx-'
+  if cursor_word !~ prefix
     exec "normal! \<c-]>"
   endif
 
-  if s:matches(cursor_word, 'phx-.\+=''')
+  if s:matches(cursor_word, prefix.'.\+=''')
     let char = ''''
-  elseif s:matches(cursor_word, 'phx-.\+="')
+  elseif s:matches(cursor_word, prefix.'.\+="')
     let char = '"'
   else
     exec "normal! \<c-]>"
@@ -241,7 +242,7 @@ function! s:find_event() abort
   let token = @i
   let @i = save_i
 
-  if cursor_word =~ '^phx-hook'
+  if cursor_word =~ '^'.prefix.'hook'
     call s:handle_phx_hook(token, cursor)
   else
     call s:handle_phx_event(token, cursor)
@@ -702,6 +703,18 @@ function! s:init_mix_project() abort
     let apps_path = ""
   endtry
 
+  let bindingPrefix = 'phx-'
+
+  if empty(apps_path)
+    try
+      let appjs = join(readfile(project_root.'/assets/js/app.js'), '\n')
+      let match = matchstr(appjs, 'bindingPrefix: \(''\|"\)\zs[A-Za-z\-]\+\ze\1')
+      if !empty(match)
+        let bindingPrefix = match
+      endif
+    endtry
+  endif
+
   if !has_key(g:mix_projects, project_root)
     let g:mix_projects[project_root] = {
           \   "root": project_root,
@@ -710,6 +723,7 @@ function! s:init_mix_project() abort
           \   "deps_fun": deps_fun,
           \   "apps_path": apps_path,
           \   "nested": nested,
+          \   "bindingPrefix": bindingPrefix,
           \   "tasks": []
           \ }
 
