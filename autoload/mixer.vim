@@ -49,8 +49,6 @@ function! s:camelcase(word)
   endif
 endfunction
 
-" Check if cursor is in range of two positions.
-" Positions are in the form of [line, col].
 function! s:in_range(pos, start, end)
   let [lnr, col] = a:pos
   let [start_lnr, start_col] = a:start
@@ -76,7 +74,6 @@ function! s:in_range(pos, start, end)
 endfunction
 
 " Run a job with a pointer to a list to store the job output in memory. 
-" This is currently just used for getting mix tasks on start up.
 function! s:async_append(cmd, append_output_to)
   if exists("*job_start")
     call job_start(["sh", "-c", a:cmd], {
