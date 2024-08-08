@@ -23,6 +23,10 @@ function! s:file_exists(glob)
   return !empty(glob(a:glob))
 endfunction
 
+function! s:runtime_exists(file)
+  return !empty(globpath(&rtp, a:file))
+endfunction
+
 function! s:matches(str, pat)
   return match(a:str, a:pat) >= 0
 endfunction
@@ -97,14 +101,27 @@ function! s:command_exists(cmd)
 endfunction
 
 
-" Init: Commands {{{1
+" SetupBuff {{{1
 
-function! mixer#init() abort
+function! mixer#setup_buff() abort
   if !s:command_exists("Mix")
     command -buffer -bang -complete=customlist,s:MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
   endif
 
-  call s:init_mix_project()
+  let [project_root, _mix_file, _nested] = s:detect_project_root()
+
+  if !exists('g:mix_projects') || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
+    call s:setup_mix_project()
+  endif
+
+  if exists('g:mix_projects') && has_key(g:mix_projects, project_root)
+    let b:mix_project = g:mix_projects[project_root]
+  endif
+
+  augroup mixerAutoload
+    autocmd!
+    autocmd DirChanged * call s:setup_mix_project()
+  augroup END
 
   if exists('b:mix_project')
     if !s:command_exists("Deps")
@@ -150,11 +167,11 @@ function! s:unmapped(map, type)
 endfunction
 
 function! s:set_compiler(root)
-  if !empty(glob(a:root.'/Makefile')) && &makeprg ==# 'make'
+  if s:file_exists(a:root.'/Makefile') && &makeprg ==# 'make'
     return
-  elseif &ft =~ 'elixir' && expand('%:p') =~ '_test.exs$' && !empty(globpath(&rtp, 'compiler/exunit.vim'))
+  elseif &ft =~ 'elixir' && expand('%:p') =~ '_test.exs$' && s:runtime_exists('compiler/exunit.vim')
     compiler exunit
-  elseif &ft =~ 'elixir' && !empty(globpath(&rtp, 'compiler/mix.vim'))
+  elseif &ft =~ 'elixir' && s:runtime_exists('compiler/mix.vim')
     compiler mix
   endif
 endfunction
@@ -383,7 +400,6 @@ function! s:arg_right(inner)
     call cursor(arg_pos)
   endif
 endfunction
-
 
 " Syntax Helpers {{{1
 
@@ -667,23 +683,37 @@ endfunction
 
 " Mix: Project {{{1
 
-function! s:init_mix_project() abort
-  " Check if in a nested or umbrella project
+function s:detect_project_root()
   let mix_file = findfile("mix.exs", ".;", 2)
   let nested = 1
+  let project_root = ''
 
   if empty(mix_file)
     let mix_file = findfile("mix.exs", ".;")
     let nested = 0
   endif
 
+  if !empty(mix_file)
+    let project_root = fnamemodify(mix_file, ':p:h')
+
+    if project_root ==# ""
+      let project_root = "."
+    endif
+
+    return [project_root, mix_file, nested]
+  else
+    return ['', '', 0]
+  endif
+endfunction
+
+function! s:setup_mix_project() abort
+  let [project_root, mix_file, nested] = s:detect_project_root()
+
   if empty(mix_file)
     return 0
   endif
 
-  let root = fnamemodify(mix_file, ':p:h')
-
-  call s:set_compiler(root)
+  call s:set_compiler(project_root)
 
   if !exists('g:mix_projects')
     let g:mix_projects = {}
@@ -691,11 +721,6 @@ function! s:init_mix_project() abort
 
   let b:impl_lnr = 0
   let b:tpl_lnr = 0
-  let project_root = fnamemodify(mix_file, ':p:h')
-
-  if project_root ==# ""
-    let project_root = "."
-  endif
 
   try
     let contents = join(readfile(mix_file), '\n')
@@ -746,8 +771,6 @@ function! s:init_mix_project() abort
     let b:mix_project = g:mix_projects[project_root]
   endif
 
-  autocmd! DirChanged * let b:mix_project.root = fnamemodify(findfile("mix.exs", ".;"), ':p:h')
-
   if exists('g:loaded_matchit')
     if !exists('s:html_match_words')
       " This is ripped straight from matchit since I don't know of a way to see
@@ -771,7 +794,10 @@ function! s:init_mix_project() abort
       endif
     endfunction
 
-    autocmd! CursorHold *.ex call s:do_match_words()
+    augroup mixerMatchWords
+      autocmd!
+      autocmd CursorHold *.ex call s:do_match_words()
+    augroup ENC
   endif
 
   let g:mix_projections = get(g:, "mix_projections", "replace")

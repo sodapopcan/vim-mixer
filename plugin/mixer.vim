@@ -16,32 +16,9 @@ let g:async_runners = [
 
 augroup mixer
   autocmd!
-  autocmd BufEnter * call mixer#init()
+  autocmd BufNewFile,BufReadPost * call mixer#setup_buff()
   autocmd FileType elixir,eelixir call mixer#define_mappings()
-  autocmd CursorMoved *.ex call s:set_close_tag_file_type()
 augroup END
-
-function! s:cursor_syn_groups() abort
-  return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")'), ",")
-endfunction
-
-function! s:set_close_tag_file_type()
-  if !exists('g:loaded_closetag') | return | endif
-
-  if exists('b:did_ftplugin_closetag')
-    unlet b:did_ftplugin_closetag
-  endif
-
-  let groups = s:cursor_syn_groups()
-
-  if groups =~ 'HeexSigil\|SurfaceSigil'
-    if g:closetag_filenames !~ ',\*\.ex$'
-      let g:closetag_filenames = g:closetag_filenames.",*.ex"
-    endif
-  else
-    let g:closetag_filenames = substitute(g:closetag_filenames, ',\*\.ex$', '', '')
-  endif
-endfunction
 
 " Options {{{1
 
