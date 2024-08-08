@@ -838,7 +838,7 @@ function! mixer#Mix(bang, ...) abort
   call s:run_mix_command(a:bang, "", a:000)
 endfunction
 
-function! mixer#MixerMixComplete(A, L, P) abort
+function! mixer#MixComplete(A, L, P) abort
   if exists('b:mix_project')
     let tasks = copy(b:mix_project.tasks)
   else
@@ -943,7 +943,7 @@ function! s:append_dep(_id, _status) abort
   write
 endfunction
 
-function! mixer#MixerDepsComplete(A, L, P)
+function! mixer#DepsComplete(A, L, P)
   let deps_tasks = filter(copy(b:mix_project.tasks), {-> v:val =~ '^deps' && v:val !=# 'deps'})
   let bare_tasks = map(deps_tasks, {-> s:sub(v:val, '^deps\.', '')})
   let bare_tasks = filter(bare_tasks, {-> v:val =~ a:A})
@@ -966,7 +966,7 @@ function! mixer#Gen(bang, ...) abort
   call s:run_mix_command(a:bang, tasks[task], extend(meta, args[1:]))
 endfunction
 
-function! mixer#MixerGenComplete(A, L, P) abort
+function! mixer#GenComplete(A, L, P) abort
   let tasks = keys(s:get_gen_tasks())
   let tasks = sort(tasks)
   let tasks = filter(tasks, {-> v:val =~ a:A})
@@ -1032,7 +1032,7 @@ let s:migrate_opts = [
       \   "-n"
       \ ]
 
-function! mixer#MixerMigrationComplete(A, L, P) abort
+function! mixer#MigrationComplete(A, L, P) abort
   if a:L =~ "-"
     let opts = copy(s:migrate_opts)
 

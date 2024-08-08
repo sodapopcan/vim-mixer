@@ -56,7 +56,7 @@ endfunction
 
 function! s:setup_buff() abort
   if !s:command_exists("Mix")
-    command -buffer -bang -complete=customlist,mixer#MixerMixComplete -nargs=* Mix call mixer#Mix(<bang>0, <f-args>)
+    command -buffer -bang -complete=customlist,mixer#MixComplete -nargs=* Mix call mixer#Mix(<bang>0, <f-args>)
   endif
 
   let [project_root, _mix_file, _nested] = MixerDetect()
@@ -76,7 +76,7 @@ function! s:setup_buff() abort
 
   if exists('b:mix_project')
     if !s:command_exists("Deps")
-      command -buffer -complete=customlist,mixer#MixerDepsComplete -range -bang -nargs=* Deps call mixer#Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+      command -buffer -complete=customlist,mixer#DepsComplete -range -bang -nargs=* Deps call mixer#Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
     endif
   endif
 
@@ -104,11 +104,11 @@ function! s:setup_buff() abort
 
   if exists('b:mix_project') && b:mix_project.has_ecto
     if !s:command_exists("Gen")
-      command -buffer -complete=customlist,mixer#MixerGenComplete -bang -nargs=* Gen call mixer#Gen(<bang>0, <f-args>)
+      command -buffer -complete=customlist,mixer#GenComplete -bang -nargs=* Gen call mixer#Gen(<bang>0, <f-args>)
     endif
 
     if !s:command_exists("Migrate")
-      command -buffer -complete=customlist,mixer#MixerMigrationComplete -count=1 -bang -nargs=* Migrate call mixer#Migrate(<bang>0, <count>, <f-args>)
+      command -buffer -complete=customlist,mixer#MigrationComplete -count=1 -bang -nargs=* Migrate call mixer#Migrate(<bang>0, <count>, <f-args>)
     endif
   endif
 endfunction
