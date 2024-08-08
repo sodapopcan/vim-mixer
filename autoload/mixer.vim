@@ -121,15 +121,15 @@ endfunction
 function mixer#define_mappings()
   let defregex = 'defp\?\|defmacrop\?\|defnp\?'
 
-  exec "vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
-  exec "vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
-  exec "onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
-  exec "onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
+  vnoremap <silent> <buffer> if :<c-u>call <sid>textobj_def(defregex, 1, 0)<cr>
+  vnoremap <silent> <buffer> af :<c-u>call <sid>textobj_def(defregex, 0, 0)<cr>
+  onoremap <silent> <buffer> if :<c-u>call <sid>textobj_def(defregex, 1, 0)<cr>
+  onoremap <silent> <buffer> af :<c-u>call <sid>textobj_def(defregex, 0, 0)<cr>
 
-  exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
-  exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  vnoremap <silent> <buffer> iF :<c-u>call <sid>textobj_def(defregex, 1, 1)<cr>
+  vnoremap <silent> <buffer> aF :<c-u>call <sid>textobj_def(defregex, 0, 1)<cr>
+  onoremap <silent> <buffer> iF :<c-u>call <sid>textobj_def(defregex, 1, 1)<cr>
+  onoremap <silent> <buffer> aF :<c-u>call <sid>textobj_def(defregex, 0, 1)<cr>
 
   vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
   vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
