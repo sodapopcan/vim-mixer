@@ -4,6 +4,8 @@
 " Constants {{{1
 
 let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+" Awk is from @mhandberg
+let s:mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
 
 " Utility {{{1
 
@@ -85,7 +87,7 @@ function! s:async_append(cmd, append_output_to)
           \   "mode": "nl"
           \ })
   elseif exists("*jobstart")
-    call jobstart(["sh", "-c", a:mix_help], {
+    call jobstart(["sh", "-c", a:cmd], {
           \   "on_stdout": function("s:gather_output", [a:append_output_to]),
           \   "mode": "nl"
           \ })
@@ -726,17 +728,13 @@ endfunction
 " Mix: Tasks {{{1
 
 function! s:populate_mix_tasks()
-  " Awk is from @mhandberg
-  let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
+  let b:mix_project.tasks = []
 
-  call s:async_append(mix_help, b:mix_project.tasks)
+  call s:async_append(s:mix_help, b:mix_project.tasks)
 endfunction
 
 function! s:get_mix_tasks()
-  " Awk is from @mhandberg
-  let mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
-
-  return split(system(mix_help), '\n')
+  return systemlist(s:mix_help)
 endfunction
 
 function! s:gather_mix_tasks(_channel, result)
@@ -1812,14 +1810,14 @@ function! s:define_projections()
         \     "type": "task",
         \     "alternate": "test/mix/tasks/{}_test.exs",
         \     "template": [
-        \       "defmodule Mix.Tasks.{camelcase|capitalize|dot|elixir_module} do",
-        \       "   use Mix.Task",
-        \       "",
+        \       "defmodule Mix.Tasks.{camelcase|capitalize|dot} do",
         \       "  @shortdoc \"{}\"",
         \       "",
         \       "  @moduledoc \"\"\"",
         \       "  {}",
         \       "  \"\"\"",
+        \       "",
+        \       "  use Mix.Task",
         \       "",
         \       "  @impl true",
         \       "  @doc false",
