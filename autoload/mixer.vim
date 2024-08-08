@@ -850,7 +850,7 @@ endfunction
 
 " Mix: :Deps {{{1
 
-function! s:Deps(bang, mods, range, line1, line2, ...) abort
+function! mixer#Deps(bang, mods, range, line1, line2, ...) abort
   let [meta, args] = s:remove_mixer_meta(a:000)
 
   if !a:0
