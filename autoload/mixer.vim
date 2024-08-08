@@ -924,17 +924,69 @@ function! s:gather_dep_output(_channel, line) abort
 endfunction
 
 function! s:append_dep(_id, _status) abort
+  if expand('%:p:t') !=# 'mix.exs'
+    echom "You switched buffers on me."
+
+    return
+  endif
+
+  let lnr = g:mixer_deps_add.lnr
   let output = join(g:mixer_deps_add.output, "\n")
   let dep = matchstr(output, "{:".g:mixer_deps_add.dep.",.*}")
+  let line = getline(lnr)
+  let cursor = s:get_cursor_pos()
+  let search_direction = ''
 
-  call search('\]')
+  if line =~# '\[\%( \+\)\?\]'
+    " Just an empty []
+    exec lnr."delete_"
+    call append(lnr - 1, ["[", dep, "]"])
+    call cursor(lnr, 1)
+    normal! 3==
+    call cursor(cursor)
 
-  call append(g:mixer_deps_add.lnr, [dep])
+    return
+  elseif line =~# '\[$'
+    normal! j
 
-  if s:matches(getline(g:mixer_deps_add.lnr), "\]$")
-    exec "normal! kA,\<esc>j^"
-  else
-    exec "normal! A,\<esc>^"
+    while s:is_blank() || s:cursor_syn_name() =~# 'Comment'
+      normal! j
+    endwhile
+
+    let search_direction = 'down'
+  elseif line =~# '\]$'
+    normal! k
+
+    while s:is_blank() || s:cursor_syn_name() =~# 'Comment'
+      normal! k
+    endwhile
+
+    let search_direction = 'up'
+  endif
+
+  let checked_lnr = line('.')
+  let checked_line = getline('.')
+
+  if checked_line =~# '\]$'
+    call search('\[', 'Wb', 0, 0, {-> s:is_string_or_comment()})
+    call append(line('.'), [dep])
+    normal! j==
+  elseif checked_line =~# '\[$'
+    call append(line('.'), [dep])
+    normal! j==
+  elseif checked_line =~# '},\?$'
+    let curr_lnr = line('.')
+
+    if checked_line =~# '}$'
+      call setline(checked_lnr, checked_line.',')
+    endif
+
+    call append(checked_lnr, [dep])
+
+    call cursor(checked_lnr + 1, 1)
+    normal! ==
+
+    call cursor(cursor)
   endif
 
   unlet g:mixer_deps_add
