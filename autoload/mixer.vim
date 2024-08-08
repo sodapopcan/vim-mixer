@@ -1050,15 +1050,15 @@ endfunction
 
 " Phoenix: :R {{{1
 
-function!  s:has_render() abort
-  return  search('^\s\+def render(', 'wn')
+function! s:has_render() abort
+  return search('^\s\+def render(', 'wn')
 endfunction
 
-function!  s:in_render() abort
+function! s:in_render() abort
   let Skip = {-> s:cursor_outer_syn_name() =~ 'Map\|List\|String\|Comment\|Atom\|Variable'}
   let view = winsaveview()
 
-  if !sea rch('def render(', 'Wb', 0, 0, Skip)
+  if !search('def render(', 'Wb', 0, 0, Skip)
     return 0
   end
 
