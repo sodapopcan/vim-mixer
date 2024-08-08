@@ -836,6 +836,7 @@ endfunction
 
 function! mixer#Mix(bang, ...) abort
   call s:run_mix_command(a:bang, "", a:000)
+  call s:populate_mix_tasks()
 endfunction
 
 function! mixer#MixComplete(A, L, P) abort
