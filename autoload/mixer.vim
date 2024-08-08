@@ -933,6 +933,11 @@ function! s:append_dep(_id, _status) abort
   let lnr = g:mixer_deps_add.lnr
   let output = join(g:mixer_deps_add.output, "\n")
   let dep = matchstr(output, "{:".g:mixer_deps_add.dep.",.*}")
+
+  if empty(dep)
+    echom "Dependency not found" | return
+  endif
+
   let line = getline(lnr)
   let cursor = s:get_cursor_pos()
   let search_direction = ''
@@ -946,7 +951,7 @@ function! s:append_dep(_id, _status) abort
     call cursor(cursor)
 
     return
-  elseif line =~# '\[$'
+  elseif line =~# '\[$\|\%( \+\)\|\%( \+#\)'
     normal! j
 
     while s:is_blank() || s:cursor_syn_name() =~# 'Comment'
@@ -954,7 +959,7 @@ function! s:append_dep(_id, _status) abort
     endwhile
 
     let search_direction = 'down'
-  elseif line =~# '\]$'
+  elseif line =~# '\]$\|\%( \+\)\|\%( \+#\)'
     normal! k
 
     while s:is_blank() || s:cursor_syn_name() =~# 'Comment'
@@ -975,6 +980,7 @@ function! s:append_dep(_id, _status) abort
     call append(line('.'), [dep])
     normal! j==
   elseif checked_line =~# '},\?$'
+    echom "hi"
     let curr_lnr = line('.')
 
     if checked_line =~# '}$'
