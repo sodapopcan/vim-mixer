@@ -18,6 +18,11 @@ augroup mixer
   autocmd!
   autocmd BufNewFile,BufReadPost * call s:setup_buff()
   autocmd FileType elixir,eelixir call mixer#define_mappings()
+  autocmd DirChanged *
+        \ let [project_root, _, _] = MixerDetect() |
+        \ if !empty(project_root) |
+        \   call mixer#setup_mix_project() |
+        \ endif
 augroup END
 
 " Options {{{1
@@ -68,11 +73,6 @@ function! s:setup_buff() abort
   if exists('g:mix_projects') && has_key(g:mix_projects, project_root)
     let b:mix_project = g:mix_projects[project_root]
   endif
-
-  augroup mixerAutoload
-    autocmd!
-    autocmd DirChanged * call mixer#setup_mix_project()
-  augroup END
 
   if exists('b:mix_project')
     if !s:command_exists("Deps")
