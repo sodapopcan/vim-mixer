@@ -785,7 +785,13 @@ function! s:run_mix_command(bang, cmd, args) abort
   let mix_tasks = []
 
   for env in envs
-    call add(mix_tasks, "MIX_ENV=".env." mix ".join(args, " "))
+    if env ==# 'dev'
+      let env = ""
+    else
+      let env = "MIX_ENV=".env
+    endif
+
+    call add(mix_tasks, env." mix ".join(args, " "))
   endfor
 
   let mix_cmd = join(mix_tasks, " && ")
@@ -1556,8 +1562,6 @@ function! s:textobj_sigil(inner)
   let view = winsaveview()
   let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
-  let on_modifier = 0
-
   if s:cursor_syn_name() !~ 'Sigil' && expand('<cWORD>') =~ '\%('.regex.'\)\w\+$'
     normal! b
     if s:cursor_syn_name() =~ 'Sigil'
@@ -1565,7 +1569,7 @@ function! s:textobj_sigil(inner)
     endif
   endif
 
-  if s:cursor_syn_name() =~ 'Sigil' || on_modifier
+  if s:cursor_syn_name() =~ 'Sigil'
     let [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
   else
     let [start_lnr, start_col] = searchpos('\~', 'Wc', 0, 0, Skip)
@@ -1587,13 +1591,13 @@ function! s:textobj_sigil(inner)
 
   if a:inner
     call search(open, 'W', 0, 0, Skip)
-    exec "normal! ".(len(open))."\<space>"
+    exec "normal! ".len(open)."\<space>"
     let [start_lnr, start_col] = s:get_cursor_pos()
     call search(escape(close, '"'), 'W', 0, 0, Skip)
     exec "normal! 1\<left>"
   else
     call search(open, 'W', 0, 0, Skip)
-    call search(escape(close, '"'), 'W', 0, 0, Skip)
+    call search(escape(close, '"/'), 'W', 0, 0, Skip)
 
     if len(open) == 3
       normal! ll
