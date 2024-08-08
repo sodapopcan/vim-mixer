@@ -39,17 +39,17 @@ function! s:is_blank(...)
 endfunction
 
 function! s:to_elixir_alias(word)
-  return substitute(s:camelcase(a:word),'^.','\u&','')
+  return s:sub(s:camelcase(a:word), '^.', '\u&')
 endfunction
 
 " Taken from @tpope's abolish.vim
 function! s:camelcase(word)
-  let word = substitute(a:word, '-', '_', 'g')
+  let word = s:gsub(a:word, '-', '_')
 
   if word !~# '_' && word =~# '\l'
-    return substitute(word, '^.', '\l&', '')
+    return s:sub(word, '^.', '\l&')
   else
-    return substitute(word, '\C\(_\)\=\(.\)', '\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))', 'g')
+    return s:gsub(word, '\C\(_\)\=\(.\)', '\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))')
   endif
 endfunction
 
@@ -121,15 +121,15 @@ endfunction
 function mixer#define_mappings()
   let defregex = 'defp\?\|defmacrop\?\|defnp\?'
 
-  vnoremap <silent> <buffer> if :<c-u>call <sid>textobj_def(defregex, 1, 0)<cr>
-  vnoremap <silent> <buffer> af :<c-u>call <sid>textobj_def(defregex, 0, 0)<cr>
-  onoremap <silent> <buffer> if :<c-u>call <sid>textobj_def(defregex, 1, 0)<cr>
-  onoremap <silent> <buffer> af :<c-u>call <sid>textobj_def(defregex, 0, 0)<cr>
+  exec "vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
+  exec "onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
+  exec "onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
 
-  vnoremap <silent> <buffer> iF :<c-u>call <sid>textobj_def(defregex, 1, 1)<cr>
-  vnoremap <silent> <buffer> aF :<c-u>call <sid>textobj_def(defregex, 0, 1)<cr>
-  onoremap <silent> <buffer> iF :<c-u>call <sid>textobj_def(defregex, 1, 1)<cr>
-  onoremap <silent> <buffer> aF :<c-u>call <sid>textobj_def(defregex, 0, 1)<cr>
+  exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
   vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
   vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
