@@ -101,67 +101,6 @@ function! s:command_exists(cmd)
 endfunction
 
 
-" SetupBuff {{{1
-
-function! mixer#setup_buff() abort
-  if !s:command_exists("Mix")
-    command -buffer -bang -complete=customlist,s:MixerMixComplete -nargs=* Mix call s:Mix(<bang>0, <f-args>)
-  endif
-
-  let [project_root, _mix_file, _nested] = s:detect_project_root()
-
-  if !exists('g:mix_projects') || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
-    call s:setup_mix_project()
-  endif
-
-  if exists('g:mix_projects') && has_key(g:mix_projects, project_root)
-    let b:mix_project = g:mix_projects[project_root]
-  endif
-
-  augroup mixerAutoload
-    autocmd!
-    autocmd DirChanged * call s:setup_mix_project()
-  augroup END
-
-  if exists('b:mix_project')
-    if !s:command_exists("Deps")
-      command -buffer -complete=customlist,s:MixerDepsComplete -range -bang -nargs=* Deps call s:Deps(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
-    endif
-  endif
-
-  if exists('b:mix_project') && b:mix_project.has_phoenix
-    if !s:command_exists("R")
-      command -buffer -nargs=0 R call s:R('edit')
-    endif
-
-    if !s:command_exists("RE")
-      command -buffer -nargs=0 RE call s:R('edit')
-    endif
-
-    if !s:command_exists("RS")
-      command -buffer -nargs=0 RS call s:R('split')
-    endif
-
-    if !s:command_exists("RV")
-      command -buffer -nargs=0 RV call s:R('vsplit')
-    endif
-
-    if !s:command_exists("RT")
-      command -buffer -nargs=0 RT call s:R('tabedit')
-    endif
-  endif
-
-  if exists('b:mix_project') && b:mix_project.has_ecto
-    if !s:command_exists("Gen")
-      command -buffer -complete=customlist,s:MixerGenComplete -bang -nargs=* Gen call s:Gen(<bang>0, <f-args>)
-    endif
-
-    if !s:command_exists("Migrate")
-      command -buffer -complete=customlist,s:MixerMigrationComplete -count=1 -bang -nargs=* Migrate call s:Migrate(<bang>0, <count>, <f-args>)
-    endif
-  endif
-endfunction
-
 function! s:unmapped(map, type)
   return empty(maparg(a:map, a:type))
 endfunction
@@ -683,31 +622,8 @@ endfunction
 
 " Mix: Project {{{1
 
-function s:detect_project_root()
-  let mix_file = findfile("mix.exs", ".;", 2)
-  let nested = 1
-  let project_root = ''
-
-  if empty(mix_file)
-    let mix_file = findfile("mix.exs", ".;")
-    let nested = 0
-  endif
-
-  if !empty(mix_file)
-    let project_root = fnamemodify(mix_file, ':p:h')
-
-    if project_root ==# ""
-      let project_root = "."
-    endif
-
-    return [project_root, mix_file, nested]
-  else
-    return ['', '', 0]
-  endif
-endfunction
-
-function! s:setup_mix_project() abort
-  let [project_root, mix_file, nested] = s:detect_project_root()
+function! mixer#setup_mix_project() abort
+  let [project_root, mix_file, nested] = MixerDetect()
 
   if empty(mix_file)
     return 0
@@ -918,11 +834,11 @@ endfunction
 
 " Mix: :Mix {{{1
 
-function! s:Mix(bang, ...) abort
+function! mixer#Mix(bang, ...) abort
   call s:run_mix_command(a:bang, "", a:000)
 endfunction
 
-function! s:MixerMixComplete(A, L, P) abort
+function! mixer#MixerMixComplete(A, L, P) abort
   if exists('b:mix_project')
     let tasks = copy(b:mix_project.tasks)
   else
@@ -1027,7 +943,7 @@ function! s:append_dep(_id, _status) abort
   write
 endfunction
 
-function! s:MixerDepsComplete(A, L, P)
+function! mixer#MixerDepsComplete(A, L, P)
   let deps_tasks = filter(copy(b:mix_project.tasks), {-> v:val =~ '^deps' && v:val !=# 'deps'})
   let bare_tasks = map(deps_tasks, {-> s:sub(v:val, '^deps\.', '')})
   let bare_tasks = filter(bare_tasks, {-> v:val =~ a:A})
@@ -1037,7 +953,7 @@ endfunction
 
 " Mix: :Gen {{{1
 
-function! s:Gen(bang, ...) abort
+function! mixer#Gen(bang, ...) abort
   let tasks = s:get_gen_tasks()
   let [meta, args] = s:remove_mixer_meta(a:000)
 
@@ -1050,7 +966,7 @@ function! s:Gen(bang, ...) abort
   call s:run_mix_command(a:bang, tasks[task], extend(meta, args[1:]))
 endfunction
 
-function! s:MixerGenComplete(A, L, P) abort
+function! mixer#MixerGenComplete(A, L, P) abort
   let tasks = keys(s:get_gen_tasks())
   let tasks = sort(tasks)
   let tasks = filter(tasks, {-> v:val =~ a:A})
@@ -1090,7 +1006,7 @@ endfunction
 
 " :Migrate {{{1
 
-function! s:Migrate(bang, count, ...) abort
+function! mixer#Migrate(bang, count, ...) abort
   let [meta, args] = s:remove_mixer_meta(a:000)
 
   echom a:count
@@ -1116,7 +1032,7 @@ let s:migrate_opts = [
       \   "-n"
       \ ]
 
-function! s:MixerMigrationComplete(A, L, P) abort
+function! mixer#MixerMigrationComplete(A, L, P) abort
   if a:L =~ "-"
     let opts = copy(s:migrate_opts)
 
@@ -1159,7 +1075,7 @@ function!  s:in_render() abort
   return s:in_range(s:get_cursor_pos(), start_pos, end_pos)
 endfunction
 
-function! s:R(type) abort
+function! mixer#R(type) abort
   if s:has_render()
     if s:in_render()
       let b:tpl_lnr = line('.')
