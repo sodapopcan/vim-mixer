@@ -690,6 +690,13 @@ function! mixer#setup_mix_project() abort
   endif
 
   if exists('g:loaded_matchit')
+    function! s:set_commentstring(str)
+      " This check is done due to a bug that possibly only affects me: https://github.com/vim/vim/issues/15462
+      if &commentstring !=# a:str && len(getline('.'))
+        exec "setlocal commentstring=".a:str
+      endif
+    endfunction
+
     if !exists('s:html_match_words')
       " This is ripped straight from matchit since I don't know of a way to see
       " what is globally defined.
@@ -705,10 +712,10 @@ function! mixer#setup_mix_project() abort
 
       if s:cursor_outer_syn_name() =~ 'Heex\|Surface'
         let b:match_words = s:html_match_words
-        setlocal commentstring=<%!--\ %s\ --%>
+        call s:set_commentstring('<%!--\ %s\ --%>')
       else
         let b:match_words = b:elixir_match_words
-        setlocal commentstring=#\ %s
+        call s:set_commentstring('#\ %s')
       endif
     endfunction
 
