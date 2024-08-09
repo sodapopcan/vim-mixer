@@ -7,7 +7,10 @@ License: Same terms as Vim itself (see |license|)
 TABLE OF CONTENTS                           *mixer*
 
 INTRODUCTION                                |mixer-introduction|
-  Passive settings                          |mixer-passive-settings|
+  Passive settings                            |mixer-passive-settings|
+    HEEx                                        |mixer-heex|
+    Surface                                     |mixer-surface|
+    matchit.vim                                 |mixer-matchit|
 COMMANDS                                    |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
@@ -46,7 +49,8 @@ plugin can be used along-side it.
 Passive Settings~
                                             *mixer-passive-settings*
 
-                                            *mixer-heex* *mixer-surface*
+                                            *mixer-heex*
+                                            *mixer-surface*
 When working in files with embedded templates, 'commentstring' will be
 adjusted appropriately based on where you cursor is.  Similarly, if you
 have |matchit| enabled, `b:match_words` will also be dynamically set.
