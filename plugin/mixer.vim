@@ -80,6 +80,12 @@ function! s:setup_buff() abort
     endif
   endif
 
+  if exists('b:mix_project')
+    if !s:command_exists("ExDoc")
+      command -buffer -nargs=0 ExDoc call mixer#ExDoc()
+    endif
+  endif
+
   if exists('b:mix_project') && b:mix_project.has_phoenix
     if !s:command_exists("R")
       command -buffer -nargs=0 R call mixer#R('edit')
