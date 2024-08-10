@@ -1328,8 +1328,14 @@ function! s:textobj_block(inner, include_meta) abort
     let end_pos = s:find_end_pos(func_pos, do_pos)
   else
     call cursor(origin)
+    let end_pos = [0, 0]
 
-    let do_pos = s:find_do('Wb')
+    if expand('<cword>') =~# '\<end\>' && !s:is_string_or_comment()
+      let end_pos = s:get_cursor_pos()
+      let do_pos = searchpairpos('\<end\>', '', '\<do\>', '', {-> s:is_string_or_comment()})
+    else
+      let do_pos = s:find_do('Wb')
+    endif
 
     if do_pos == [0, 0]
       return winrestview(view)
@@ -1337,7 +1343,9 @@ function! s:textobj_block(inner, include_meta) abort
 
     let func_pos = s:find_do_block_head(do_pos, 'Wb')
 
-    let end_pos = s:find_end_pos(func_pos, do_pos)
+    if end_pos == [0, 0]
+      let end_pos = s:find_end_pos(func_pos, do_pos)
+    endif
   endif
 
   if !s:in_range(origin, func_pos, end_pos)
