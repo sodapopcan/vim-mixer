@@ -67,35 +67,16 @@ COMMANDS                                    *mixer-commands*
                     Mix~
                                             *mixer-commands-mix*
                                             *mixer-:Mix*
-                                            *:Mix*
-:Mix[!] {-env}{+env} {args}
-                    Run a mix command with autocomplete.
+:Mix [args]         Run a mix command with autocomplete.
 
                     It will use an async library if available.  Currently,
                     it's aware of |dispatch|, |neomake|, |asyncrun|, and the
                     lesser known |asyncdo|.  The latter is by Elixir community
-                    member @hauleth so I figured I'd include it :)  PRs for
-                    others are welcome.  When called with a bang [!] it will
-                    call `:MyAsyncRunner!`.  You may also configure it to use
-                    any command you want:
+                    member @hauleth so I figured I'd include it :) When called
+                    with a bang [!] it will call `:MyAsyncRunner!`.  You may
+                    also configure it to use any command you want:
 >
                       let g:mixer_async_command = 'Make'
-<
-                    The environment can be specified like so:
->
-                      :Mix ~test compile
-<
-                    This works for any custom environment you have outside the
-                    standard "dev", "test", and "prod".  The `~` here simply
-                    means "environment name."
-
-                    You can also add environments onto the default like so:
->
-                      :Mix +test mix compile
-<
-                    This will run:
->
-                      $ MIX_ENV=dev mix compile && MIX_ENV=test mix compile
 <
                     If you are using an async runner and wish to run a command
                     synchronously using `:Mix` (ie, get the output in the
@@ -108,9 +89,6 @@ COMMANDS                                    *mixer-commands*
 >
                       :Mix!! deps.get
 <
-                    The only difference between this and `:!mix` is that you
-                    get autocomplete and environment flags.
-
                     This command is always available, even when not editing an
                     Elixir file.
 
@@ -121,29 +99,45 @@ COMMANDS                                    *mixer-commands*
                     delay the first time you hit `<tab>` while it populates
                     the tasks.
 
+                                            *mixer-:Mix!*
+:Mix!               If using an async runner, it will do whatever it is your
+                    chosen library's command does when called with a [!].
 
-                                            *mixer-:Deps* *:Deps*
-:{range}Deps[!] {task} {args}
-                    A wrapper around `:Mix deps` with some added behaviour.
+                                            *mixer-:Mix-env*
+:Mix[!] ~{env} [args]
+                    Specify the environment.  For example:
+>
+                      :Mix ~test compile
+<
+                    This works for any custom environment you have outside of
+                    the standard "dev", "test", and "prod".  The `~` here
+                    simply means "environment name."
 
-                    When the current buffer is `mix.exs` and called without
-                    {task} or {args} it will:
+                                            *mixer-:Mix-add-env*
+:Mix[!] +{env} [args] 
+                    Run task in {env} as well as the default.  For example:
+>
+                      :Mix +test mix compile
+<
+                    This will run:
+>
+                      $ mix compile && MIX_ENV=test mix compile
+<
 
-                      - |:write| the buffer if it has been modified
-                      - run `mix deps get`
+                                            *mixer-:Deps*
+                                            *mixer-:Deps!*
+:Deps               Navigate to `mix.exs` and jump to your `deps` function.
+                    This works regardless of what you have called it.
+
+:{range}Deps[!] {task} [args]
+                    A wrapper around `:Mix deps` .
+
+                    When the current buffer is `mix.exs` it will first write
+                    the buffer if it is modified.
 
                     In any other buffer it will take you to `mix.exs` and
                     jump to your `deps` function.  This works regardless of
                     what you have named it.
-
-                    The standard tasks are available as well as a special
-                    `add` task.  This allows you to add deps to your mix.exs
-                    by placing your cursor above where you would like to add
-                    it and invoking the following:
->
-                      :Deps add phoenix_test
-<
-                    This is only available if the current buffer is `mix.exs`.
 
                     Given a {range}, it will operate on those lines.  This is
                     probably most useful with the current line for example,
@@ -152,7 +146,7 @@ COMMANDS                                    *mixer-commands*
                       {:live_view, "~> 0.20"},
 <
                     You can update LiveView by calling:
-      >
+>
                       :.Deps update
 <
                     With the following lines visually selected:
@@ -178,9 +172,27 @@ COMMANDS                                    *mixer-commands*
                     does for |:Mix|.  Environment flags via `-` and `+` are
                     also available.
 
+                                            *mixer-:Deps_add*
+
+:Deps add {dep}     Insert {dep} into the current buffer.  This is only
+                    available if the current buffer is `mix.exs` and it
+                    assumes your cursor is somewhere in the `deps` function.
+                    For example, with \%# being your cursor:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_\%#test, "~> 1.7"},
+                      {:image, "~> 0.5"}
+<
+                    Typing `:Deps add pathex` will result in:
+>
+                      {:floki, "~> 0.3"},
+                      {:phoenix_test, "~> 1.7"},
+                      {:pathex, "~> 2.5"},
+                      {:image, "~> 0.5"}
+<
 
                                             *mixer-:Gen* *:Gen*
-:Gen                Unified generator command with autocomplete.
+:Gen[!]             Unified generator command with autocomplete.
 
                     Run any `*.gen.*` task in your project without having to
                     provide its namesapce.
@@ -207,10 +219,10 @@ COMMANDS                                    *mixer-commands*
 
 
                                             *mixer-:Migrate* *:Migrate*
-:{count}Migrate[!] {arg}
+:{count}Migrate[!] [arg]
                     Run migrations with autocomplete.
 
-                    {count} will be passed to `--step`.  {arg} is either
+                    {count} will be passed to `--step`.  [arg] is either
                     a path to or filename of a migration which will be passed
                     to `--to`.  This can be a relative or absolute path, or
                     simply the migration name.  The former does not work in
@@ -224,8 +236,7 @@ COMMANDS                                    *mixer-commands*
 
 
                                             *mixer-:Rollback* *:Rollback*
-
-:{count}Rollback[!] {args}
+:{count}Rollback[!] [arg]
                     Rollback migrations with autocomplete.
 
                     Works just like |:Migrate| in reverse.
@@ -251,8 +262,9 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
                     attempt to find JS hook definitions from
                     `phx-hook="MyHook"`.  It otherwise works as normal.
 
-                    This command is only available if your project is being
-                    tracked by git.  Hopefully this will change at some point.
+                    This command's implementation requires your project to be
+                    tracked by `git`.  I would like to change this sooner or
+                    later.
 
 
 
