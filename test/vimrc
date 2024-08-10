@@ -1,0 +1,8 @@
+filetype off
+set rtp+=../
+if !&compatible | set nocompatible | endif
+filetype plugin indent on
+syntax on
+
+nnoremap q :qa!<cr>
+nnoremap jk <esc>
