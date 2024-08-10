@@ -1423,9 +1423,9 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
       normal! k^
     endif
 
-    let stopline = max([1, search('\<end\>', 'Wbn')])
+    let stopline = max([1, search('\<end\>', 'Wbn', 0, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|DocString\|markdown'})])
 
-    call search('\s*$', 'Wb', stopline, 0, {-> s:is_string_or_comment()})
+    call search('^\s*$', 'Wb', stopline, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|DocString\|markdown'})
 
     while search(known_annotations, 'Wb', stopline) | endwhile
 
@@ -1447,6 +1447,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   let view.lnum = start_pos[0]
   call s:textobj_select_obj(view, start_pos, end_pos)
 endfunction
+
 
 " Text Objects: map {{{1
 
