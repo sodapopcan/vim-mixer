@@ -882,6 +882,25 @@ function! mixer#Deps(bang, mods, range, line1, line2, ...) abort
       echom "What do you want me to add?" | return
     endif
 
+    if empty(b:mix_project.deps_fun)
+      echom "You don't have a deps function" | return
+    endif
+
+    if expand('%:t') !~# 'mix.exs'
+      exec "edit" b:mix_project.root.'/mix.exs'
+    endif
+
+    let cursor = s:get_cursor_pos()
+    call search('defp\? '.b:mix_project.deps_fun.' do', '', 0, 0, {-> s:is_string_or_comment()})
+    normal! $
+    let do_pos = s:get_cursor_pos()
+    let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
+
+    if !s:in_range(cursor, do_pos, end_pos)
+      let do_pos[0] += 1
+      call cursor(do_pos)
+    endif
+
     return s:find_dep(args[1])
   elseif a:0
     let task_fragment = args[0]
@@ -909,6 +928,7 @@ function! mixer#Deps(bang, mods, range, line1, line2, ...) abort
 endfunction
 
 function! s:find_dep(dep) abort
+  echom "Finding deps..."
   let cmd = 'mix hex.info '.a:dep
 
   let g:mixer_deps_add = {
@@ -962,21 +982,31 @@ function! s:append_dep(_id, _status) abort
     call cursor(lnr, 1)
     normal! 3==
     call cursor(cursor)
+    unlet g:mixer_deps_add
 
     return
-  elseif line =~# '\[$\|\%( \+\)\|\%( \+#\)'
-    normal! j
+  endif
+
+  if line =~# '\]$'
+    call searchpair('\[', '', '\]', 'Wb', {-> s:is_string_or_comment()})
+  endif
+
+  if line =~# '\[$\|\%( \+\)\|\%( \+#\)\|^\s*$'
+    " An empty [] but on different lines
+    normal! j^
 
     while s:is_blank() || s:cursor_syn_name() =~# 'Comment'
-      normal! j
+      normal! j^
     endwhile
 
     let search_direction = 'down'
   elseif line =~# '\]$\|\%( \+\)\|\%( \+#\)'
-    normal! k
+    " Same thing but look down.  This is a very bone-headed way to do this.
+    " Refactor this.
+    normal! k^
 
     while s:is_blank() || s:cursor_syn_name() =~# 'Comment'
-      normal! k
+      normal! k^
     endwhile
 
     let search_direction = 'up'
@@ -986,18 +1016,25 @@ function! s:append_dep(_id, _status) abort
   let checked_line = getline('.')
 
   if checked_line =~# '\]$'
+    " empty [] on different lines
     call search('\[', 'Wb', 0, 0, {-> s:is_string_or_comment()})
     call append(line('.'), [dep])
-    normal! j==
+    normal! j==k
   elseif checked_line =~# '\[$'
     call append(line('.'), [dep])
-    normal! j==
+    normal! j==k
+  elseif checked_line =~# '}$'
+    call setline(line('.'), checked_line.',')
+    call append(checked_lnr, [dep])
+    normal! j==k
   elseif checked_line =~# '},\?$'
-    echom "hi"
-    let curr_lnr = line('.')
-
     if checked_line =~# '}$'
       call setline(checked_lnr, checked_line.',')
+    endif
+
+    if search_direction ==# 'down' && getline(checked_lnr - 1) =~ '\%(\s\+\)\?#'
+      " Add under comment
+      let checked_lnr = line('.') - 1
     endif
 
     call append(checked_lnr, [dep])
