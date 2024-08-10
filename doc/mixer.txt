@@ -258,9 +258,11 @@ MAPPINGS                                    *mixer-mappings*
                                             *mixer-CTRL-]*
 CTRL-]              Remapped to be context aware in Phoenix files. Will
                     jump from `phx-click="some-event"` to
-                    `handle_event("some-event"...`.  It will also
-                    attempt to find JS hook definitions from
-                    `phx-hook="MyHook"`.  It otherwise works as normal.
+                    `handle_event("some-event"...`.  It will also attempt to
+                    find JS hook definitions from `phx-hook="MyHook"`.  If it
+                    cannot find `MyHook =` in your js/ directory, it looks for
+                    a .js or .ts file that resembles the name of your hook.
+                    It otherwise works as normal.
 
                     This command's implementation requires your project to be
                     tracked by `git`.  I would like to change this sooner or
