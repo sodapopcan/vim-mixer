@@ -884,20 +884,6 @@ function! mixer#Deps(bang, mods, range, line1, line2, ...) abort
       echom "What do you want me to add?" | return
     endif
 
-    if empty(b:mix_project.deps_fun)
-      echom "You don't have a deps function" | return
-    endif
-
-    if expand('%:t') !~# 'mix.exs'
-      exec "edit" b:mix_project.root.'/mix.exs'
-    endif
-
-    let cursor = s:get_cursor_pos()
-    call search('defp\? '.b:mix_project.deps_fun.' do', '', 0, 0, {-> s:is_string_or_comment()})
-    normal! $
-    let do_pos = s:get_cursor_pos()
-    let end_pos = searchpairpos('\<do\>', '', '\<end\>', 'Wn', {-> s:is_string_or_comment()})
-
     if !s:in_range(cursor, do_pos, end_pos)
       let do_pos[0] += 1
       call cursor(do_pos)
