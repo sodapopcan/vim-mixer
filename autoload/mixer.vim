@@ -691,9 +691,11 @@ function! mixer#setup_mix_project() abort
 
   if exists('g:loaded_matchit')
     function! s:set_commentstring(str)
-      " This check is done due to a bug that possibly only affects me: https://github.com/vim/vim/issues/15462
-      if &commentstring !=# a:str && len(getline('.'))
+      " This check is done due to a now fixed bug: https://github.com/vim/vim/issues/15462
+      if escape(&commentstring, ' ') !=# a:str
+        let cursor = getcurpos()
         exec "setlocal commentstring=".a:str
+        call setpos('.', cursor)
       endif
     endfunction
 
