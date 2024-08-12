@@ -72,7 +72,7 @@ for file in readdir('tests')
         call add(fails, fail)
       endif
 
-      bwipe!
+      close!
     endfor
   endfor
 endfor

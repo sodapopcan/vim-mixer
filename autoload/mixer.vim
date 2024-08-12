@@ -775,9 +775,9 @@ function! s:run_mix_command(bang, cmd, args) abort
 
       let env = remove(args, 0)
       call add(envs, s:sub(env, '^+', ''))
-    elseif arg =~ '^-'
+    elseif arg =~ '^\^'
       let env = remove(args, 0)
-      call add(envs, s:sub(env, '^-', ''))
+      call add(envs, s:sub(env, '^\^', ''))
     else
       break
     endif

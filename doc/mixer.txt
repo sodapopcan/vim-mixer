@@ -107,10 +107,10 @@ COMMANDS                                    *mixer-commands*
 :Mix[!] ~{env} [args]
                     Specify the environment.  For example:
 >
-                      :Mix ~test compile
+                      :Mix ^test compile
 <
                     This works for any custom environment you have outside of
-                    the standard "dev", "test", and "prod".  The `~` here
+                    the standard "dev", "test", and "prod".  The `^` here
                     simply means "environment name."
 
                                             *mixer-:Mix-add-env*
@@ -169,7 +169,7 @@ COMMANDS                                    *mixer-commands*
                     next to each other but hey, there it is!
 
                     This command's bang [!] behaviour works the same as it
-                    does for |:Mix|.  Environment flags via `-` and `+` are
+                    does for |:Mix|.  Environment flags via `^` and `+` are
                     also available.
 
                                             *mixer-:Deps_add*
@@ -214,7 +214,7 @@ COMMANDS                                    *mixer-commands*
                     Tasks are sorted by their non-namespaced names.
 
                     This command's bang [!] behaviour works the same as it
-                    does for |:Mix|.  Environment flags via `-` and `+` are
+                    does for |:Mix|.  Environment flags via `^` and `+` are
                     also available.
 
 
@@ -229,7 +229,7 @@ COMMANDS                                    *mixer-commands*
                     umbrella apps unless your cd into the app.
 
                     This command's bang [!] behaviour  works the same as it
-                    does for |:Mix|.  Environment flags via `-` and `+` are
+                    does for |:Mix|.  Environment flags via `^` and `+` are
                     also available.
 
                     Only available in a mix project with Ecto.

@@ -5,4 +5,4 @@ filetype plugin indent on
 syntax on
 
 nnoremap q :qa!<cr>
-nnoremap jk <esc>
+inoremap jk <esc>

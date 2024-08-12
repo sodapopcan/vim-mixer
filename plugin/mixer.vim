@@ -108,11 +108,11 @@ function! s:setup_buff() abort
     endif
   endif
 
-  if exists('b:mix_project') && b:mix_project.has_ecto
-    if !s:command_exists("Gen")
-      command -buffer -complete=customlist,mixer#GenComplete -bang -nargs=* Gen call mixer#Gen(<bang>0, <f-args>)
-    endif
+  if !s:command_exists("Gen")
+    command -buffer -complete=customlist,mixer#GenComplete -bang -nargs=* Gen call mixer#Gen(<bang>0, <f-args>)
+  endif
 
+  if exists('b:mix_project') && b:mix_project.has_ecto
     if !s:command_exists("Migrate")
       command -buffer -complete=customlist,mixer#MigrationComplete -count=1 -bang -nargs=* Migrate call mixer#Migrate(<bang>0, <count>, <f-args>)
     endif
