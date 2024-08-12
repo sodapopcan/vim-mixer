@@ -104,7 +104,7 @@ COMMANDS                                    *mixer-commands*
                     chosen library's command does when called with a [!].
 
                                             *mixer-:Mix-env*
-:Mix[!] ~{env} [args]
+:Mix[!] ^{env} [args]
                     Specify the environment.  For example:
 >
                       :Mix ^test compile
