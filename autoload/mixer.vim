@@ -133,10 +133,10 @@ function mixer#define_mappings()
   exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
   exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
-  vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
-  vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
-  onoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 1)<cr>
-  onoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 1)<cr>
+  vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 0)<cr>
+  vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 0)<cr>
+  onoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 0)<cr>
+  onoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 0)<cr>
 
   vnoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
   vnoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
@@ -1262,10 +1262,12 @@ function! s:adjust_whitespace(start_pos)
   return [start_lnr, start_col]
 endfunction
 
-function! s:adjust_block_region(inner, leave_end_col, start_pos, end_pos) abort
+function! s:adjust_block_region(inner, do, start_pos, end_pos) abort
+  let [start_pos, end_pos] = [a:start_pos, a:end_pos]
+
   if v:operator ==# 'c' && !a:inner
     " We want a blank line left for insert mode so don't adjust anything
-    return [a:start_pos, a:end_pos]
+    return [start_pos, end_pos]
   endif
 
   let [start_lnr, start_col] = a:start_pos
@@ -1290,7 +1292,7 @@ function! s:adjust_block_region(inner, leave_end_col, start_pos, end_pos) abort
       let start_col = 1
     endif
 
-    if !a:leave_end_col
+    if a:do ==# 'do'
       let end_col = len(getline(end_lnr)) + 1 " Include \n
     endif
 
@@ -1306,52 +1308,67 @@ endfunction
 function! s:textobj_block(inner, include_meta) abort
   let view = winsaveview()
 
-  " First check if we are between a function call and a `do`
   let origin = s:get_cursor_pos()
-  let do_pos = s:find_do('Wc')
+  " First check if we are in `fn -> end`
+  let start_pos = searchpos('\<fn\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
+  let on_fn = expand('<cword>') ==# 'fn'
 
-  let func_pos = s:find_do_block_head(do_pos, 'Wb')
+  if on_fn
+    let do_pos = searchpos('->', 'Wn', 0, 0, {-> s:is_string_or_comment()})
+    let do = '->'
+    let end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
+    let end_pos[1] += 2
+  endif
 
-  if s:in_range(origin, func_pos, do_pos)
-    let end_pos = s:find_end_pos(func_pos, do_pos)
-  else
+  if !on_fn || !s:in_range(origin, start_pos, end_pos)
     call cursor(origin)
-    let end_pos = [0, 0]
 
-    if expand('<cword>') =~# '\<end\>' && !s:is_string_or_comment()
-      let do_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>\zs', 'Wb', {-> s:is_string_or_comment()})
-    else
-      let do_pos = s:find_do('Wb')
-    endif
-
-    if do_pos == [0, 0]
-      return winrestview(view)
-    endif
+    " Then check if we are between a function call and a `do`
+    let do_pos = s:find_do('Wc')
 
     let func_pos = s:find_do_block_head(do_pos, 'Wb')
 
-    let end_pos = s:find_end_pos(func_pos, do_pos)
+    if s:in_range(origin, func_pos, do_pos)
+      let end_pos = s:find_end_pos(func_pos, do_pos)
+    else
+      call cursor(origin)
+      let end_pos = [0, 0]
+
+      if expand('<cword>') =~# '\<end\>' && !s:is_string_or_comment()
+        let do_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>\zs', 'Wb', {-> s:is_string_or_comment()})
+      else
+        let do_pos = s:find_do('Wb')
+      endif
+
+      if do_pos == [0, 0]
+        return winrestview(view)
+      endif
+
+      let func_pos = s:find_do_block_head(do_pos, 'Wb')
+
+      let end_pos = s:find_end_pos(func_pos, do_pos)
+    endif
+
+    if !s:in_range(origin, func_pos, end_pos)
+      call cursor(origin)
+
+      let do_pos = s:find_do('W')
+      let func_pos = s:find_do_block_head(do_pos, 'Wbc')
+      let end_pos = s:find_end_pos(func_pos, do_pos)
+    endif
+
+    if func_pos == [0, 0] | return winrestview(view) | endif
+
+    if a:inner
+      let start_pos = copy(do_pos)
+      let start_pos[1] = 1
+    else
+      let start_pos = func_pos
+    endif
+
+    call cursor(do_pos)
+    let do = expand('<cWORD>')
   endif
-
-  if !s:in_range(origin, func_pos, end_pos)
-    call cursor(origin)
-
-    let do_pos = s:find_do('W')
-    let func_pos = s:find_do_block_head(do_pos, 'Wbc')
-    let end_pos = s:find_end_pos(func_pos, do_pos)
-  endif
-
-  if func_pos == [0, 0] | return winrestview(view) | endif
-
-  if a:inner
-    let start_pos = copy(do_pos)
-    let start_pos[1] = 1
-  else
-    let start_pos = func_pos
-  endif
-
-  call cursor(do_pos)
-  let do = expand('<cWORD>')
 
   if !a:inner && a:include_meta
     call cursor(start_pos)
@@ -1379,11 +1396,11 @@ function! s:textobj_block(inner, include_meta) abort
     call cursor(do_pos)
   endif
 
-  if a:inner && do ==# 'do:'
+  if a:inner && do =~ 'do:\|->'
     " Clear `do:` When switching to insert, leaving a space after it.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
-    let [start_pos, end_pos] = s:adjust_block_region(a:inner, do ==# 'do:', start_pos, end_pos)
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, do, start_pos, end_pos)
   endif
 
   let view.lnum = start_pos[0]
@@ -1449,11 +1466,9 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   " Look for the meta
   if !a:inner && a:include_annotations
-    if !s:is_blank()
-      normal! k^
-    endif
+    let func_name = s:get_func_name(def_pos)
 
-    let stopline = max([1, search('\<end\>', 'Wbn', 0, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|DocString\|markdown'})])
+    let stopline = max([1, search('\<end\>\|def\%(macro\)\?p\? \%('.func_name.'\)\@!', 'Wbn', 0, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|DocString\|markdown'})])
 
     call search('^\s*$', 'Wb', stopline, 0, {-> s:cursor_syn_name() =~ 'String\|Comment\|DocString\|markdown'})
 
@@ -1471,7 +1486,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
-    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 0, start_pos, end_pos)
+    let [start_pos, end_pos] = s:adjust_block_region(a:inner, 'do', start_pos, end_pos)
   endif
 
   let view.lnum = start_pos[0]
