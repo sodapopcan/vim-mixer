@@ -884,11 +884,6 @@ function! mixer#Deps(bang, mods, range, line1, line2, ...) abort
       echom "What do you want me to add?" | return
     endif
 
-    if !s:in_range(cursor, do_pos, end_pos)
-      let do_pos[0] += 1
-      call cursor(do_pos)
-    endif
-
     return s:find_dep(args[1])
   elseif a:0
     let task_fragment = args[0]
