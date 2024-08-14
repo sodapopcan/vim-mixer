@@ -440,13 +440,13 @@ function! s:get_term(cmd)
 endfunction
 
 let s:pairs = {
-        \   '(': ')',
-        \   ')': '(',
-        \   '{': '}',
-        \   '}': '{',
-        \   '[': ']',
-        \   ']': '[',
-        \ }
+      \   '(': ')',
+      \   ')': '(',
+      \   '{': '}',
+      \   '}': '{',
+      \   '[': ']',
+      \   ']': '[',
+      \ }
 
 function! s:get_pair(delim)
   return get(s:pairs, a:delim, 0)
@@ -724,7 +724,7 @@ function! mixer#setup_mix_project() abort
     augroup mixerMatchWords
       autocmd!
       autocmd CursorHold *.ex call s:do_match_words()
-    augroup ENC
+    augroup END
   endif
 
   let g:mix_projections = get(g:, "mix_projections", "replace")
@@ -1958,18 +1958,18 @@ function! s:define_projections()
     let projectionist_heuristics['lib/*.ex']['related'] = ["lib/".name.".ex"]
 
     call extend(projectionist_heuristics, {
-        \   'lib/'.name.'_web.ex': {
-        \     'type': 'web',
-        \   },
-        \   'lib/'.name.'_web/router.ex': {
-        \     'type': 'router',
-        \     'alternate': 'lib/'.name.'_web/endpoint.ex',
-        \   },
-        \   'lib/'.name.'_web/endpoint.ex': {
-        \     'type': 'endpoint',
-        \     'alternate': 'lib/'.name.'_web/router.ex'
-        \   }
-        \ })
+          \   'lib/'.name.'_web.ex': {
+          \     'type': 'web',
+          \   },
+          \   'lib/'.name.'_web/router.ex': {
+          \     'type': 'router',
+          \     'alternate': 'lib/'.name.'_web/endpoint.ex',
+          \   },
+          \   'lib/'.name.'_web/endpoint.ex': {
+          \     'type': 'endpoint',
+          \     'alternate': 'lib/'.name.'_web/router.ex'
+          \   }
+          \ })
   endif
 
 
