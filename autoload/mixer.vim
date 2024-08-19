@@ -1641,7 +1641,7 @@ function! s:textobj_sigil(inner)
   let line = getline('.')[col('.') - 1:]
   let open = matchstr(line, open_delimiters)
 
-  let maps = {
+  let close = {
         \   '/': '/',
         \   '|': '|',
         \   '''': '''',
@@ -1650,9 +1650,7 @@ function! s:textobj_sigil(inner)
         \   '\[': '\]',
         \   '{': '}',
         \   '<': '>'
-        \ }
-
-  let close = maps[open]
+        \ }[open]
 
   if a:inner
     call search(open, 'W', 0, 0, Skip)

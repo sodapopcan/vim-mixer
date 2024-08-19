@@ -1,4 +1,4 @@
-*mixer.txt*  *mixer* mixes your mix so you can mix while you mix
+*mixer.txt*  Utilities for working with The Elixir Programming Language <3
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
@@ -41,8 +41,9 @@ plugin can be used along-side it.
     PLEASE NOTE                                                        ~
   +--------------------------------------------------------------------+
   | Almost all commands and mappings are BUFFER LOCAL and only defined |
-  | if they are available!  This means you must edit an elixir, heex,  |
-  | or surface file to get the appropriate functionality.              |
+  | if they are available.  This means you must edit an elixir, heex,  |
+  | or surface file OR be inside a mix project to get the appropriate  |
+  | functionality.                                                     |
   +--------------------------------------------------------------------+
 
 
@@ -52,19 +53,21 @@ Passive Settings~
                                             *mixer-heex*
                                             *mixer-surface*
 When working in files with embedded templates, 'commentstring' will be
-adjusted appropriately based on where you cursor is.  Similarly, if you
-have |matchit| enabled, `b:match_words` will also be dynamically set.
+adjusted appropriately based on where you cursor is.  Similarly, if you have
+|matchit| enabled, `b:match_words` will also be automatically set based where
+your cursor position in the file.  Note, this is set on |CursorHold|, so if
+you happen to have set a very slow |uptimedate|, then it's possible you could
+be too quick for it.
 
                                             *mixer-compiler*
 If available, `:compiler mix` will be called for Elixir files and
 `:compiler exunit` will be called for any Elixir file ending in `_test.exs`.
-This is available if you have |elixir.vim| installed.
-
+These are available if you have |elixir.vim| installed.  See `complier/` if
+in that plugin if don't use it and wish to copy them over.
 
 
 COMMANDS                                    *mixer-commands*
 
-                    Mix~
                                             *mixer-commands-mix*
                                             *mixer-:Mix*
 :Mix [args]         Run a mix command with autocomplete.
@@ -72,15 +75,14 @@ COMMANDS                                    *mixer-commands*
                     It will use an async library if available.  Currently,
                     it's aware of |dispatch|, |neomake|, |asyncrun|, and the
                     lesser known |asyncdo|.  The latter is by Elixir community
-                    member @hauleth so I figured I'd include it :) When called
-                    with a bang [!] it will call `:MyAsyncRunner!`.  You may
-                    also configure it to use any command you want:
+                    member @hauleth so I figured I'd include it :)
+                    You may also configure it to use any command you want:
 >
                       let g:mixer_async_command = 'Make'
 <
-                    If you are using an async runner and wish to run a command
-                    synchronously using `:Mix` (ie, get the output in the
-                    terminal session), you may do so like this:
+                    If you wish to run a command synchronously using `:Mix`
+                    (ie, get the output in the terminal session), you may do
+                    so like this:
 >
                       :Mix ! deps.get
 <
@@ -174,9 +176,10 @@ COMMANDS                                    *mixer-commands*
 
                                             *mixer-:Deps_add*
 
-:Deps add {dep}     Insert {dep} into the current buffer.  This is only
-                    available if the current buffer is `mix.exs` and it
-                    assumes your cursor is somewhere in the `deps` function.
+:Deps add {dep}     Insert {dep} into the current buffer.  This is available
+                    anywhere so it's best to make your cursor is where you
+                    want the dep to be inserted.
+
                     For example, with \%# being your cursor:
 >
                       {:floki, "~> 0.3"},
@@ -192,9 +195,10 @@ COMMANDS                                    *mixer-commands*
 <
 
                                             *mixer-:Gen* *:Gen*
+                                            *mixer-:Gen!* *:Gen!*
 :Gen[!]             Unified generator command with autocomplete.
 
-                    Run any `*.gen.*` task in your project without having to
+                    Run any `*.gen*` task in your project without having to
                     provide its namesapce.
 
                     For example:
@@ -215,7 +219,7 @@ COMMANDS                                    *mixer-commands*
 
                     This command's bang [!] behaviour works the same as it
                     does for |:Mix|.  Environment flags via `^` and `+` are
-                    also available.
+                    recognized but like not very useful.
 
 
                                             *mixer-:Migrate* *:Migrate*
@@ -250,7 +254,7 @@ COMMANDS                                    *mixer-commands*
                     the same way should you find yourself not wanting to fully
                     migrate back to latest.
 
-                    Only available in a mix project with Ecto.
+                    Only available in mix projects with Ecto.
 
 
 MAPPINGS                                    *mixer-mappings*
