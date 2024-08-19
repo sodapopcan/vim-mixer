@@ -13,3 +13,24 @@ end
 #%
 defmodule Foo do
 end
+#@@@
+## Changes inside a function
+#~ normal cif"I'm new text"
+#.  2,12
+#.  3, 10
+#.  4, 14
+#.  5, 4
+#%
+defmodule Foo do
+  def hi do
+    "I'm new text"
+  end
+end
+#@@@
+## Replaces around a function
+#~ normal caf"New text"
+#.  3, 1
+#%
+defmodule Foo do
+  "New text"
+end

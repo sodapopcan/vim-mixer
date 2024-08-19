@@ -4,8 +4,18 @@
 " Constants {{{1
 
 let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+
 " Awk is from @mhandberg
 let s:mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
+
+let reserved = [
+      \   'true', 'false', 'nil',
+      \   'when', 'and', 'or', 'not', 'in',
+      \   'fn',
+      \   'do', 'end', 'catch', 'rescue', 'after', 'else'
+      \ ]
+
+let s:reserved = '\<'.join(reserved, '\>\|\<').'\>'
 
 " Utility {{{1
 
@@ -477,7 +487,7 @@ function! s:find_do_block_head(do_pos, flags)
 
   " let stop = search('\%(\<end\>\|^\s*$\)', 'Wbn')
   let Skip = {->
-        \ expand('<cword>') =~ '\<when\>\|\<in\>\|\<not\>' ||
+        \ expand('<cword>') =~ '\<when\>\|\<and\>\|\<or\>\|\<not\>\|\<in\>' ||
         \ !s:paren_in_range(a:do_pos) ||
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
@@ -502,7 +512,7 @@ function! s:find_do_block_head(do_pos, flags)
   " '\%(\<end\>\|\%(,$\)\)'
   " let start = '\%(\<end\>\s\+\)\@!\zs'
   let start = ''
-  let no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<not\>\|\<in\>\)\@!'
+  let no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<and\>\|\<or\>\|\<not\>\|\<in\>\)\@!'
 
   return searchpos(start.s:func_call_regex.no_follow, a:flags, 0, 0, Skip)
 endfunction
@@ -1358,7 +1368,7 @@ function! s:textobj_block(inner, include_meta) abort
       let start_pos = copy(do_pos)
       let start_pos[1] = 1
     else
-      let start_pos = func_pos
+      let start_pos = copy(func_pos)
     endif
 
     call cursor(do_pos)
@@ -1391,9 +1401,15 @@ function! s:textobj_block(inner, include_meta) abort
     call cursor(do_pos)
   endif
 
-  if a:inner && do =~ 'do:\|->'
-    " Clear `do:` When switching to insert, leaving a space after it.
-    let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
+  if a:inner && do =~# 'do:\|->'
+    if do ==# 'do:'
+      " Clear `do:` When switching to insert, leaving a space after it.
+      let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
+    elseif do ==# '->'
+      " Clear `->` When switching to insert, leaving a space after it.
+      let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 3 : 2)
+      let end_pos[1] -= 4
+    endif
   else
     let [start_pos, end_pos] = s:adjust_block_region(a:inner, do, start_pos, end_pos)
   endif
@@ -1597,23 +1613,22 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 " Text Objects: sigil {{{1
 
 function! s:textobj_sigil(inner)
-  let Skip = {->
-        \ index([
-        \   'Sigil',
-        \   'MixSigil',
-        \   'DelimEscape',
-        \   'MixDelimEscape',
-        \   'RegexEscapePunctuation',
-        \   'MixRegexEscapePunctuation'
-        \ ], s:cursor_syn_name()) >= 0}
+  let Skip = {-> s:cursor_syn_name() =~ 'DelimEscape\|RegexEscapePunctuation'}
 
   let view = winsaveview()
-  let regex = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
+  let open_delimiters = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
-  if s:cursor_syn_name() !~ 'Sigil' && expand('<cWORD>') =~ '\%('.regex.'\)\w\+$'
-    normal! b
-    if s:cursor_syn_name() =~ 'Sigil'
-      let on_modifer = 1
+  if s:cursor_syn_name() !~ 'Sigil' && s:cursor_char() =~ '\k'
+    while s:cursor_char() =~ '\k'
+      normal! h
+
+      if col('.') == 1
+        return winrestview(view)
+      endif
+    endwhile
+
+    if s:cursor_syn_name() !~ 'Sigil'
+      return winrestview(view)
     endif
   endif
 
@@ -1624,18 +1639,20 @@ function! s:textobj_sigil(inner)
   endif
 
   let line = getline('.')[col('.') - 1:]
-  let open = matchstr(line, regex)
+  let open = matchstr(line, open_delimiters)
 
-  let close = {
-        \   "\/": "\/",
-        \   "|": "|",
-        \   "'": "'",
-        \   "\"": "\"",
-        \   "(": ")",
-        \   "[": "]",
-        \   "{": "}",
-        \   "<": ">"
-        \ }[open]
+  let maps = {
+        \   '/': '/',
+        \   '|': '|',
+        \   '''': '''',
+        \   '"': '"',
+        \   '(': ')',
+        \   '\[': '\]',
+        \   '{': '}',
+        \   '<': '>'
+        \ }
+
+  let close = maps[open]
 
   if a:inner
     call search(open, 'W', 0, 0, Skip)
@@ -1645,13 +1662,11 @@ function! s:textobj_sigil(inner)
     exec "normal! 1\<left>"
   else
     call search(open, 'W', 0, 0, Skip)
-    call search(escape(close, '"/'), 'W', 0, 0, Skip)
+    call search(close, 'W', 0, 0, Skip)
 
-    if len(open) == 3
-      normal! ll
-    endif
-
-    call search('\a\+', 'We')
+    while getline('.')[col('.')] =~ '\k'
+      normal! l
+    endwhile
   endif
 
   let [end_lnr, end_col] = s:get_cursor_pos()
@@ -1724,9 +1739,8 @@ endfunction
 " Projections {{{1
 
 function! s:define_projections()
-  if filereadable(b:mix_project.root."/".".projections.json")
-    return
-  endif
+  if !exists('g:loaded_projectionist') | return | endif
+  if filereadable(b:mix_project.root."/".".projections.json") | return | endif
 
   let name = b:mix_project.name
   " These projections comes straight from elixir-tools.nvim

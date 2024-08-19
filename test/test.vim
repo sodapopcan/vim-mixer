@@ -17,7 +17,7 @@ function! ParseLines(lines)
   endfor
 
   return instructions
-endfunction!
+endfunction
 
 function! GetBuf()
   let lines = []
@@ -27,13 +27,14 @@ function! GetBuf()
   endfor
 
   return lines
-endfunction!
+endfunction
 
 let fails = []
 let fail_proto = {"file": "", "lnr": 0, "message": "", "cmds": [], "cursor": []}
 
 for file in readdir('tests')
   let contents = join(readfile('./tests/'.file), "\n")
+
   let testdata = split(contents, '#@@@')
 
   let buffer = split(testdata[0], "\n")
@@ -52,7 +53,7 @@ for file in readdir('tests')
 
       call append(0, buffer)
 
-      $d_
+      $delete_
       call cursor(cursor)
 
       for cmd in instructions.cmds
@@ -68,17 +69,27 @@ for file in readdir('tests')
         let fail.lnr = lnr
         let fail.message = getline(lnr + 1)
         let fail.cmds = instructions.cmds
+        let fail.buffer = GetBuf()
         let fail.cursor = cursor
         call add(fails, fail)
       endif
 
-      close!
+      bwipe!
     endfor
   endfor
 endfor
 
 if len(fails)
-  let output = map(fails, {-> v:val.file.":".v:val.lnr." ".v:val.message})
+  let output = []
+  for fail in fails
+    call add(output, fail.file.':'.fail.lnr)
+    for line in fail.buffer
+      call add(output, line)
+    endfor
+    call add(output, "")
+  endfor
+  echom output
+
   call writefile(output, 'fails')
   cquit!
 else
