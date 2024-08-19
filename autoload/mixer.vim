@@ -1613,7 +1613,15 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 " Text Objects: sigil {{{1
 
 function! s:textobj_sigil(inner)
-  let Skip = {-> s:cursor_syn_name() =~ 'DelimEscape\|RegexEscapePunctuation'}
+  " Skip delims
+  " Manually skip ' and " because elixir.vim doesn't account for this.
+  " I need to figure that out.
+  let Skip = { -> 
+        \   s:cursor_syn_name() =~ 'DelimEscape\|RegexEscapePunctuation' ||
+        \   (
+        \     s:cursor_char() =~ '"\|''' && s:cursor_char(line('.') - 1) ==# '\'
+        \   )
+        \ }
 
   let view = winsaveview()
   let open_delimiters = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
@@ -1644,10 +1652,10 @@ function! s:textobj_sigil(inner)
   let close = {
         \   '/': '/',
         \   '|': '|',
-        \   '''': '''',
+        \   "'": "'",
         \   '"': '"',
         \   '(': ')',
-        \   '\[': '\]',
+        \   '[': ']',
         \   '{': '}',
         \   '<': '>'
         \ }[open]
