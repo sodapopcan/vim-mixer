@@ -196,6 +196,12 @@ function! mixer#define_mappings()
   endif
 
   call s:define_argument_mappings()
+
+  if exists('g:closetag_regions')
+    if !has_key(g:closetag_regions, 'elixir')
+      let g:closetag_regions = extend(g:closetag_regions, {'elixir': 'elixirHeexSigil'})
+    endif
+  endif
 endfunction
 
 " Jump to event handler/hook {{{1

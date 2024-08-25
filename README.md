@@ -45,14 +45,24 @@ See `:help mixer` for full details.
 ## Recommended Plugins
 
 - [elixir.vim](https://github.com/elixir-editors/vim-elixir)
-  - Not strictly required for nvimmers.
+
+  Not strictly required for nvimmers.
+
 - [closetag](https://github.com/alvan/vim-closetag)
-  - Auto-close HTML tags.  Mixer is aware of this plugin and will auto-activate
-    it when your cursor is inside `~H` or `~F`.
+
+  Auto-close HTML tags.  Mixer is aware of this plugin and will extend
+  `g:closetag_regions` for you do it will work with your cursor inside
+  `~H` or `~F`.  Due to the way closetag is implemented, you must
+  configure the appropriate filetypes on your own.
+
 - [splitjoin.vim](https://github.com/AndrewRadev/splitjoin.vim)
-  - Among other things, it lets you pipe and unpipe args.
+
+  Among other things, it lets you pipe and unpipe args, though unnecessary if
+  you use snippets or the like.
+
 - [endwise.vim](https://github.com/tpope/vim-endwise)
-  - Auto-adds `end` after hitting `<cr>` in insert mode.
+
+  Auto-adds `end` after hitting `<cr>` in insert mode.
 
 -------------------
   - With your cursor within the `index` controller action, `:R` will take you to
