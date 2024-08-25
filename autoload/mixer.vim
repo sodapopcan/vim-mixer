@@ -4,6 +4,9 @@
 " Constants {{{1
 
 let s:func_call_regex = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+let s:empty = [0, 0]
+let s:empty2 = [[0, 0], [0, 0]]
+let s:empty3 = [[0, 0], [0, 0], [0, 0]]
 
 " Awk is from @mhandberg
 let s:mix_help = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
@@ -487,7 +490,7 @@ function! s:find_do_block_head(do_pos, flags)
 
   " let stop = search('\%(\<end\>\|^\s*$\)', 'Wbn')
   let Skip = {->
-        \ expand('<cword>') =~ '\<when\>\|\<and\>\|\<or\>\|\<not\>\|\<in\>' ||
+        \ expand('<cword>') =~ s:reserved ||
         \ !s:paren_in_range(a:do_pos) ||
         \ s:cursor_syn_name() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
         \ }
@@ -512,7 +515,7 @@ function! s:find_do_block_head(do_pos, flags)
   " '\%(\<end\>\|\%(,$\)\)'
   " let start = '\%(\<end\>\s\+\)\@!\zs'
   let start = ''
-  let no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|\<do\>\|\<when\>\|\<and\>\|\<or\>\|\<not\>\|\<in\>\)\@!'
+  let no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|'.s:reserved.'\)\@!'
 
   return searchpos(start.s:func_call_regex.no_follow, a:flags, 0, 0, Skip)
 endfunction
@@ -1242,8 +1245,7 @@ endfunction
 
 nnoremap <silent> <Plug>(MixerRestorView)
       \ :call winrestview(g:mixer_view)<bar>
-      \ :unlet g:mixer_view<bar>
-      \ :normal! ==^<cr>
+      \ :unlet g:mixer_view<cr>
 
 function! s:adjust_whitespace(start_pos)
   let [start_lnr, start_col] = a:start_pos
@@ -1315,17 +1317,9 @@ function! s:textobj_block(inner, include_meta) abort
 
   let origin = s:get_cursor_pos()
   " First check if we are in `fn -> end`
-  let start_pos = searchpos('\<fn\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
-  let on_fn = expand('<cword>') ==# 'fn'
+  let fn_pos = s:handle_fn(origin, a:inner)
 
-  if on_fn
-    let do_pos = searchpos('->', 'Wn', 0, 0, {-> s:is_string_or_comment()})
-    let do = '->'
-    let end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
-    let end_pos[1] += 2
-  endif
-
-  if !on_fn || !s:in_range(origin, start_pos, end_pos)
+  if fn_pos == s:empty3
     call cursor(origin)
 
     " Then check if we are between a function call and a `do`
@@ -1337,7 +1331,7 @@ function! s:textobj_block(inner, include_meta) abort
       let end_pos = s:find_end_pos(func_pos, do_pos)
     else
       call cursor(origin)
-      let end_pos = [0, 0]
+      let end_pos = s:empty
 
       if expand('<cword>') =~# '\<end\>' && !s:is_string_or_comment()
         let do_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>\zs', 'Wb', {-> s:is_string_or_comment()})
@@ -1345,7 +1339,7 @@ function! s:textobj_block(inner, include_meta) abort
         let do_pos = s:find_do('Wb')
       endif
 
-      if do_pos == [0, 0]
+      if do_pos == s:empty
         return winrestview(view)
       endif
 
@@ -1362,7 +1356,7 @@ function! s:textobj_block(inner, include_meta) abort
       let end_pos = s:find_end_pos(func_pos, do_pos)
     endif
 
-    if func_pos == [0, 0] | return winrestview(view) | endif
+    if func_pos == s:empty | return winrestview(view) | endif
 
     if a:inner
       let start_pos = copy(do_pos)
@@ -1373,6 +1367,9 @@ function! s:textobj_block(inner, include_meta) abort
 
     call cursor(do_pos)
     let do = expand('<cWORD>')
+  else
+    let [start_pos, do_pos, end_pos] = fn_pos
+    let do = '->'
   endif
 
   if !a:inner && a:include_meta
@@ -1415,8 +1412,30 @@ function! s:textobj_block(inner, include_meta) abort
   endif
 
   let view.lnum = start_pos[0]
+  if a:inner
+    let view.col = start_pos[1]
+  endif
 
   call s:textobj_select_obj(view, start_pos, end_pos)
+endfunction
+
+function! s:handle_fn(origin, inner)
+  let fn_pos = searchpos('\<fn\>', 'Wbc', 0, 0, {-> s:is_string_or_comment()})
+
+  if fn_pos == s:empty
+    return s:empty3
+  else
+    let do_pos = searchpos('->', 'Wn', 0, 0, {-> s:is_string_or_comment()})
+    let do = '->'
+    let end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
+    let end_pos[1] += 2
+
+    if s:in_range(a:origin, do_pos, end_pos)
+      return [fn_pos, do_pos, end_pos]
+    else
+      return s:empty3
+    endif
+  endif
 endfunction
 
 
@@ -1424,18 +1443,15 @@ endfunction
 
 function! s:textobj_def(keyword, inner, include_annotations) abort
   let known_annotations = '@doc\>\|@spec\>\|@tag\>\|@requirements\>\|\<attr\>\|\<slot\>'
-  let user_annotations = get(g:, 'mixer_known_annotations')
+  let user_annotations = get(g:, 'mixer_known_annotations', 0)
 
-  if user_annotations
+  if user_annotations != 0
     let known_annotations = join([known_annotations, user_annotations], '\|')
   endif
 
   let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment'}
   let view = winsaveview()
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
-
-  normal! ^
-
   let cursor_origin = s:get_cursor_pos()
 
   if s:check_for_meta(known_annotations)
@@ -1446,14 +1462,14 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   let do_pos = s:find_do('W')
   let end_pos = s:find_end_pos(def_pos, do_pos)
 
-  if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == [0, 0]
+  if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == s:empty
     call winrestview(view)
     normal! wb
 
     let def_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
   endif
 
-  if def_pos == [0, 0] | return winrestview(view) | endif
+  if def_pos == s:empty | return winrestview(view) | endif
 
   if !a:inner && a:include_annotations
     let def_pos = s:find_first_func_head(def_pos)
@@ -1501,6 +1517,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   endif
 
   let view.lnum = start_pos[0]
+  let view.col = start_pos[1]
   call s:textobj_select_obj(view, start_pos, end_pos)
 endfunction
 
@@ -1524,7 +1541,7 @@ function! s:textobj_map(inner) abort
     let [start_lnr, start_col] = searchpos(open_regex, 'Wc', 0, 0, Skip)
   endif
 
-  if [start_lnr, start_col] == [0, 0]
+  if [start_lnr, start_col] == s:empty
     return winrestview(view)
   endif
 
