@@ -21,12 +21,11 @@ COMMANDS                                    |mixer-mix-commands|
 MAPPINGS                                    |mixer-mappings|
 NAVIGATION                                  |mixer-navigation|
 TEXT OBJECTS                                |mixer-text-objects|
-  Do/end blocks                               |mixer-text-object-do-end|
-  Functions                                   |mixer-functions|
-  Maps                                        |mixer-maps|
-  Sigils                                      |mixer-sigils|
-  Comments                                    |mixer-comments|
-  Options                                     |mixer-text-objects-options|
+  Do/end block                                |mixer-text-object-do-end|
+  Function                                    |mixer-function|
+  Map or struct                               |mixer-map|
+  Sigil                                       |mixer-sigil|
+  Comment                                     |mixer-comment|
 OPTIONS                                     |mixer-options|
 
 INTRODUCTION                                *mixer-introduction*
@@ -305,7 +304,7 @@ Here is an overview:
     #/@doc """/etc      | c  (comment)
 
 
-                    do/end blocks~
+                    Do/end block~
 id                                          *mixer-ie* *mixer-ae*
 ad                  A do/end block including function call.
 iD
@@ -332,8 +331,14 @@ aD                  Currently brings `else` along with it.
                     touching the code block.  If separated by a blank line
                     they will be left alone.
 
+                    options~
+>
+                        let g:mixer_textobj_block = 'd'
+                        let g:mixer_textobj_block_with_meta = 'D'
+<
 
-                    function and macro definitions~
+
+                    Function and macro definition~
 if                                          *mixer-if* *mixer-af*
 af                                          *mixer-iF* *mixer-aF*
 iF                  A function definition including `def`, `defp`, `defmacro`, and
@@ -352,30 +357,51 @@ iF                  A function definition including `def`, `defp`, `defmacro`, a
                       let g:mixer_known_annotations =
                         \ '\<my_macro\>\|@my_attribute\>'
 <
+                    options~
+>
+                        let g:mixer_textobj_def = 'd'
+                        let g:mixer_textobj_def_with_meta = 'D'
+<
 
-                    module definitions~
+                    Module definition~
 iM                                          *mixer-iM* *mixer-aM*
 aM                  A module definition.
 
+                    options~
+>
+                      let g:mixer_textobj_module = 'M'
+<
 
-                    maps and structs~
+                    Map or struct~
 im                                          *mixer-im* *mixer-am*
 am                  A map or struct.
 
                     With a count of `0`, as in `0yam`, this will target the
                     most outter map.
 
+                    options~
+>
+                      let g:mixer_textobj_map = 'M'
+<
 
-                    sigils~
+                    Sigil~
 iS                                          *mixer-iS* *mixer-aS*
 aS                  A sigil.  Works regardless of the delimiter.
 
+                    options~
+>
+                      let g:mixer_textobj_sigil = 'M'
+<
 
-                    comments~
+                    Comment~
 ic                                          *mixer-ic* *mixer-ac*
 ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
+                    options~
+>
+                      let g:mixer_textobj_comment = 'M'
+<
 
                     function arguments~
 ia                                          *mixer-text-objects-arguments*

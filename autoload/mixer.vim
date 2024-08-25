@@ -133,53 +133,63 @@ endfunction
 
 " Init: Mappings {{{1
 
-function mixer#define_mappings()
+function! mixer#define_mappings()
+  let def = get(g:, 'mixer_textobj_def', 'f')
+  let def_with_meta = get(g:, 'mixer_textobj_def_with_meta', 'F')
+  let block = get(g:, 'mixer_textobj_block', 'd')
+  let block_with_meta = get(g:, 'mixer_textobj_block_with_meta', 'D')
+  let module = get(g:, 'mixer_textobj_module', 'M')
+  let map = get(g:, 'mixer_textobj_map', 'm')
+  let sigil = get(g:, 'mixer_textobj_sigil', 'S')
+  let comment = get(g:, 'mixer_textobj_comment', 'c')
+  let quote = get(g:, 'mixer_textobj_quote', 'q')
+
   let defregex = 'defp\?\|defmacrop\?\|defnp\?'
 
-  exec "vnoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
-  exec "vnoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
-  exec "onoremap <silent> <buffer> if :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
-  exec "onoremap <silent> <buffer> af :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> i".def." :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> a".def." :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
+  exec "onoremap <silent> <buffer> i".def." :\<c-u>call <sid>textobj_def('".defregex."', 1, 0)\<cr>"
+  exec "onoremap <silent> <buffer> a".def." :\<c-u>call <sid>textobj_def('".defregex."', 0, 0)\<cr>"
 
-  exec "vnoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "vnoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
-  exec "onoremap <silent> <buffer> iF :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
-  exec "onoremap <silent> <buffer> aF :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> i".def_with_meta." :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> a".def_with_meta." :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> i".def_with_meta." :\<c-u>call <sid>textobj_def('".defregex."', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> a".def_with_meta." :\<c-u>call <sid>textobj_def('".defregex."', 0, 1)\<cr>"
 
-  vnoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 0)<cr>
-  vnoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 0)<cr>
-  onoremap <silent> <buffer> iM :<c-u>call <sid>textobj_def('defmodule', 1, 0)<cr>
-  onoremap <silent> <buffer> aM :<c-u>call <sid>textobj_def('defmodule', 0, 0)<cr>
+  exec "vnoremap <silent> <buffer> i".module." :\<c-u>call <sid>textobj_def('defmodule', 1, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> a".module." :\<c-u>call <sid>textobj_def('defmodule', 0, 0)\<cr>"
+  exec "onoremap <silent> <buffer> i".module." :\<c-u>call <sid>textobj_def('defmodule', 1, 0)\<cr>"
+  exec "onoremap <silent> <buffer> a".module." :\<c-u>call <sid>textobj_def('defmodule', 0, 0)\<cr>"
 
-  vnoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
-  vnoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
-  onoremap <silent> <buffer> iq :<c-u>call <sid>textobj_def('quote', 1, 1)<cr>
-  onoremap <silent> <buffer> aq :<c-u>call <sid>textobj_def('quote', 0, 1)<cr>
+  exec "vnoremap <silent> <buffer> i".quote." :\<c-u>call <sid>textobj_def('quote', 1, 1)\<cr>"
+  exec "vnoremap <silent> <buffer> a".quote." :\<c-u>call <sid>textobj_def('quote', 0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> i".quote." :\<c-u>call <sid>textobj_def('quote', 1, 1)\<cr>"
+  exec "onoremap <silent> <buffer> a".quote." :\<c-u>call <sid>textobj_def('quote', 0, 1)\<cr>"
 
-  vnoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1, 0)<cr>
-  vnoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0, 0)<cr>
-  onoremap <silent> <buffer> id :<c-u>call <sid>textobj_block(1, 0)<cr>
-  onoremap <silent> <buffer> ad :<c-u>call <sid>textobj_block(0, 0)<cr>
+  exec "vnoremap <silent> <buffer> i".block." :\<c-u>call <sid>textobj_block(1, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> a".block." :\<c-u>call <sid>textobj_block(0, 0)\<cr>"
+  exec "onoremap <silent> <buffer> i".block." :\<c-u>call <sid>textobj_block(1, 0)\<cr>"
+  exec "onoremap <silent> <buffer> a".block." :\<c-u>call <sid>textobj_block(0, 0)\<cr>"
 
-  vnoremap <silent> <buffer> iD :<c-u>call <sid>textobj_block(1, 0)<cr>
-  vnoremap <silent> <buffer> aD :<c-u>call <sid>textobj_block(0, 1)<cr>
-  onoremap <silent> <buffer> iD :<c-u>call <sid>textobj_block(1, 0)<cr>
-  onoremap <silent> <buffer> aD :<c-u>call <sid>textobj_block(0, 1)<cr>
+  exec "vnoremap <silent> <buffer> i".module." :\<c-u>call <sid>textobj_block(1, 0)\<cr>"
+  exec "vnoremap <silent> <buffer> a".module." :\<c-u>call <sid>textobj_block(0, 1)\<cr>"
+  exec "onoremap <silent> <buffer> i".module." :\<c-u>call <sid>textobj_block(1, 0)\<cr>"
+  exec "onoremap <silent> <buffer> a".module." :\<c-u>call <sid>textobj_block(0, 1)\<cr>"
 
-  vnoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
-  vnoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
-  onoremap <silent> <buffer> ic :<c-u>call <sid>textobj_comment(1)<cr>
-  onoremap <silent> <buffer> ac :<c-u>call <sid>textobj_comment(0)<cr>
+  exec "vnoremap <silent> <buffer> i".comment." :\<c-u>call <sid>textobj_comment(1)\<cr>"
+  exec "vnoremap <silent> <buffer> a".comment." :\<c-u>call <sid>textobj_comment(0)\<cr>"
+  exec "onoremap <silent> <buffer> i".comment." :\<c-u>call <sid>textobj_comment(1)\<cr>"
+  exec "onoremap <silent> <buffer> a".comment." :\<c-u>call <sid>textobj_comment(0)\<cr>"
 
-  vnoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
-  vnoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
-  onoremap <silent> <buffer> im :<c-u>call <sid>textobj_map(1)<cr>
-  onoremap <silent> <buffer> am :<c-u>call <sid>textobj_map(0)<cr>
+  exec "vnoremap <silent> <buffer> i".map." :\<c-u>call <sid>textobj_map(1)\<cr>"
+  exec "vnoremap <silent> <buffer> a".map." :\<c-u>call <sid>textobj_map(0)\<cr>"
+  exec "onoremap <silent> <buffer> i".map." :\<c-u>call <sid>textobj_map(1)\<cr>"
+  exec "onoremap <silent> <buffer> a".map." :\<c-u>call <sid>textobj_map(0)\<cr>"
 
-  vnoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
-  vnoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
-  onoremap <silent> <buffer> iS :<c-u>call <sid>textobj_sigil(1)<cr>
-  onoremap <silent> <buffer> aS :<c-u>call <sid>textobj_sigil(0)<cr>
+  exec "vnoremap <silent> <buffer> i".sigil." :\<c-u>call <sid>textobj_sigil(1)\<cr>"
+  exec "vnoremap <silent> <buffer> a".sigil." :\<c-u>call <sid>textobj_sigil(0)\<cr>"
+  exec "onoremap <silent> <buffer> i".sigil." :\<c-u>call <sid>textobj_sigil(1)\<cr>"
+  exec "onoremap <silent> <buffer> a".sigil." :\<c-u>call <sid>textobj_sigil(0)\<cr>"
 
   if !empty(system('command -v git'))
     nnoremap <silent> <buffer> <c-]> :call <sid>find_event()<cr>
