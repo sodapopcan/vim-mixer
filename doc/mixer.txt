@@ -11,6 +11,7 @@ INTRODUCTION                                |mixer-introduction|
     HEEx                                        |mixer-heex|
     Surface                                     |mixer-surface|
     matchit.vim                                 |mixer-matchit|
+    Phoenix Hilighting                          |mixer-syntax-highlighting|
 COMMANDS                                    |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
@@ -25,8 +26,8 @@ TEXT OBJECTS                                |mixer-text-objects|
   Maps                                        |mixer-maps|
   Sigils                                      |mixer-sigils|
   Comments                                    |mixer-comments|
-  options                                     |mixer-text-objects-options|
-
+  Options                                     |mixer-text-objects-options|
+OPTIONS                                     |mixer-options|
 
 INTRODUCTION                                *mixer-introduction*
 
@@ -62,8 +63,15 @@ be too quick for it.
                                             *mixer-compiler*
 If available, `:compiler mix` will be called for Elixir files and
 `:compiler exunit` will be called for any Elixir file ending in `_test.exs`.
-These are available if you have |elixir.vim| installed.  See `complier/` if
-in that plugin if don't use it and wish to copy them over.
+These are available if you have |elixir.vim| installed.  See the `complier/`
+directory in that plugin if yout don't use it and wish to copy them over.
+
+                                            *mixer-syntax-highliting*
+Mixer will highlight common library macros like `using`, `plug`, `scope`, etc.
+To turn off this behaviour, set:
+>
+  let g:mixer_syntax_highlighting = 0
+<
 
 
 COMMANDS                                    *mixer-commands*
@@ -175,7 +183,6 @@ COMMANDS                                    *mixer-commands*
                     also available.
 
                                             *mixer-:Deps_add*
-
 :Deps add {dep}     Insert {dep} into the current buffer.  This is available
                     anywhere so it's best to make your cursor is where you
                     want the dep to be inserted.
@@ -277,7 +284,6 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
 TEXT OBJECTS                                *mixer-text-objects*
                                             *mixer-text-object*
                                             *mixer-textobj*
-
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
 for the def* family of macros where the 'aF' version includes specs,
@@ -288,23 +294,22 @@ Here is an overview:
 
     Elixir construct    | Text Object  (mneumonic/notes)
     --------------------+------------------------------------------------
-    do/end blocks       | d  (do)
-    do/end blocks       | D  (includes assignment and comments)
+    blocks              | d  (do, but also fb)
+    blocks              | D  (includes assignment and comments)
     def[p]/defmarco[p]  | f
     def[p]/defmacro[p]  | F  (includes annotations and all function heads)
     defmodule           | M
     %{}/%Fooi.Bar{}     | m  (maps and structs)
-    Sigils              | S  (note the uppercase)
+    %Fooi.Bar{}         | S  (structs)
+    Sigils              | ~ 
     #/@doc """/etc      | c  (comment)
 
 
                     do/end blocks~
 id                                          *mixer-ie* *mixer-ae*
-ad
+ad                  A do/end block including function call.
 iD
-aD                  A do/end block including function call.
-
-                    Currently brings `else` along with it.
+aD                  Currently brings `else` along with it.
 
                     A reasonable effort is made for these to be as general as
                     possible and work with custom macros, not just the
@@ -329,11 +334,9 @@ aD                  A do/end block including function call.
 
 
                     function and macro definitions~
-
 if                                          *mixer-if* *mixer-af*
 af                                          *mixer-iF* *mixer-aF*
-iF
-aF                  A function definition including `def`, `defp`, `defmacro`, and
+iF                  A function definition including `def`, `defp`, `defmacro`, and
                     `defmacrop` as well as `defn` for Nx'ers.
 
                     "aF" will include any function annotations.  A small list
@@ -351,13 +354,11 @@ aF                  A function definition including `def`, `defp`, `defmacro`, a
 <
 
                     module definitions~
-
 iM                                          *mixer-iM* *mixer-aM*
 aM                  A module definition.
 
 
                     maps and structs~
-
 im                                          *mixer-im* *mixer-am*
 am                  A map or struct.
 
@@ -366,20 +367,17 @@ am                  A map or struct.
 
 
                     sigils~
-
 iS                                          *mixer-iS* *mixer-aS*
 aS                  A sigil.  Works regardless of the delimiter.
 
 
                     comments~
-
 ic                                          *mixer-ic* *mixer-ac*
 ac                  A comment.  Mostly just useful for formatting when
                     a comment is touching some code.
 
 
                     function arguments~
-
 ia                                          *mixer-text-objects-arguments*
 aa
                     A function argument.
@@ -389,8 +387,8 @@ aa
                     at <https://github.com/AndrewRadev/sideways.vim>.
 
 
+Text Object Options~
                                             *mixer-text-objects-options*
-
 By default, text objects use the "seek" behaviour.  This means if you type
 `daf` outside of a function, it will delete the next function searching
 downward.  You may turn this off with the following setting:

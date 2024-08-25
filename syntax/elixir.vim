@@ -61,6 +61,7 @@ if !hlexists('elixirVariable')
   syn match elixirVariable '&\d\+'
 endif
 
-syn match elixirPhoenix "\C\(^\s*\)\@<=\<\(scope\|live\|on_mount\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\|assert_\%(\k\+\)\=\)\>"
-
-hi link elixirPhoenix Keyword
+if get(g:, 'mixer_syntax_highlighting', 1)
+  syn match elixirPhoenix "\C\(^\s*\)\@<=\<\(scope\|live\|on_mount\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\|assert_\%(\k\+\)\=\)\>"
+  hi link elixirPhoenix Include
+endif
