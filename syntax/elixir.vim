@@ -60,3 +60,7 @@ if !hlexists('elixirVariable')
   syn match elixirVariable '@[a-z]\w*'
   syn match elixirVariable '&\d\+'
 endif
+
+syn match elixirPhoenix "\C\(^\s*\)\@<=\<\(scope\|live\|on_mount\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\|assert_\%(\k\+\)\=\)\>"
+
+hi link elixirPhoenix Keyword
