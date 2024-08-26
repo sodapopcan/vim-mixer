@@ -833,7 +833,8 @@ function! s:run_mix_command(bang, cmd, args) abort
   endfor
 
   let mix_cmd = join(mix_tasks, " && ")
-  let async_cmd = g:mixer_async_command
+
+  let async_cmd = get(g:, 'mixer_async_command', 0)
 
   if !async_cmd
     for runner in g:async_runners
