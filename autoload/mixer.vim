@@ -1297,15 +1297,23 @@ function! s:adjust_block_region(inner, do, start_pos, end_pos) abort
   let [end_lnr, end_col] = a:end_pos
 
   if a:inner
-    let start_lnr += 1
-    let end_lnr -= 1
+    if start_lnr != end_lnr
+      let start_lnr += 1
+      let end_lnr -= 1
+    elseif a:do ==# '->'
+      let end_col -= 4
+    endif
 
     if v:operator ==# 'c'
-      let start_col = indent(start_lnr) + 1
       exec start_lnr + 1
-      let end_col = len(getline(end_lnr))
+      if a:do !=# '->'
+        let start_col = indent(start_lnr) + 1
+        let end_col = len(getline(end_lnr))
+      endif
     else
-      let end_col = len(getline(end_lnr)) + 1 " Include \n
+      if a:do !=# '->'
+        let end_col = len(getline(end_lnr)) + 1 " Include \n
+      endif
       exec start_lnr
     endif
   else
@@ -1421,7 +1429,7 @@ function! s:textobj_block(inner, include_meta) abort
     elseif do ==# '->'
       " Clear `->` When switching to insert, leaving a space after it.
       let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 3 : 2)
-      let end_pos[1] -= 4
+      let [start_pos, end_pos] = s:adjust_block_region(a:inner, do, start_pos, end_pos)
     endif
   else
     let [start_pos, end_pos] = s:adjust_block_region(a:inner, do, start_pos, end_pos)
@@ -1446,7 +1454,7 @@ function! s:handle_fn(origin, inner)
     let end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', {-> s:is_string_or_comment()})
     let end_pos[1] += 2
 
-    if s:in_range(a:origin, do_pos, end_pos)
+    if s:in_range(a:origin, fn_pos, end_pos)
       return [fn_pos, do_pos, end_pos]
     else
       return s:empty3
