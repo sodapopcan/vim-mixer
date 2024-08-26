@@ -728,12 +728,6 @@ function! mixer#setup_mix_project() abort
       endif
     endfunction
 
-    if !exists('s:html_match_words')
-      " This is ripped straight from matchit since I don't know of a way to see
-      " what is globally defined.
-      let s:html_match_words = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
-    endif
-
     function! s:do_match_words()
       if exists('b:match_words') && !exists('b:elixir_match_words')
         let b:elixir_match_words = b:match_words
@@ -741,7 +735,15 @@ function! mixer#setup_mix_project() abort
 
       if !exists('b:elixir_match_words') | return | endif
 
-      if s:cursor_outer_syn_name() =~ 'Heex\|Surface'
+      if !exists('s:html_match_words')
+        " This is ripped straight from matchit since I don't know of a way to see
+        " what is globally defined.
+        let s:html_match_words = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
+      endif
+
+      let syn = s:cursor_outer_syn_name()
+
+      if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
         let b:match_words = s:html_match_words
         call s:set_commentstring('<%!--\ %s\ --%>')
       else
