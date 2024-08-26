@@ -17,17 +17,16 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
   - `ic`/`ac`- A comment
 
 - Conveniences
+  - `'commentstring'` is dynamically set in embedded HEEx/Surface.
   - [matchit](https://www.vim.org/scripts/script.php?script_id=39) works in
-    HEEx/Surface templates.
+    embedded HEEx/Surface templates.
   - Automatically sets `:compiler` if the appropriate plugin is found.  (for Vim
     users, this requires elixir.vim)
 
 - Commands
   - `:Mix`: Run a mix command with autocomplete.  Uses
     [dispatch](https://github.com/tpope/vim-dispatch) or
-    [asyncrun](https://github.com/skywind3000/asyncrun.vim)if available.  PRs
-    for other popular async runners are welcome.  See
-    [CONTRIBUTING](./CONTRIBUTING.md)
+    [asyncrun](https://github.com/skywind3000/asyncrun.vim)if available.
   - `:Deps` for added `:Mix deps` functionality, like dynamically adding
     packages or just jumping to your `deps` function (no matter what you've call it).
   - `:Gen` is a unified command for running `gen` tasks, eg:
