@@ -752,7 +752,7 @@ function! mixer#setup_mix_project() abort
 
     augroup mixerMatchWords
       autocmd!
-      autocmd CursorHold *.ex call s:do_match_words()
+      autocmd CursorHold,BufEnter *.ex call s:do_match_words()
     augroup END
   endif
 
