@@ -9,8 +9,9 @@ TABLE OF CONTENTS                           *mixer*
 INTRODUCTION                                |mixer-introduction|
   Passive settings                            |mixer-passive-settings|
     Commenting                                  |mixer-commenting|
-    matchit.vim                                 |mixer-matchit|
-    Phoenix Hilighting                          |mixer-syntax-highlighting|
+    matchit.vim in embedded templates           |mixer-matchit|
+    Compiler                                    |mixer-compiler|
+    Syntax Hilighting                           |mixer-syntax-highlighting|
 COMMANDS                                    |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
@@ -26,6 +27,7 @@ TEXT OBJECTS                                |mixer-text-objects|
   Sigil                                       |mixer-sigil|
   Comment                                     |mixer-comment|
 OPTIONS                                     |mixer-options|
+
 
 INTRODUCTION                                *mixer-introduction*
 
@@ -51,16 +53,19 @@ Passive Settings~
 
                                             *mixer-commenting*
 When working in files with embedded templates, 'commentstring' will be
-adjusted appropriately based on where you cursor is.  Similarly, if you have
-|matchit| enabled, `b:match_words` will also be automatically set based where
-your cursor position in the file.
+adjusted appropriately based on where you cursor is.
 
 Caveats:
 
   * This is set on |CursorHold|, so if you happen to have set a very slow
     |uptimedate|, then it's possible you could be too quick for it.
   * When commenting out both Elixir and HEEx/Surface in visual mode,
-    'commentstring' will be whaever it was when you entered visual mode.
+    'commentstring' will be whatever it was when you entered visual mode.
+
+                                            *mixer-matchit*
+Similar to above, if you have |matchit| enabled, `b:match_words` will be
+automatically set based where your cursor position in the file, allowing you
+to use |%| in embedded HEEs/Surface.
 
                                             *mixer-compiler*
 If available, `:compiler mix` will be called for Elixir files and
@@ -85,8 +90,8 @@ COMMANDS                                    *mixer-commands*
                     It will use an async library if available.  Currently,
                     it's aware of |dispatch|, |neomake|, |asyncrun|, and the
                     lesser known |asyncdo|.  The latter is by Elixir community
-                    member @hauleth so I figured I'd include it :)
-                    You may also configure it to use any command you want:
+                    member @hauleth so I figured I'd include it :) You may
+                    also configure it to use any command you want:
 >
                       let g:mixer_async_command = 'Make'
 <
@@ -208,7 +213,7 @@ COMMANDS                                    *mixer-commands*
 :Gen[!]             Unified generator command with autocomplete.
 
                     Run any `*.gen*` task in your project without having to
-                    provide its namesapce.
+                    provide its namespace.
 
                     For example:
 >
@@ -280,7 +285,6 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
                     This command's implementation requires your project to be
                     tracked by `git`.  I would like to change this sooner or
                     later.
-
 
 
 TEXT OBJECTS                                *mixer-text-objects*
@@ -407,13 +411,11 @@ ac                  A comment.  Mostly just useful for formatting when
 
                     Function argument~
 ia                                          *mixer-text-objects-argument*
-aa
-                    A function argument.
+aa                  A function argument.
 
                     These are only available if the plugin sideways.vim is
                     installed.  You can find this on www.vim.org or on github
                     at <https://github.com/AndrewRadev/sideways.vim>.
-
 
 Text Object Options~
                                             *mixer-text-objects-options*
