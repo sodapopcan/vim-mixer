@@ -8,8 +8,7 @@ TABLE OF CONTENTS                           *mixer*
 
 INTRODUCTION                                |mixer-introduction|
   Passive settings                            |mixer-passive-settings|
-    HEEx                                        |mixer-heex|
-    Surface                                     |mixer-surface|
+    Commenting                                  |mixer-commenting|
     matchit.vim                                 |mixer-matchit|
     Phoenix Hilighting                          |mixer-syntax-highlighting|
 COMMANDS                                    |mixer-mix-commands|
@@ -50,14 +49,18 @@ plugin can be used along-side it.
 Passive Settings~
                                             *mixer-passive-settings*
 
-                                            *mixer-heex*
-                                            *mixer-surface*
+                                            *mixer-commenting*
 When working in files with embedded templates, 'commentstring' will be
 adjusted appropriately based on where you cursor is.  Similarly, if you have
 |matchit| enabled, `b:match_words` will also be automatically set based where
-your cursor position in the file.  Note, this is set on |CursorHold|, so if
-you happen to have set a very slow |uptimedate|, then it's possible you could
-be too quick for it.
+your cursor position in the file.
+
+Caveats:
+
+  * This is set on |CursorHold|, so if you happen to have set a very slow
+    |uptimedate|, then it's possible you could be too quick for it.
+  * When commenting out both Elixir and HEEx/Surface in visual mode,
+    'commentstring' will be whaever it was when you entered visual mode.
 
                                             *mixer-compiler*
 If available, `:compiler mix` will be called for Elixir files and
