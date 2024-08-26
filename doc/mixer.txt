@@ -299,8 +299,7 @@ Here is an overview:
     def[p]/defmacro[p]  | F  (includes annotations and all function heads)
     defmodule           | M
     %{}/%Fooi.Bar{}     | m  (maps and structs)
-    %Fooi.Bar{}         | S  (structs)
-    Sigils              | ~ 
+    Sigils              | S 
     #/@doc """/etc      | c  (comment)
 
 
