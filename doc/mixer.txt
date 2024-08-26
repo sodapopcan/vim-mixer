@@ -402,8 +402,8 @@ ac                  A comment.  Mostly just useful for formatting when
                       let g:mixer_textobj_comment = 'M'
 <
 
-                    function arguments~
-ia                                          *mixer-text-objects-arguments*
+                    Function argument~
+ia                                          *mixer-text-objects-argument*
 aa
                     A function argument.
 
