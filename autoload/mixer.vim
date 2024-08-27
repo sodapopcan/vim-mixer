@@ -1491,30 +1491,26 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == s:empty
     call winrestview(view)
-    normal! wb
 
-    let def_pos = searchpos(keyword, 'Wc', 0, 0, Skip)
+    let def_pos = searchpos(keyword, 'W', 0, 0, Skip)
   endif
 
   if def_pos == s:empty | return winrestview(view) | endif
 
   if !a:inner && a:include_annotations
     let def_pos = s:find_first_func_head(def_pos)
-    let do_pos = s:find_do('Wc')
   endif
-
-  call cursor(do_pos)
 
   let first_head_has_keyword_do = expand('<cWORD>') ==# 'do:'
 
   if !a:inner && a:include_annotations
     call s:find_last_func_head(def_pos)
+    let do_pos = s:find_do('Wc')
   endif
 
-  let last_func_do_pos = s:find_do('Wc')
-
   let start_pos = def_pos
-  let end_pos = s:find_end_pos(def_pos, last_func_do_pos)
+  " echom [start_pos, do_pos] | return
+  let end_pos = s:find_end_pos(def_pos, do_pos)
 
   call cursor(def_pos)
 
