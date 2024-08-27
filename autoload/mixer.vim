@@ -613,22 +613,26 @@ endfunction
 " TODO: Maybe take arity into account.
 function! s:find_first_func_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+'.func_name, 'Wb') | endwhile
+  echom 'def\k*\s*'.func_name.'\>'
+  while search('def\k*\s*'.func_name.'\>', 'Wb') | endwhile
 
   return s:get_cursor_pos()
 endfunction
 
 function! s:find_last_func_head(def_pos) abort
   let func_name = s:get_func_name(a:def_pos)
-  while search('def\%(\l\+\)\?\s\+\<'.func_name.'\>', 'W') | endwhile
+  while search('def\k*\s*\<\%(do_\)\='.func_name.'\>', 'W') | endwhile
 
   return s:get_cursor_pos()
 endfunction
 
 function! s:get_func_name(def_pos) abort
   call cursor(a:def_pos)
+  normal! w
+  let func = matchstr(expand('<cword>'), '^\%(do_\)\=\zs\k*')
+  normal! b
 
-  return expand('<cword>')
+  return func
 endfunction
 
 function! s:is_lambda_end(do_pos)

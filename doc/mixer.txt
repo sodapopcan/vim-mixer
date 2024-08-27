@@ -301,7 +301,7 @@ Here is an overview:
     Elixir construct    | Text Object  (mneumonic/notes)
     --------------------+------------------------------------------------
     blocks              | d  (do, but also fb)
-    blocks              | D  (includes assignment and comments)
+    blocks              | D  (includes assignment comments)
     def[p]/defmarco[p]  | f
     def[p]/defmacro[p]  | F  (includes annotations and all function heads)
     defmodule           | M
@@ -350,7 +350,9 @@ af                                          *mixer-iF* *mixer-aF*
 iF                  A function definition including `def`, `defp`, `defmacro`, and
                     `defmacrop` as well as `defn` for Nx'ers.
 
-                    "aF" will include any function annotations.  A small list
+                    "aF" will include any function annotations as well
+                    surrounding functions with the same name, including
+                    private functions prefixed with `do_`.  A small list
                     of well-known annotations are considered (definitively:
                     `@doc`, `@spec`, `@tag`, and `@requirements`) as well as
                     LiveView's `attr` and `slot` macros.  Otherwise, anything
@@ -363,6 +365,10 @@ iF                  A function definition including `def`, `defp`, `defmacro`, a
                       let g:mixer_known_annotations =
                         \ '\<my_macro\>\|@my_attribute\>'
 <
+
+                    NOTE When including surrounding function heads, artity is
+                    NOT taken into account.
+
                     options~
 >
                         let g:mixer_textobj_def = 'd'
