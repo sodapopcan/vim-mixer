@@ -627,10 +627,8 @@ endfunction
 
 function! s:get_func_name(def_pos) abort
   call cursor(a:def_pos)
-  normal! W
-  let func_name = expand('<cword>')
-  normal! ^
-  return func_name
+
+  return expand('<cword>')
 endfunction
 
 function! s:is_lambda_end(do_pos)
@@ -1481,15 +1479,20 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
   let keyword = '\<\%('.escape(a:keyword, '|').'\)\>'
   let cursor_origin = s:get_cursor_pos()
 
+  " Being in the gutter of a def line is considered in range
+  normal! ^
+  let cursor_start = s:get_cursor_pos()
+
   if s:check_for_meta(known_annotations)
     call search(keyword, 'W', 0, 0, Skip)
   endif
 
+  " Search backward
   let def_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
   let do_pos = s:find_do('W')
   let end_pos = s:find_end_pos(def_pos, do_pos)
 
-  if !s:in_range(cursor_origin, def_pos, end_pos) || do_pos == s:empty
+  if !s:in_range(cursor_start, def_pos, end_pos) || do_pos == s:empty
     call winrestview(view)
 
     let def_pos = searchpos(keyword, 'W', 0, 0, Skip)
@@ -1501,15 +1504,20 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     let def_pos = s:find_first_func_head(def_pos)
   endif
 
+  call cursor(def_pos)
+
+  let do_pos = s:find_do('W')
+
   let first_head_has_keyword_do = expand('<cWORD>') ==# 'do:'
+
+  call cursor(def_pos)
 
   if !a:inner && a:include_annotations
     call s:find_last_func_head(def_pos)
     let do_pos = s:find_do('Wc')
   endif
 
-  let start_pos = def_pos
-  " echom [start_pos, do_pos] | return
+  let start_pos = copy(def_pos)
   let end_pos = s:find_end_pos(def_pos, do_pos)
 
   call cursor(def_pos)
@@ -1527,15 +1535,11 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
     let start_pos = s:get_cursor_pos()
   endif
 
-  if a:inner
-    let start_pos = do_pos
-    let start_pos[1] = 1
-  endif
-
   if a:inner && first_head_has_keyword_do
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
+    let start_pos[1] = 1
     let [start_pos, end_pos] = s:adjust_block_region(a:inner, 'do', start_pos, end_pos)
   endif
 
