@@ -549,7 +549,11 @@ function! s:find_end_pos(func_pos, do_pos) abort
   if line =~# '(' && line !~# '^\s*def'
     normal! f(
 
-    return searchpairpos('(', '', ')', 'W', {-> s:is_string_or_comment()})
+    let pair = searchpairpos('(', '', ')', 'W', {-> s:is_string_or_comment()})
+
+    if pair[1] > a:do_pos[1]
+      return pair
+    endif
   endif
 
   call cursor(a:do_pos)
