@@ -388,9 +388,6 @@ aM                  A module definition.
 im                                          *mixer-im* *mixer-am*
 am                  A map or struct.
 
-                    With a count of `0`, as in `0yam`, this will target the
-                    most outter map.
-
                     options~
 >
                       let g:mixer_textobj_map = 'M'
