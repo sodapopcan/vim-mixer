@@ -437,7 +437,7 @@ function! s:cursor_on_comment_or_blank_line()
 endfunction
 
 function! s:is_string_or_comment()
-  return s:cursor_syn_name() =~ 'String\|Comment\|CharList\|Atom'
+  return s:cursor_syn_name() =~ 'String\|Comment\|CharList'
 endfunction
 
 function! s:empty_parens()
@@ -565,18 +565,32 @@ function! s:get_end_pos()
 endfunction
 
 function! s:find_end_pos(func_pos, do_pos) abort
+  call cursor(a:func_pos)
+
+  let line = getline('.')
+
+  " If we're a block that was called with parens we're golden.
+  if line =~# '(' && line !~# '^\s*def'
+    normal! f(
+
+    return searchpairpos('(', '', ')', 'W', {-> s:is_string_or_comment()})
+  endif
+
   call cursor(a:do_pos)
 
-  let Skip = {-> s:cursor_syn_name() =~ 'String\|Comment' || s:is_lambda_end(a:do_pos)}
+  let Skip = {-> s:is_string_or_comment() || s:is_lambda_end(a:do_pos)}
 
   if expand('<cWORD>') ==# 'do:'
     " First we can check if if it's call with parens as that is easy to find the
     " end:
     call cursor(a:func_pos)
-    if getline(line('.')) =~ '\#%'.s:func_call_regex.'('
-      normal! f(
 
-      return searchpairpos('(', '', ')', 'W', {-> s:is_string_or_comment()})
+    let currline = getline(line('.'))
+
+    if currline =~# '\#%'.s:func_call_regex.'(\|{\|\[' && currline !~# ',$'
+      call search(match, 'W', line('.'))
+
+      return searchpairpos('(\|{\|\[', '', ')\|}\|\]', 'W', {-> s:is_string_or_comment()})
     else
       call cursor(a:do_pos)
     endif
