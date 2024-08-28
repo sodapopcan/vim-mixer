@@ -419,36 +419,12 @@ function! s:cursor_synstack_str()
   return join(terms, ',')
 endfunction
 
-function! s:is_lambda()
-  let terms = map(synstack(line('.'), col('.')), 'synIDattr(v:val,"name")')
-  let terms = filter(terms, 'v:val =~ "Lambda"')
-
-  if empty(terms) | return '' | endif
-
-  return terms[0] ==# 'elixirMixerLambda'
-endfunction
-
 function! s:cursor_on_comment()
   return index(['Comment', 'DocString', 'DocStringDelimiter'], s:cursor_outer_syn_name()) > -1
 endfunction
 
-function! s:cursor_on_comment_or_blank_line()
-  return s:cursor_on_comment() || s:is_blank()
-endfunction
-
 function! s:is_string_or_comment()
   return s:cursor_syn_name() =~ 'String\|Comment\|CharList'
-endfunction
-
-function! s:empty_parens()
-  let cursor = getpos(".")
-  let save_i = @i
-  normal! "iyib
-  let is_empty = s:is_blank(@i)
-  let @i = save_i
-  call setpos(".", cursor)
-
-  return is_empty
 endfunction
 
 function! s:get_cursor_pos()
