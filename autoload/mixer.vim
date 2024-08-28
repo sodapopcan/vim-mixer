@@ -1429,6 +1429,7 @@ function! s:textobj_block(inner, include_meta) abort
 
   if a:inner && do =~# 'do:\|->'
     if do ==# 'do:'
+      let start_pos[0] = do_pos[0]
       " Clear `do:` When switching to insert, leaving a space after it.
       let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
     elseif do ==# '->'
@@ -1541,6 +1542,7 @@ function! s:textobj_def(keyword, inner, include_annotations) abort
 
   if a:inner && first_head_has_keyword_do
     " Clear `do:` When switching to insert, leave a space after it otherwise do not.
+    let start_pos[0] = do_pos[0]
     let start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
     let start_pos[1] = 1
