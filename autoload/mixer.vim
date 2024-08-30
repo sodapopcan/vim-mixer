@@ -546,6 +546,9 @@ function! s:find_end_pos(func_pos, do_pos) abort
   " If we're a block that was called with parens we're golden.
   if search('\%#'.expand('<cword>').'/zs(')
     let pair = searchpairpos('(', '', ')', '', {-> s:is_string_or_comment()})
+    if v:operator ==# 'c'
+      let pair[1] -= 1
+    endif
 
     return pair
   endif
@@ -563,18 +566,7 @@ function! s:find_end_pos(func_pos, do_pos) abort
   let Skip = {-> s:is_string_or_comment() || s:is_lambda_end(a:do_pos)}
 
   if expand('<cWORD>') ==# 'do:'
-    " First we can check if if it's call with parens as that is easy to find the
-    " end:
-    let currline = getline(line('.'))
-    let match = matchstr(currline, '\%#'.s:func_call_regex.'(\|{\|\[')
-
-    if !empty(match) && currline !~# ',$'
-      call search(match, 'W', line('.'))
-
-      return searchpairpos('(\|{\|\[', '', ')\|}\|\]', 'W', {-> s:is_string_or_comment()})
-    else
-      call cursor(a:do_pos)
-    endif
+    call cursor(a:do_pos)
 
     while s:do_find_end()
       if s:cursor_char() ==# ','
