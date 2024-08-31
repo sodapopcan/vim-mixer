@@ -57,7 +57,7 @@ function! s:to_elixir_alias(word)
   return s:sub(s:camelcase(a:word), '^.', '\u&')
 endfunction
 
-" Taken from @tpope's abolish.vim
+" Taken from @tpope's abolish.vim <https://github.com/tpope/vim-abolish>
 function! s:camelcase(word)
   let word = s:gsub(a:word, '-', '_')
 
@@ -747,9 +747,9 @@ function! mixer#setup_mix_project() abort
     augroup END
   endif
 
-  let g:mix_projections = get(g:, "mix_projections", "replace")
+  let g:mixer_projections = get(g:, "mixer_projections", "replace")
 
-  if g:mix_projections !=# "disable"
+  if g:mixer_projections !=# "disable"
     call s:define_projections()
   endif
 endfunction
@@ -2030,9 +2030,9 @@ function! s:define_projections()
   endif
 
 
-  if g:mix_projections ==# 'replace'
+  if g:mixer_projections ==# 'replace'
     let g:projectionist_heuristics['mix.exs'] = projectionist_heuristics
-  elseif g:mix_projections ==# 'merge'
+  elseif g:mixer_projections ==# 'merge'
     call extend(g:projectionist_heuristics['mix.exs'], projectionist_heuristics)
   endif
 endfunction
