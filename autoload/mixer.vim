@@ -979,8 +979,8 @@ function! s:append_dep(_id, _status) abort
   let cursor = s:get_cursor_pos()
   let search_direction = ''
 
-  if line =~# '\[\%( \+\)\?\]'
-    " Just an empty []
+  if line =~# '\[\s*\]'
+    " Just an empty [] or even [           ]
     exec lnr."delete_"
     call append(lnr - 1, ["[", dep, "]"])
     call cursor(lnr, 1)
@@ -2032,7 +2032,7 @@ function! s:define_projections()
 
   if g:mixer_projections ==# 'replace'
     let g:projectionist_heuristics['mix.exs'] = projectionist_heuristics
-  elseif g:mixer_projections ==# 'merge'
+  elseif g:mixer_projections ==# 'merge' && exists('g:projectionist_heuristics') && has_key(g:projectionist_heuristics, 'mix.exs')
     call extend(g:projectionist_heuristics['mix.exs'], projectionist_heuristics)
   endif
 endfunction
