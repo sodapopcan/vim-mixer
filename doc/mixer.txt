@@ -3,6 +3,10 @@
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
+=============================================================================
+        NOTE: This plugin has a fairly hard dependency on elixir.vim
+                https://github.com/elixir-lang/vim-elixir
+=============================================================================
 
 TABLE OF CONTENTS                           *mixer*
 
@@ -40,12 +44,12 @@ plugin can be used along-side it.
 
 
     PLEASE NOTE                                                        ~
-  +--------------------------------------------------------------------+
-  | Almost all commands and mappings are BUFFER LOCAL and only defined |
-  | if they are available.  This means you must edit an elixir, heex,  |
-  | or surface file OR be inside a mix project to get the appropriate  |
-  | functionality.                                                     |
-  +--------------------------------------------------------------------+
+  +--------------------------------------------------------------------+~
+  | Almost all commands and mappings are BUFFER LOCAL and only defined |~
+  | if they are available.  This means you must edit an elixir, heex,  |~
+  | or surface file OR be inside a mix project to get the appropriate  |~
+  | functionality.                                                     |~
+  +--------------------------------------------------------------------+~
 
 
 Passive Settings~

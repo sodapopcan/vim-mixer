@@ -31,6 +31,10 @@ enddef
 #     return getline('.') =~ '^\s*$'
 # enddef
 
+export def Unmapped(map: string, type: string): bool
+  return empty(maparg(map, type))
+enddef
+
 export def ToElixirAlias(word: string): string
   return sub(camelcase(word), '^.', '\u&')
 enddef

@@ -660,9 +660,9 @@ function! mixer#setup_mix_project() abort
 
   try
     let contents = join(readfile(mix_file), '\n')
-    let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs[a-z][A-Za-z0-9_]\+\ze')
-    let deps_fun = matchstr(contents, 'def project\%(()\)\?\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
-    let apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zs[a-z][A-Za-z0-9_]\+\ze"')
+    let project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\l\k\+\ze')
+    let deps_fun = matchstr(contents, 'def project\%(()\)\=\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
+    let apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zs\l\k\+\ze"')
   catch
     let project_name = ""
     let deps_fun = ""
@@ -764,11 +764,6 @@ endfunction
 
 function! s:get_mix_tasks()
   return systemlist(s:mix_help)
-endfunction
-
-function! s:gather_mix_tasks(_channel, result)
-  let g:mixer_tasks = get(g:, "mixer_tasks", [])
-  call add(g:mixer_tasks, a:result)
 endfunction
 
 " Mix: helpers {{{1
