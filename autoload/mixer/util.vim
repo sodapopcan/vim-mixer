@@ -40,13 +40,13 @@ export def ToElixirAlias(word: string): string
 enddef
 
 # Taken from @tpope's abolish.vim <http//github.com/tpope/vim-abolish>
-export def Camelcase(word: string): string
-  var w = Gsub(word, '-', '_')
+export def Camelcase(w: string): string
+  var word = Gsub(w, '-', '_')
 
-  if w !~# '_' && w =~# '\l'
-    return Sub(w, '^.', '\l&')
+  if word !~# '_' && word =~# '\l'
+    return Sub(word, '^.', '\l&')
   else
-    return Gsub(w, '\C\(_\)\=\(.\)', '\=submatch(1) == "" ? tolower(submatch(2)) : toupper(submatch(2))')
+    return Gsub(word, '\C\(_\)\=\(.\)', '\=submatch(1) == "" ? tolower(submatch(2)) : toupper(submatch(2))')
   endif
 enddef
 
