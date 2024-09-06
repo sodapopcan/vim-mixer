@@ -55,10 +55,10 @@ def RunMixCommand(bang: bool, cmd: string, args: list<string>): void
       endif
 
       env_pipe = remove(args, 0)
-      add(envs, util.Sub(env_pipe, '^+', ''))
+      add(envs, util.Sub(env_pipe, ENV_ADD_SWITCH, ''))
     elseif arg =~ ENV_SET_SWITCH
       env_pipe = remove(args, 0)
-      add(envs, util.Sub(env_pipe, '^\^', ''))
+      add(envs, util.Sub(env_pipe, ENV_SET_SWITCH, ''))
     else
       break
     endif
