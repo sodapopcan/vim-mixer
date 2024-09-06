@@ -24,12 +24,9 @@ export def Matches(str: string, pat: string): bool
   return match(str, pat) >= 0
 enddef
 
-# export def IsBlank(line = ''): bool
-#   if line
-#     return line =~ '^\s*$'
-#   else
-#     return getline('.') =~ '^\s*$'
-# enddef
+export def IsBlank(string: string): bool
+  return line =~ '^\s*$'
+enddef
 
 export def Unmapped(map: string, type: string): bool
   return empty(maparg(map, type))

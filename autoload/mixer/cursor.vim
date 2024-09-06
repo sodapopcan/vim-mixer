@@ -29,6 +29,10 @@ export def InGutter(): bool
   return col('.') <= getline('.')->matchstr('^\s\+')->len()
 enddef
 
+export def IsBlank(): bool
+  return getline('.') =~ '^\s*$'
+enddef
+
 export def OuterSynName(): string
   var terms = GetTerms()
 

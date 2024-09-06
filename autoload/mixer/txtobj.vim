@@ -44,7 +44,7 @@ def AdjustWhitespace(start_pos: list<number>): list<number>
   var [start_lnr, start_col] = start_pos
 
   var start_line = getline(start_lnr)
-  var prev_blank = cursor.IsBlank(getline(start_lnr - 1))
+  var prev_blank = util.IsBlank(getline(start_lnr - 1))
   var offset = 0
 
   if start_col > 2
@@ -126,10 +126,11 @@ def TextobjBlock(inner: bool, include_meta: bool): void
     " Then check if we are between a function call and a `do`
     var do_pos = FindDo('Wc')
 
-    let func_pos = s:find_do_block_head(do_pos, 'Wb')
+    var func_pos = find_do_block_head(do_pos, 'Wb')
+    var end_pos = [0, 0]
 
-    if s:in_range(origin, func_pos, do_pos)
-      let end_pos = s:find_end_pos(func_pos, do_pos)
+    if util.InRange(origin, func_pos, do_pos)
+      end_pos = syntax.FindEndPos(func_pos, do_pos)
     else
       call cursor(origin)
       let end_pos = s:empty
