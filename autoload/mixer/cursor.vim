@@ -26,7 +26,7 @@ export def SynName(): string
 enddef
 
 export def InGutter(): bool
-  return col('.') <= len(matchstr(getline('.'), '^\s\+'))
+  return col('.') <= getline('.')->matchstr('^\s\+')->len()
 enddef
 
 export def OuterSynName(): string
@@ -36,7 +36,9 @@ export def OuterSynName(): string
     return ''
   endif
 
-  return util.Sub(util.Sub(terms[0], 'elixir', ''), 'Delimiter', '')
+  return terms[0]
+    -> util.Sub('elixir', '')
+    -> util.Sub('Delimiter', '')
 enddef
 
 export def SynstackStr(): string
