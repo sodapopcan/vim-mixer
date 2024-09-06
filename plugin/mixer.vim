@@ -4,6 +4,10 @@ endif
 
 vim9script noclear
 
+# mixer.vim     Utilities for working with The Elixir Programming Language <3
+# Maintainer:   Andrew Haust <https://andrew.hau.st>
+# Version:      0.1.0
+
 if get(g:, 'loaded_mixer', false)
   finish
 endif
@@ -11,10 +15,6 @@ g:loaded_mixer = true
 
 import autoload 'mixer/mix.vim'
 import autoload 'mixer/project.vim'
-
-# mixer.vim     Utilities for working with The Elixir Programming Language <3
-# Maintainer:   Andrew Haust <https://andrew.hau.st>
-# Version:      0.1.0
 
 augroup mixer
   autocmd!
