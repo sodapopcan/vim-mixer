@@ -68,12 +68,12 @@ export def Setup(): void
     b:mix_project = g:mix_projects[project_root]
   endif
 
-  # if exists('g:loaded_matchit')
-  #   augroup mixerMatchWords
-  #     autocmd!
-  #     # autocmd CursorHold,BufEnter *.ex call DoMatchWords()
-  #   augroup END
-  # endif
+  if exists('g:loaded_matchit')
+    augroup mixerMatchWords
+      autocmd!
+      autocmd CursorHold,BufEnter *.ex call DoMatchWords()
+    augroup END
+  endif
 
   # g:mixer_projections = get(g:, 'mixer_projections', 'replace')
 

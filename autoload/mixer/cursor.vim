@@ -30,7 +30,7 @@ export def InGutter(): bool
 enddef
 
 export def OuterSynName(): string
-  const terms = GetTerms()
+  var terms = GetTerms()
 
   if empty(terms)
     return ''
@@ -44,10 +44,9 @@ export def SynstackStr(): string
 enddef
 
 def GetTerms(): list<string>
-  const stack = synstack(line('.'), col('.'))
-  const names = map(stack, (_, v) => synIDattr(v, 'name'))
-
-  return filter(names, (_, v) => v !=# 'elixirBlock')
+  return synstack(line('.'), col('.'))
+    -> map((_, v) => synIDattr(v, 'name'))
+    -> filter((_, v) => v !=# 'elixirBlock')
 enddef
 
 export def OnComment(): bool
