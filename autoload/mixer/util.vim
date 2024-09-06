@@ -36,17 +36,17 @@ export def Unmapped(map: string, type: string): bool
 enddef
 
 export def ToElixirAlias(word: string): string
-  return sub(camelcase(word), '^.', '\u&')
+  return Sub(Camelcase(word), '^.', '\u&')
 enddef
 
 # Taken from @tpope's abolish.vim <http//github.com/tpope/vim-abolish>
 export def Camelcase(word: string): string
-  var word = Gsub(word, '-', '_')
+  var w = Gsub(word, '-', '_')
 
-  if word !~# '_' && word =~# '\l'
-    return Sub(word, '^.', '\l&')
+  if w !~# '_' && w =~# '\l'
+    return Sub(w, '^.', '\l&')
   else
-    return Gsub(word, '\C\(_\)\=\(.\)', '\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))')
+    return Gsub(w, '\C\(_\)\=\(.\)', '\=submatch(1) == "" ? tolower(submatch(2)) : toupper(submatch(2))')
   endif
 enddef
 

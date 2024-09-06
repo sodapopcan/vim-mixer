@@ -7,31 +7,37 @@ import autoload './cursor.vim'
 const HTML_MATCH_WORDS = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
 
 export def Setup(): void
+  var [project_root, mix_file, nested] = g:MixerDetect()
+
   if empty(mix_file)
     return
   endif
 
+  g:mix_projects = get(g:, 'mix_projects', {})
+
   # SetCompiler(project_root)
 
+  var contents = ''
+  var project_name = ''
+  var deps_fun = ''
+  var apps_path = ''
+
   try
-    const contents = join(readfile(mix_file), '\n')
-    const project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\l\k\+\ze')
-    const deps_fun = matchstr(contents, 'def project\%(()\)\=\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
-    const apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zs\l\k\+\ze"')
+    contents = join(readfile(mix_file), '\n')
+    project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
+    deps_fun = matchstr(contents, 'def project\%(()\)\=\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
+    apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zsk\+\ze"')
   catch
-    const project_name = ''
-    const deps_fun = ''
-    const apps_path = ''
   endtry
 
-  const has_phoenix = util.FileExists(project_root."/deps/phoenix")
-  const has_ecto = util.FileExists(project_root."/deps/ecto_sql")
+  const has_phoenix = util.FileExists(project_root .. "/deps/phoenix")
+  const has_ecto = util.FileExists(project_root .. "/deps/ecto_sql")
 
   var bindingPrefix = 'phx-'
 
   if empty(apps_path)
     try
-      const appjs = join(readfile(project_root.'/assets/js/app.js'), '\n')
+      const appjs = join(readfile(project_root .. '/assets/js/app.js'), '\n')
       const match = matchstr(appjs, 'bindingPrefix: \(''\|"\)\zs[A-Za-z\-]\+\ze\1')
 
       if !empty(match)
@@ -57,19 +63,19 @@ export def Setup(): void
 
     b:mix_project = g:mix_projects[project_root]
 
-    mix.PopulateMixTask()
+    mix.PopulateMixTasks()
   else
     b:mix_project = g:mix_projects[project_root]
   endif
 
-  if exists('g:loaded_matchit')
-    augroup mixerMatchWords
-      autocmd!
-      autocmd CursorHold,BufEnter *.ex call DoMatchWords()
-    augroup END
-  endif
+  # if exists('g:loaded_matchit')
+  #   augroup mixerMatchWords
+  #     autocmd!
+  #     # autocmd CursorHold,BufEnter *.ex call DoMatchWords()
+  #   augroup END
+  # endif
 
-  g:mixer_projections = get(g:, 'mixer_projections', 'replace')
+  # g:mixer_projections = get(g:, 'mixer_projections', 'replace')
 
   # if g:mixer_projections !=# "disable"
   #   call DefineProjections()

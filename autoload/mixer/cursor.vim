@@ -13,14 +13,10 @@ export def Char(...pos: list<number>): string
   endif
 enddef
 
-export def SynName(...pos: list<number>): string
-  if 0
-    const [line, col] = pos
-  else
-    const [line, col] = GetCursorPos()
-  endif
+export def SynName(): string
+  const [line, col] = Pos()
 
-  const names = map(synstack(line, col), 'synIDattr(v:val,"name")')
+  const names = map(synstack(line, col), (_, v) => synIDattr(v, "name"))
 
   if len(names)
     return util.Sub(names[-1], 'elixir', '')
@@ -30,19 +26,17 @@ export def SynName(...pos: list<number>): string
 enddef
 
 export def InGutter(): bool
-  const leading_whitespace_len = len(matchstr(getline('.'), '^\s\+'))
-
-  return col('.') <= leading_whitespace_len
+  return col('.') <= len(matchstr(getline('.'), '^\s\+'))
 enddef
 
 export def OuterSynName(): string
-  const term = GetTerms()
+  const terms = GetTerms()
 
   if empty(terms)
     return ''
   endif
 
-  return util.Sub(util.sub(terms[0], 'elixir', ''), 'Delimiter', '')
+  return util.Sub(util.Sub(terms[0], 'elixir', ''), 'Delimiter', '')
 enddef
 
 export def SynstackStr(): string
@@ -71,3 +65,5 @@ enddef
 export def PrevLine(): string
   return getline(line('.') - 1)
 enddef
+
+defcompile
