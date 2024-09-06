@@ -24,9 +24,9 @@ export def Matches(str: string, pat: string): bool
   return match(str, pat) >= 0
 enddef
 
-# export def IsBlank(...match): bool
-#   if match
-#     return 1 =~ '^\s*$'
+# export def IsBlank(line = ''): bool
+#   if line
+#     return line =~ '^\s*$'
 #   else
 #     return getline('.') =~ '^\s*$'
 # enddef
