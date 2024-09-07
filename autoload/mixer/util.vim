@@ -9,7 +9,7 @@ const PAIRS = {
   ']': '[',
 }
 
-def GetPair(delim: string): string
+export def GetPair(delim: string): string
   return get(PAIRS, delim, 0)
 enddef
 

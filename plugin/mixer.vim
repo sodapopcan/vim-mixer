@@ -64,12 +64,16 @@ def g:MixerDetect(): list<any>
 enddef
 
 def Exists(cmd: string): bool
-  return exists(':' .. cmd) != 2
+  return exists(':' .. cmd) == 2
 enddef
 
 def SetupBuf(): void
-  if Exists('Mix')
-    command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>0, <f-args>)
+  if !Exists('Mix')
+    command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
+  endif
+
+  if !Exists('Console')
+    command -buffer -nargs=0 -bang Console mix.ConsoleCommand(<bang>false, <q-mods>)
   endif
 
   var [project_root, mix_file, nested] = g:MixerDetect()
@@ -79,7 +83,7 @@ def SetupBuf(): void
   endif
 
   if exists('b:mix_project')
-    if Exists('Deps')
+    if !Exists('Deps')
       command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
     endif
   endif

@@ -81,7 +81,114 @@ const RESERVED = '\<' .. join(reserved, '\>\|\<') .. '\>'
 
 const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
+# Common {{{1
+
+def TextobjSelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
+  const [start_lnr, start_col] = start_pos
+  const [end_lnr, end_col] = end_pos
+
+  g:mixer_view = view
+
+  if v:operator ==# 'c'
+    unlet g:mixer_view.lnum
+    unlet g:mixer_view.col
+  endif
+
+  setpos("'<", [0, start_lnr, start_col, 0])
+  setpos("'>", [0, end_lnr, end_col, 0])
+
+  normal! gv
+
+  if v:operator ==# 'c'
+    feedkeys("\<c-r>=g:MixerRestoreViewInsert()\<cr>")
+  else
+    feedkeys("\<Plug>(MixerRestorView)")
+  endif
+enddef
+
+def g:MixerRestoreViewInsert()
+  winrestview(g:mixer_view)
+  unlet g:mixer_view
+
+  return ""
+enddef
+
+nnoremap <silent> <Plug>(MixerRestorView)
+      \ :call winrestview(g:mixer_view)<bar>
+      \ :unlet g:mixer_view<cr>
+
+def AdjustWhitespace(start_pos: list<number>): list<number>
+  var [start_lnr, start_col] = start_pos
+
+  var start_line = getline(start_lnr)
+  var prev_blank = util.IsBlank(getline(start_lnr - 1))
+  var offset = 0
+
+  if start_col > 2
+    offset = start_col - 2
+  else
+    offset = 0
+  endif
+
+  const empty_gutter = start_line[0 : offset] =~ '^\s*$'
+
+  if start_lnr > 1 && prev_blank && empty_gutter
+    start_lnr -= 1
+    start_col = 1
+  elseif start_lnr > 1 && empty_gutter
+    start_col = 1
+  endif
+
+  return [start_lnr, start_col]
+enddef
+
 # def/fn/do/end/etc Helpers {{{1
+
+def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos: list<number>): list<list<number>>
+  if v:operator ==# 'c' && !inner
+    # We want a blank line left for insert mode so don't adjust anything
+    return [start_pos, end_pos]
+  endif
+
+  var [start_lnr, start_col] = start_pos
+  var [end_lnr, end_col] = end_pos
+
+  if inner
+    if start_lnr != end_lnr
+      start_lnr += 1
+      end_lnr -= 1
+    elseif do ==# '->'
+      end_col -= 4
+    endif
+
+    if v:operator ==# 'c'
+      exec start_lnr + 1
+      if do !=# '->'
+        start_col = indent(start_lnr) + 1
+        end_col = len(getline(end_lnr))
+      endif
+    else
+      if do !=# '->'
+        end_col = len(getline(end_lnr)) + 1 # Include \n
+      endif
+      exec ':' .. start_lnr
+    endif
+  else
+    [start_lnr, start_col] = AdjustWhitespace([start_lnr, start_col])
+
+    if start_col == 0
+      start_col = 1
+    endif
+
+    if do ==# 'do'
+      end_col = len(getline(end_lnr)) + 1 # Include \n
+    endif
+
+    exec ':' .. start_lnr
+  endif
+
+  return [[start_lnr, start_col], [end_lnr, end_col]]
+enddef
 
 def FindDo(flags: string): list<number>
   return searchpos('\<do\>:\?', flags, 0, 0, () => cursor.OnStringOrComment())
@@ -265,114 +372,6 @@ def CheckForMeta(known_annotations: string): bool
     word =~ known_annotations ||
     WORD =~ known_annotations
 enddef
-
-# Common {{{1
-
-def TextobjSelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
-  const [start_lnr, start_col] = start_pos
-  const [end_lnr, end_col] = end_pos
-
-  g:mixer_view = view
-
-  if v:operator ==# 'c'
-    unlet g:mixer_view.lnum
-    unlet g:mixer_view.col
-  endif
-
-  setpos("'<", [0, start_lnr, start_col, 0])
-  setpos("'>", [0, end_lnr, end_col, 0])
-
-  normal! gv
-
-  if v:operator ==# 'c'
-    feedkeys("\<c-r>=g:MixerRestoreViewInsert()\<cr>")
-  else
-    feedkeys("\<Plug>(MixerRestorView)")
-  endif
-enddef
-
-def g:MixerRestoreViewInsert()
-  winrestview(g:mixer_view)
-  unlet g:mixer_view
-
-  return ""
-enddef
-
-nnoremap <silent> <Plug>(MixerRestorView)
-      \ :call winrestview(g:mixer_view)<bar>
-      \ :unlet g:mixer_view<cr>
-
-def AdjustWhitespace(start_pos: list<number>): list<number>
-  var [start_lnr, start_col] = start_pos
-
-  var start_line = getline(start_lnr)
-  var prev_blank = util.IsBlank(getline(start_lnr - 1))
-  var offset = 0
-
-  if start_col > 2
-    offset = start_col - 2
-  else
-    offset = 0
-  endif
-
-  const empty_gutter = start_line[0 : offset] =~ '^\s*$'
-
-  if start_lnr > 1 && prev_blank && empty_gutter
-    start_lnr -= 1
-    start_col = 1
-  elseif start_lnr > 1 && empty_gutter
-    start_col = 1
-  endif
-
-  return [start_lnr, start_col]
-enddef
-
-def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos: list<number>): list<list<number>>
-  if v:operator ==# 'c' && !inner
-    # We want a blank line left for insert mode so don't adjust anything
-    return [start_pos, end_pos]
-  endif
-
-  var [start_lnr, start_col] = start_pos
-  var [end_lnr, end_col] = end_pos
-
-  if inner
-    if start_lnr != end_lnr
-      start_lnr += 1
-      end_lnr -= 1
-    elseif do ==# '->'
-      end_col -= 4
-    endif
-
-    if v:operator ==# 'c'
-      exec start_lnr + 1
-      if do !=# '->'
-        start_col = indent(start_lnr) + 1
-        end_col = len(getline(end_lnr))
-      endif
-    else
-      if do !=# '->'
-        end_col = len(getline(end_lnr)) + 1 # Include \n
-      endif
-      exec ':' .. start_lnr
-    endif
-  else
-    [start_lnr, start_col] = AdjustWhitespace([start_lnr, start_col])
-
-    if start_col == 0
-      start_col = 1
-    endif
-
-    if do ==# 'do'
-      end_col = len(getline(end_lnr)) + 1 # Include \n
-    endif
-
-    exec ':' .. start_lnr
-  endif
-
-  return [[start_lnr, start_col], [end_lnr, end_col]]
-enddef
-
 
 # Text Object: block {{{1
 

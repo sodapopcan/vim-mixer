@@ -16,7 +16,7 @@ g:mixer_async_runners = [
   'AsyncDo'
 ]
 
-# PopulateMixTasks
+# PopulateMixTasks {{{1
 
 export def PopulateMixTasks()
   # Clear the current list of tasks
@@ -24,6 +24,7 @@ export def PopulateMixTasks()
 
   async.Append(MIX_HELP, b:mix_project.tasks)
 enddef
+
 
 # MixCommand {{{1
 
@@ -99,6 +100,8 @@ export def DepsCommand(
 
   call RunMixCommand(bang, task, args)
 enddef
+
+# DepsCommand {{{1
 
 export def DepsComplete(A: string, L: string, P: number): list<string>
   return b:mix_project.tasks
@@ -226,11 +229,26 @@ def AppendDep(_id: job, _status: number): void
   write
 enddef
 
+# Console {{{1
+
+export def ConsoleCommand(bang: bool, mods: string): void
+  if bang
+    exec mods .. " term ++close iex"
+  elseif exists('b:mix_project') && !bang
+    exec mods .. " term ++close iex -S mix"
+  else
+    exec mods .. " term ++close iex"
+  endif
+enddef
+
+
 # Run Mix Command {{{1
+
 def RunMixCommand(bang: bool, cmd: string, args: list<string>): void
   var envs = []
   final targs = []
   const default_env = 'dev'
+
 
   var run_async = true
   if len(args) && args[0] ==# '!'
