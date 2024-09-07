@@ -1,5 +1,18 @@
 vim9script
 
+const PAIRS = {
+  '(': ')',
+  ')': '(',
+  '{': '}',
+  '}': '{',
+  '[': ']',
+  ']': '[',
+}
+
+def GetPair(delim: string): string
+  return get(PAIRS, delim, 0)
+enddef
+
 export def Sub(str: string, pat: string, rep: string): string
   return substitute(str, pat, rep, '')
 enddef

@@ -3,6 +3,8 @@ vim9script
 import autoload './cursor.vim'
 import autoload './util.vim'
 
+# Map Definitions {{{1
+
 export def Define(): void
   const def = get(g:, 'mixer_textobj_def', 'f')
   const def_with_meta = get(g:, 'mixer_textobj_def_with_meta', 'F')
@@ -62,6 +64,8 @@ export def Define(): void
   exec "onoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:false)\<cr>"
 enddef
 
+# Constants {{{1
+
 const EMPTY = [0, 0]
 const EMPTY2 = [[0, 0], [0, 0]]
 const EMPTY3 = [[0, 0], [0, 0], [0, 0]]
@@ -77,19 +81,7 @@ const RESERVED = '\<' .. join(reserved, '\>\|\<') .. '\>'
 
 const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
-const PAIRS = {
-  '(': ')',
-  ')': '(',
-  '{': '}',
-  '}': '{',
-  '[': ']',
-  ']': '[',
-}
-
-
-def GetPair(delim: string): string
-  return get(PAIRS, delim, 0)
-enddef
+# def/fn/do/end/etc Helpers {{{1
 
 def FindDo(flags: string): list<number>
   return searchpos('\<do\>:\?', flags, 0, 0, () => cursor.OnStringOrComment())
@@ -154,7 +146,7 @@ def DoFindEnd(): number
     return search(')\|,\|\n', 'W', 0, 0, () => cursor.SynName() =~ 'String\|Comment\|Atom\|Sigil\|Number')
   else
     var open_char = cursor.Char()
-    var close_char = GetPair(open_char)
+    var close_char = util.GetPair(open_char)
 
     if searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'W', () => cursor.OnStringOrComment())
       if getline('.')[col('.')] ==# ','
@@ -164,6 +156,30 @@ def DoFindEnd(): number
 
     return 1
   endif
+enddef
+
+# TODO: Maybe take arity into account.
+def FindFirstFuncHead(def_pos: list<number>): list< number>
+  var func_name = GetFuncName(def_pos)
+  while search('def\k*\s*' .. func_name .. '\>', 'Wb') > 0 | endwhile
+
+  return cursor.Pos()
+enddef
+
+def FindLastFuncHead(def_pos: list<number>): list<number>
+  const func_name = GetFuncName(def_pos)
+  while search('def\k*\s*\<\%(do_\)\=' .. func_name .. '\>', 'W') > 0 | endwhile
+
+  return cursor.Pos()
+enddef
+
+def GetFuncName(def_pos: list<number>): string
+  cursor.Set(def_pos)
+  normal! w
+  const func = matchstr(expand('<cword>'), '^\%(do_\)\=\zs\k*')
+  normal! b
+
+  return func
 enddef
 
 def FindEndPos(func_pos: list<number>, do_pos: list<number>): list<number>
@@ -233,30 +249,6 @@ def GetEndPos(): list<number>
   return cursor.Pos()
 enddef
 
-# TODO: Maybe take arity into account.
-def FindFirstFuncHead(def_pos: list<number>): list< number>
-  var func_name = GetFuncName(def_pos)
-  while search('def\k*\s*' .. func_name .. '\>', 'Wb') > 0 | endwhile
-
-  return cursor.Pos()
-enddef
-
-def FindLastFuncHead(def_pos: list<number>): list<number>
-  const func_name = GetFuncName(def_pos)
-  while search('def\k*\s*\<\%(do_\)\=' .. func_name .. '\>', 'W') > 0 | endwhile
-
-  return cursor.Pos()
-enddef
-
-def GetFuncName(def_pos: list<number>): string
-  cursor.Set(def_pos)
-  normal! w
-  const func = matchstr(expand('<cword>'), '^\%(do_\)\=\zs\k*')
-  normal! b
-
-  return func
-enddef
-
 def IsLambdaEnd(do_pos: list<number>): bool
   if expand('<cword>') ==# 'end'
     return searchpair('\<fn\>', '', '\<end\>\zs', 'Wbn', () => cursor.OnStringOrComment(), do_pos[0]) > 0
@@ -273,6 +265,8 @@ def CheckForMeta(known_annotations: string): bool
     word =~ known_annotations ||
     WORD =~ known_annotations
 enddef
+
+# Common {{{1
 
 def TextobjSelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
   const [start_lnr, start_col] = start_pos
@@ -380,7 +374,7 @@ def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos:
 enddef
 
 
-# Text Objects: block {{{1
+# Text Object: block {{{1
 
 def TextobjBlock(inner: bool, include_meta: bool): void
   var view = winsaveview()
@@ -461,7 +455,7 @@ def TextobjBlock(inner: bool, include_meta: bool): void
       normal! b
       if cursor.Char() =~ ')\}\|\|\]'
         var close_char = cursor.Char()
-        var open_char = GetPair(close_char)
+        var open_char = util.GetPair(close_char)
         start_pos = searchpairpos(open_char, '', close_char, 'Wb', () => cursor.OnStringOrComment())
         normal! F%
         start_pos[1] = col('.')
@@ -521,7 +515,7 @@ def HandleFn(origin: list<number>, inner: bool): list<list<number>>
 enddef
 
 
-# Text Objects: def {{{1
+# Text Object: def {{{1
 
 def TextobjDef(kwd: string, inner: bool, include_annotations: bool): void
   var known_annotations = '@doc\>\|@spec\>\|@tag\>\|@requirements\>\|\<attr\>\|\<slot\>'
@@ -610,7 +604,7 @@ def TextobjDef(kwd: string, inner: bool, include_annotations: bool): void
 enddef
 
 
-# Text Objects: map {{{1
+# Text Object: map {{{1
 
 def TextobjMap(inner: bool): void
   const Skip = () => cursor.OnStringOrComment()
@@ -720,7 +714,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
       \ :unlet b:mixer_operator<bar>
       \ :unlet b:mixer_start_col<cr>
 
-# Text Objects: sigil {{{1
+# Text Object: sigil {{{1
 
 def TextobjSigil(inner: bool): void
   # Skip delims
@@ -798,7 +792,7 @@ def TextobjSigil(inner: bool): void
   normal! gv
 enddef
 
-# Text Objects: comment  {{{1
+# Text Object: comment  {{{1
 
 def TextobjComment(inner: bool): void
   var view = winsaveview()

@@ -3,8 +3,10 @@
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
+Requires Vim 9
+
 =============================================================================
-        NOTE: This plugin has a fairly hard dependency on elixir.vim
+          This plugin has a fairly hard dependency on elixir.vim
                 https://github.com/elixir-lang/vim-elixir
 =============================================================================
 
