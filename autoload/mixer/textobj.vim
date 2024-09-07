@@ -170,7 +170,7 @@ def FindEndPos(func_pos: list<number>, do_pos: list<number>): list<number>
   cursor(func_pos)
 
   # If we're a block that was called with parens we're golden.
-  if search('\%#' .. expand('<cword>') .. '/zs(')
+  if search('\%#' .. expand('<cword>') .. '/zs(') > 0
     var pair = searchpairpos('(', '', ')', '', () => c.OnStringOrComment())
     if v:operator ==# 'c'
       pair[1] -= 1
@@ -180,7 +180,7 @@ def FindEndPos(func_pos: list<number>, do_pos: list<number>): list<number>
   endif
 
   # The whole expression is wrapped in parens
-  if search('(\%#' .. expand('<cword>'), 'b')
+  if search('(\%#' .. expand('<cword>'), 'b') > 0
     var pair = searchpairpos('(', '', ')', 'W', () => c.OnStringOrComment())
     pair[1] -= 1
 
@@ -236,15 +236,14 @@ enddef
 # TODO: Maybe take arity into account.
 def FindFirstFuncHead(def_pos: list<number>): list< number>
   var func_name = GetFuncName(def_pos)
-  echom 'def\k*\s*' .. func_name .. '\>'
-  while search('def\k*\s*' .. func_name .. '\>', 'Wb') | endwhile
+  while search('def\k*\s*' .. func_name .. '\>', 'Wb') > 0 | endwhile
 
   return c.Pos()
 enddef
 
 def FindLastFuncHead(def_pos: list<number>): list<number>
   const func_name = GetFuncName(def_pos)
-  while search('def\k*\s*\<\%(do_\)\=' .. func_name .. '\>', 'W') | endwhile
+  while search('def\k*\s*\<\%(do_\)\=' .. func_name .. '\>', 'W') > 0 | endwhile
 
   return c.Pos()
 enddef
@@ -258,9 +257,9 @@ def GetFuncName(def_pos: list<number>): string
   return func
 enddef
 
-def IsLambdaEnd(do_pos: list<number>): number
+def IsLambdaEnd(do_pos: list<number>): bool
   if expand('<cword>') ==# 'end'
-    return searchpair('\<fn\>', '', '\<end\>\zs', 'Wbn', () => c.OnStringOrComment(), do_pos[0])
+    return searchpair('\<fn\>', '', '\<end\>\zs', 'Wbn', () => c.OnStringOrComment(), do_pos[0]) > 0
   endif
 
   return 0
@@ -591,7 +590,7 @@ def TextobjDef(kwd: string, inner: bool, include_annotations: bool): void
 
     search('^\s*$', 'Wb', stopline, 0, () => c.SynName() =~ 'String\|Comment\|DocString\|markdown')
 
-    while search(known_annotations, 'Wb', stopline) | endwhile
+    while search(known_annotations, 'Wb', stopline) > 0 | endwhile
 
     start_pos = c.Pos()
   endif
