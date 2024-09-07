@@ -229,7 +229,61 @@ def AppendDep(_id: job, _status: number): void
   write
 enddef
 
-# Console {{{1
+
+# Gen Command {{{1
+
+export def GenCommand(bang: bool, ...args: list<string>): void
+  var tasks = GetGenTasks()
+  var [meta, args] = RemoveMixerMeta(args)
+
+  var task = copy(args[0])
+
+  if !has_key(tasks, task)
+    echom "No task with that name"
+    return
+  endif
+
+  call RunMixCommand(bang, tasks[task], extend(meta, args[1 :]))
+enddef
+
+export def GenComplete(A: string, L: string, P: number): list<string>
+  return GetGenTasks()
+    -> keys()
+    -> sort()
+    -> filter((_, v) => v =~ A)
+enddef
+
+def GetGenTasks(): dict<string>
+  const PackageName = (task) => matchstr(task, '^\l\+')
+  var gen_tasks = {}
+  var dup_keys = []
+  var all_tasks = copy(b:mix_project.tasks)
+
+  for task in filter(all_tasks, (_, v) => v =~ '\.gen\.')
+    var task_key = matchstr(task, '\.gen\.\zs.*$')
+
+    if has_key(gen_tasks, task_key) || util.InList(dup_keys, task_key)
+      var package_name = PackageName(task)
+      var dup_key = copy(task_key)
+      task_key = task_key .. "-" .. package_name
+
+      if !util.InList(dup_keys, dup_key)
+        var dup_task = gen_tasks[dup_key]
+        unlet gen_tasks[dup_key]
+        var new_key = dup_key .. "-" .. PackageName(dup_task)
+        gen_tasks[new_key] = dup_task
+        add(dup_keys, dup_key)
+      endif
+    endif
+
+    gen_tasks[task_key] = task
+  endfor
+
+  return gen_tasks
+enddef
+
+
+# Console Command {{{1
 
 export def ConsoleCommand(bang: bool, mods: string): void
   if bang
