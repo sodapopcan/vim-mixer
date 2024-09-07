@@ -6,7 +6,7 @@ vim9script
 import autoload './util.vim'
 
 export def Char(...pos: list<number>): string
-  if len(pos)
+  if len(pos) > 0
     return getline('.')[pos[0] - 1]
   else
     return getline('.')[col('.') - 1]
@@ -18,7 +18,7 @@ export def SynName(): string
 
   const names = map(synstack(line, col), (_, v) => synIDattr(v, "name"))
 
-  if len(names)
+  if len(names) > 0
     return util.Sub(names[-1], 'elixir', '')
   else
     return ''
@@ -59,7 +59,7 @@ export def OnComment(): bool
   return index(['Comment', 'DocString', 'DocStringDelimiter'], OuterSynName()) > -1
 enddef
 
-export def OnSringOrComment(): bool
+export def OnStringOrComment(): bool
   return SynName() =~ 'String\|Comment\|CharList'
 enddef
 

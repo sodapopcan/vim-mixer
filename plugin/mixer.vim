@@ -21,6 +21,23 @@ augroup mixer
   autocmd BufNewFile,BufReadPost * SetupBuf()
 augroup END
 
+# class MixProject
+#   var root: string
+#   var name: string
+#   var alias: string
+#   var deps_fun_name: string
+#   var apps_path: string
+#   var binding_prefix = 'phx-'
+#   var has_phoenix: bool
+#   var has_ecto: bool
+#   var is_nested: bool
+#   var tasks = []
+
+#   def Path(path: string): string
+#     return this.root->join(path, '/')
+#   enddef
+# endclass
+
 def g:MixerDetect(): list<any>
   var mix_file = findfile('mix.exs', '.;', 2)
   var nested: bool
@@ -44,8 +61,12 @@ def g:MixerDetect(): list<any>
   return [project_root, mix_file, nested]
 enddef
 
+def Exists(cmd: string): bool
+  return exists(':' .. cmd) != 2
+enddef
+
 def SetupBuf(): void
-  if exists(':Mix') != 2
+  if Exists('Mix')
     command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>0, <f-args>)
   endif
 
@@ -53,6 +74,12 @@ def SetupBuf(): void
 
   if !empty(project_root) && !exists('g:mix_projects') || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
     project.Setup()
+  endif
+
+  if exists('b:mix_project')
+    if Exists('Deps')
+      command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+    endif
   endif
 enddef
 

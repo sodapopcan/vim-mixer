@@ -2,6 +2,7 @@ vim9script
 
 import './util.vim'
 import './async.vim'
+import './cursor.vim' as c
 
 # AWK command from @mhandberg
 const MIX_HELP = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
@@ -15,6 +16,16 @@ g:mixer_async_runners = [
   'AsyncDo'
 ]
 
+# PopulateMixTasks
+
+export def PopulateMixTasks()
+  # Clear the current list of tasks
+  b:mix_project.tasks = []
+
+  async.Append(MIX_HELP, b:mix_project.tasks)
+enddef
+
+# MixCommand {{{1
 
 export def MixCommand(bang: bool, ...rest: list<string>): void
   RunMixCommand(bang, '', rest)
@@ -32,6 +43,190 @@ export def MixComplete(A: string, L: string, P: number): list<string>
   return filter(tasks, (_, v) => v =~ A)
 enddef
 
+export def DepsCommand(
+    bang: bool,
+    mods: string,
+    range: number,
+    line1: number,
+    line2: number,
+    ...rest: list<string>
+    ): void
+  var [meta, args] = RemoveMixerMeta(rest)
+
+  var cmd: string
+  var task_fragment: string
+
+  if len(rest) == 0
+    if mods =~ 'hor\|vert'
+      cmd = 'split'
+    else
+      cmd = 'edit'
+    endif
+
+    exec mods cmd b:mix_project.root .. "/mix.exs"
+    search('defp\?\s\+' .. b:mix_project.deps_fun, 'c')
+    exec "normal! z\<cr>"
+
+    return
+  elseif len(rest) > 0 && args[0] ==# 'add'
+    if len(rest) == 1
+      echom "What do you want me to add?" | return
+    endif
+
+    FindDep(args[1])
+    return
+  elseif len(rest) > 0
+    task_fragment = args[0]
+    args = args[1 :]
+  else
+    task_fragment = ""
+    args = []
+  endif
+
+  if expand('%t') =~ "mix.exs" && getbufinfo(bufnr())[0].changed
+    write
+  endif
+
+  if range > 0
+    for lnr in range(line1, line2)
+      call add(args, matchstr(getline(lnr), '\%(\s\+\)\?{:\zs\w\+'))
+    endfor
+  endif
+
+  args = extend(meta, args)
+
+  var task = join(["deps", task_fragment], ".")
+
+  call RunMixCommand(bang, task, args)
+enddef
+
+export def DepsComplete(A: string, L: string, P: number): list<string>
+  return b:mix_project.tasks
+    -> copy()
+    -> filter((_, v) => v =~ '^deps' && v !=# 'deps')
+    -> map((_, v) => util.Sub(v, '^deps\.', ''))
+    -> filter((_, v) => v =~ A)
+enddef
+
+def NewDepDict(dep: string): dict<any>
+  return copy({
+    "dep": dep,
+    "lnr": line("."),
+    "output": []
+  })
+enddef
+
+def FindDep(dep: string): void
+  echom "Finding deps..."
+  var cmd = 'mix hex.info ' .. dep
+
+  g:mixer_deps_add = NewDepDict(dep)
+
+  job_start(["sh", "-c", cmd], {
+    "out_cb": function("GatherDepOutput"),
+    "exit_cb": function("AppendDep"),
+    "mode": "nl"
+  })
+enddef
+
+def GatherDepOutput(_channel: channel, line: string): void
+  add(g:mixer_deps_add.output, line)
+enddef
+
+def AppendDep(_id: job, _status: number): void
+  if expand('%:p:t') !=# 'mix.exs'
+    echom "You switched buffers on me."
+
+    return
+  endif
+
+  var lnr = copy(g:mixer_deps_add.lnr)
+  var output = join(g:mixer_deps_add.output, "\n")
+  var dep = matchstr(output, "{:" .. g:mixer_deps_add.dep .. ",.*}")
+
+  unlet g:mixer_deps_add
+
+  if empty(dep)
+    echom "Dependency not found" | return
+  endif
+
+  var line = getline(lnr)
+  var cursor_origin = c.Pos()
+  var search_direction = ''
+
+  if line =~# '\[\s*\]'
+    # Just an empty [] or even [           ]
+    exec lnr .. "delete_"
+    append(lnr - 1, ["[", dep, "]"])
+    cursor(lnr, 1)
+    normal! 3==
+    cursor(cursor_origin)
+
+    return
+  endif
+
+  if line =~# '\]$'
+    searchpair('\[', '', '\]', 'Wb', () => c.OnStringOrComment())
+  endif
+
+  if line =~# '\[$\|\%( \+\)\|\%( \+#\)\|^\s*$'
+    # An empty [] but on different lines
+    normal! j^
+
+    while c.IsBlank() || c.SynName() =~# 'Comment'
+      normal! j^
+    endwhile
+
+    search_direction = 'down'
+  elseif line =~# '\]$\|\%( \+\)\|\%( \+#\)'
+    # Same thing but look down.  This is a very bone-headed way to do this.
+    # Refactor this.
+    normal! k^
+
+    while c.IsBlank() || c.SynName() =~# 'Comment'
+      normal! k^
+    endwhile
+
+    search_direction = 'up'
+  endif
+
+  var checked_lnr = line('.')
+  var checked_line = getline('.')
+
+  if checked_line =~# '\]$'
+    # empty [] on different lines
+    search('\[', 'Wb', 0, 0, () => c.OnStringOrComment())
+    append(line('.'), [dep])
+    normal! j==k
+  elseif checked_line =~# '\[$'
+    append(line('.'), [dep])
+    normal! j==k
+  elseif checked_line =~# '}$'
+    setline(line('.'), checked_line .. ',')
+    append(checked_lnr, [dep])
+    normal! j==k
+  elseif checked_line =~# '},\?$'
+    if checked_line =~# '}$'
+      setline(checked_lnr, checked_line .. ',')
+    endif
+
+    if search_direction ==# 'down' && getline(checked_lnr - 1) =~ '\%(\s\+\)\?#'
+      # Add under comment
+      checked_lnr = line('.') - 1
+    endif
+
+    append(checked_lnr, [dep])
+
+    cursor(checked_lnr + 1, 1)
+    normal! ==
+
+    cursor(cursor_origin)
+  endif
+
+  write
+enddef
+
+# Run Mix Command {{{1
 def RunMixCommand(bang: bool, cmd: string, args: list<string>): void
   var envs = []
   final targs = []
@@ -107,11 +302,20 @@ def RunMixCommand(bang: bool, cmd: string, args: list<string>): void
   endif
 enddef
 
-export def PopulateMixTasks()
-  # Clear the current list of tasks
-  b:mix_project.tasks = []
+# This filters out `!` and env args to use them in Mix wrapper functions.
+# I should come up with something better than this.
+def RemoveMixerMeta(args: list<string>): list<any>
+  var local_args = copy(args)
+  var meta = []
 
-  async.Append(MIX_HELP, b:mix_project.tasks)
+  for arg in args
+    if arg =~ '^!\|+\|-'
+      call add(meta, arg)
+      call remove(local_args, 0)
+    else
+      break
+    endif
+  endfor
+
+  return [meta, local_args]
 enddef
-
-defcompile
