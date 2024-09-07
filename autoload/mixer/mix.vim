@@ -2,7 +2,7 @@ vim9script
 
 import './util.vim'
 import './async.vim'
-import './cursor.vim' as c
+import './cursor.vim'
 
 # AWK command from @mhandberg
 const MIX_HELP = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
@@ -151,29 +151,29 @@ def AppendDep(_id: job, _status: number): void
   endif
 
   var line = getline(lnr)
-  var cursor_origin = c.Pos()
+  var cursor_origin = cursor.Pos()
   var search_direction = ''
 
   if line =~# '\[\s*\]'
     # Just an empty [] or even [           ]
     exec lnr .. "delete_"
     append(lnr - 1, ["[", dep, "]"])
-    cursor(lnr, 1)
+    cursor.Set(lnr, 1)
     normal! 3==
-    cursor(cursor_origin)
+    cursor.Set(cursor_origin)
 
     return
   endif
 
   if line =~# '\]$'
-    searchpair('\[', '', '\]', 'Wb', () => c.OnStringOrComment())
+    searchpair('\[', '', '\]', 'Wb', () => cursor.OnStringOrComment())
   endif
 
   if line =~# '\[$\|\%( \+\)\|\%( \+#\)\|^\s*$'
     # An empty [] but on different lines
     normal! j^
 
-    while c.IsBlank() || c.SynName() =~# 'Comment'
+    while cursor.IsBlank() || cursor.SynName() =~# 'Comment'
       normal! j^
     endwhile
 
@@ -183,7 +183,7 @@ def AppendDep(_id: job, _status: number): void
     # Refactor this.
     normal! k^
 
-    while c.IsBlank() || c.SynName() =~# 'Comment'
+    while cursor.IsBlank() || cursor.SynName() =~# 'Comment'
       normal! k^
     endwhile
 
@@ -195,7 +195,7 @@ def AppendDep(_id: job, _status: number): void
 
   if checked_line =~# '\]$'
     # empty [] on different lines
-    search('\[', 'Wb', 0, 0, () => c.OnStringOrComment())
+    search('\[', 'Wb', 0, 0, () => cursor.OnStringOrComment())
     append(line('.'), [dep])
     normal! j==k
   elseif checked_line =~# '\[$'
@@ -217,10 +217,10 @@ def AppendDep(_id: job, _status: number): void
 
     append(checked_lnr, [dep])
 
-    cursor(checked_lnr + 1, 1)
+    cursor.Set(checked_lnr + 1, 1)
     normal! ==
 
-    cursor(cursor_origin)
+    cursor.Set(cursor_origin)
   endif
 
   write

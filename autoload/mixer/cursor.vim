@@ -5,6 +5,11 @@ vim9script
 
 import autoload './util.vim'
 
+# Just a wrapper around `cursor()` so that we don't have to alias this file's import.
+export def Set(pos: list<number>): void
+  cursor(pos)
+enddef
+
 export def Char(...pos: list<number>): string
   if len(pos) > 0
     return getline('.')[pos[0] - 1]
@@ -70,5 +75,3 @@ enddef
 export def PrevLine(): string
   return getline(line('.') - 1)
 enddef
-
-defcompile
