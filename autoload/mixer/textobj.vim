@@ -1,11 +1,277 @@
 vim9script
 
-import autoload './cursor'
-import autoload './textobj_syntax.vim' as syntax
+import autoload './cursor.vim' as c
+import autoload './util.vim'
+
+export def Define(): void
+  const def = get(g:, 'mixer_textobj_def', 'f')
+  const def_with_meta = get(g:, 'mixer_textobj_def_with_meta', 'F')
+  const block = get(g:, 'mixer_textobj_block', 'd')
+  const block_with_meta = get(g:, 'mixer_textobj_block_with_meta', 'D')
+  const module = get(g:, 'mixer_textobj_module', 'M')
+  const map = get(g:, 'mixer_textobj_map', 'm')
+  const sigil = get(g:, 'mixer_textobj_sigil', 'S')
+  const comment = get(g:, 'mixer_textobj_comment', 'c')
+  const quote = get(g:, 'mixer_textobj_quote', 'q')
+
+  const defregex = 'defp\=\|defmacrop\=\|defnp\='
+
+  exec "vnoremap <silent> <buffer> i" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:false)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:true)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:false, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:false, v:false)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:true, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:true, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:false, v:true)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextobjBlock(v:false, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextobjBlock(v:false, v:false)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjBlock(v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjBlock(v:false, v:true)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextobjComment(v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextobjComment(v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextobjComment(v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextobjComment(v:false)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. map .. " :\<c-u>call <sid>TextobjMap(v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. map .. " :\<c-u>call <sid>TextobjMap(v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. map .. " :\<c-u>call <sid>TextobjMap(v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. map .. " :\<c-u>call <sid>TextobjMap(v:false)\<cr>"
+
+  exec "vnoremap <silent> <buffer> i" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:false)\<cr>"
+enddef
 
 const EMPTY = [0, 0]
 const EMPTY2 = [[0, 0], [0, 0]]
 const EMPTY3 = [[0, 0], [0, 0], [0, 0]]
+
+const RESERVED = [
+  'true', 'false', 'nil',
+  'when', 'and', 'or', 'not', 'in',
+  'fn',
+  'do', 'end', 'catch', 'rescue', 'after', 'else'
+]
+
+const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+
+const PAIRS = {
+  '(': ')',
+  ')': '(',
+  '{': '}',
+  '}': '{',
+  '[': ']',
+  ']': '[',
+}
+
+
+def GetPair(delim: string): string
+  return get(PAIRS, delim, 0)
+enddef
+
+def FindDo(flags: string): list<number>
+  return searchpos('\<do\>:\?', flags, 0, 0, () => c.OnStringOrComment())
+enddef
+
+def FindDoBlockHead(do_pos: list<number>, flags: list<number>): list<number>
+  # This is a bit nuts because we want to be able to find user-defined macro
+  # calls, not just the builtins.
+
+  # let stop = search('\%(\<end\>\|^\s*$\)', 'Wbn')
+  const Skip = () => (
+    expand('<cword>') =~ RESERVED ||
+    !ParenInRange(do_pos) ||
+    c.SynName() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
+  )
+
+  var func_pos = searchpos('\%(>\|=\|\%(\s\+\)\)\s\+\zs\<\k\+\>\s\+\<do\>:\?', 'Wb', line('.'))
+  if line('.') == func_pos[0]
+    # We're going to do the bone-headed thing here and walk up until we find
+    # a non-blank line then see if it ends in a comma.
+    normal! k
+    while c.IsBlank()
+      if line('.') == 1
+        return [0, 0]
+      endif
+      normal! k
+    endwhile
+
+    if getline('.') !~ ',$'
+      call cursor(func_pos)
+
+      return func_pos
+    endif
+  endif
+
+  # '\%(\<end\>\|\%(,$\)\)'
+  # let start = '\%(\<end\>\s\+\)\@!\zs'
+  const start = ''
+  const no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|'.RESERVED.'\)\@!'
+
+  return searchpos(start .. FUNC_CALL_REGEX .. no_follow, flags, 0, 0, Skip)
+enddef
+
+def ParenInRange(do_pos: list<number>): list<number>
+  if expand('<cWORD>') =~ '\<\k\+\>('
+    normal! f(
+    const open_pos = c.Pos()
+    const pair_pos = searchpairpos('(', '', ')', 'Wn', () => c.OnStringOrComment())
+    normal! b
+
+    return util.InRage(do_pos, open_pos, pair_pos)
+  else
+    return 1
+  endif
+enddef
+
+def DoFindEnd(): number
+  search('(\|{\|\[', 'W', line('.')) # Check if do block is a construct or function call
+
+  if expand('<cWORD>') =~ '\<\k\+\>:'
+    # Not a construct or function call
+    return search(')\|,\|\n', 'W', 0, 0, () => c.SynName() =~ 'String\|Comment\|Atom\|Sigil\|Number')
+  else
+    var open_char = c.Char()
+    var close_char = GetPair(open_char)
+
+    if searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'W', () => c.OnStringOrComment())
+      if getline('.')[col('.')] ==# ','
+        normal! l
+      endif
+    endif
+
+    return 1
+  endif
+enddef
+
+def FindEndPos(func_pos: list<number>, do_pos: list<number>): list<number>
+  cursor(func_pos)
+
+  # If we're a block that was called with parens we're golden.
+  if search('\%#' .. expand('<cword>') .. '/zs(')
+    var pair = searchpairpos('(', '', ')', '', () => c.OnStringOrComment())
+    if v:operator ==# 'c'
+      pair[1] -= 1
+    endif
+
+    return pair
+  endif
+
+  # The whole expression is wrapped in parens
+  if search('(\%#' .. expand('<cword>'), 'b')
+    var pair = searchpairpos('(', '', ')', 'W', () => c.OnStringOrComment())
+    pair[1] -= 1
+
+    return pair
+  endif
+
+  cursor(do_pos)
+
+  const Skip = () => c.OnStringOrComment() || IsLambdaEnd(do_pos)
+
+  if expand('<cWORD>') ==# 'do:'
+    cursor(do_pos)
+
+    while DoFindEnd()
+      if c.Char() ==# ','
+        normal! w
+        if expand('<cWORD>') =~ '\<\k\+\>:'
+          continue
+        else
+          normal! geh
+
+          return GetEndPos()
+        endif
+      elseif c.Char() ==# ')'
+        var open_pos = searchpairpos('(', '', ')', 'Wbn', () => c.OnStringOrComment())
+        if open_pos[0] == func_pos[0] && open_pos[1] == func_pos[1] - 1
+          normal! h
+        endif
+
+        return GetEndPos()
+      else
+        return GetEndPos()
+      endif
+    endwhile
+
+    return [0, 0]
+  else
+    var pos = searchpairpos('\<do\>:\@!', '', '\<end\>', 'W', Skip)
+    pos[1] += 2
+
+    return pos
+  endif
+enddef
+
+def GetEndPos(): list<number>
+  while c.Char() =~ '}\|\]'
+    normal! h
+  endwhile
+
+  return c.Pos()
+enddef
+
+# TODO: Maybe take arity into account.
+def FindFirstFuncHead(def_pos: list<number>): list< number>
+  var func_name = GetFuncName(def_pos)
+  echom 'def\k*\s*' .. func_name .. '\>'
+  while search('def\k*\s*' .. func_name .. '\>', 'Wb') | endwhile
+
+  return c.Pos()
+enddef
+
+def FindLastFuncHead(def_pos: list<number>): list<number>
+  const func_name = GetFuncName(def_pos)
+  while search('def\k*\s*\<\%(do_\)\=' .. func_name .. '\>', 'W') | endwhile
+
+  return c.Pos()
+enddef
+
+def GetFuncName(def_pos: list<number>): string
+  cursor(def_pos)
+  normal! w
+  const func = matchstr(expand('<cword>'), '^\%(do_\)\=\zs\k*')
+  normal! b
+
+  return func
+enddef
+
+def IsLambdaEnd(do_pos: list<number>): number
+  if expand('<cword>') ==# 'end'
+    return searchpair('\<fn\>', '', '\<end\>\zs', 'Wbn', () => c.OnStringOrComment(), do_pos[0])
+  endif
+
+  return 0
+enddef
+
+def CheckForMeta(known_annotations: string): bool
+  const word = expand('<cword>')
+  const WORD = expand('<cWORD>')
+
+  return c.SynstackStr() =~ 'Comment\|DocString' ||
+    word =~ known_annotations ||
+    WORD =~ known_annotations
+enddef
 
 def TextobjSelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
   const [start_lnr, start_col] = start_pos
@@ -51,8 +317,9 @@ def AdjustWhitespace(start_pos: list<number>): list<number>
   if start_col > 2
     offset = start_col - 2
   else
-    var offset = 0
+    offset = 0
   endif
+
   const empty_gutter = start_line[0 : offset] =~ '^\s*$'
 
   if start_lnr > 1 && prev_blank && empty_gutter
@@ -63,9 +330,9 @@ def AdjustWhitespace(start_pos: list<number>): list<number>
   endif
 
   return [start_lnr, start_col]
-endfunction
+enddef
 
-def AdjustBlockRegion(inner: bool, do: string, start_pos: number, end_pos: number): list<list<number>>
+def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos: list<number>): list<list<number>>
   if v:operator ==# 'c' && !inner
     # We want a blank line left for insert mode so don't adjust anything
     return [start_pos, end_pos]
@@ -92,7 +359,7 @@ def AdjustBlockRegion(inner: bool, do: string, start_pos: number, end_pos: numbe
       if do !=# '->'
         end_col = len(getline(end_lnr)) + 1 # Include \n
       endif
-      exec start_lnr
+      exec ':' .. start_lnr
     endif
   else
     [start_lnr, start_col] = AdjustWhitespace([start_lnr, start_col])
@@ -117,7 +384,7 @@ enddef
 def TextobjBlock(inner: bool, include_meta: bool): void
   var view = winsaveview()
 
-  var origin = cursor.Pos()
+  var origin = c.Pos()
   # First check if we are in `fn -> end`
   var fn_pos = HandleFn(origin, inner)
 
@@ -125,42 +392,44 @@ def TextobjBlock(inner: bool, include_meta: bool): void
     cursor(origin)
 
     # Then check if we are between a function call and a `do`
-    var do_pos = syntax.FindDo('Wc')
+    var do_pos = FindDo('Wc')
 
     var func_pos = find_do_block_head(do_pos, 'Wb')
     var end_pos = [0, 0]
 
     if util.InRange(origin, func_pos, do_pos)
-      end_pos = syntax.FindEndPos(func_pos, do_pos)
+      end_pos = FindEndPos(func_pos, do_pos)
     else
       cursor(origin)
       var end_pos = EMPTY
 
-      if expand('<cword>') =~# '\<end\>' && !cursor.OnStringOrComment()
-        do_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>\zs', 'Wb', () => cursor.OnStringOrComment())
+      if expand('<cword>') =~# '\<end\>' && !c.OnStringOrComment()
+        do_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>\zs', 'Wb', () => c.OnStringOrComment())
       else
         do_pos = FindDo('Wb')
       endif
 
       if do_pos == EMPTY
-        return winrestview(view)
+        winrestview(view)
+        return
       endif
 
-      func_pos = syntax.FindDoBlockHead(do_pos, 'Wb')
+      func_pos = FindDoBlockHead(do_pos, 'Wb')
 
-      end_pos = syntax.FindEndPos(func_pos, do_pos)
+      end_pos = FindEndPos(func_pos, do_pos)
     endif
 
     if !util.InRange(origin, func_pos, end_pos)
       cursor(origin)
 
-      do_pos = syntax.FindDo('W')
-      func_pos = syntax.FindDoBlockHead(do_pos, 'Wbc')
-      end_pos = syntax.FindEndPos(func_pos, do_pos)
+      do_pos = FindDo('W')
+      func_pos = FindDoBlockHead(do_pos, 'Wbc')
+      end_pos = FindEndPos(func_pos, do_pos)
     endif
 
     if func_pos == EMPTY
-      return winrestview(view)
+      winrestview(view)
+      return
     endif
 
     if inner
@@ -187,8 +456,8 @@ def TextobjBlock(inner: bool, include_meta: bool): void
       normal! b
       if cursor_char() =~ ')\}\|\|\]'
         close_char = cursor_char()
-        open_char = syntax.GetPair(close_char)
-        start_pos = searchpairpos(open_char, '', close_char, 'Wb', () => cursor.OnStringOrComment())
+        open_char = GetPair(close_char)
+        start_pos = searchpairpos(open_char, '', close_char, 'Wb', () => c.OnStringOrComment())
         normal! F%
         start_pos[1] = col('.')
       endif
@@ -211,10 +480,10 @@ def TextobjBlock(inner: bool, include_meta: bool): void
     elseif do ==# '->'
       # Clear `->` When switching to insert, leaving a space after it.
       start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 3 : 2)
-      [start_pos, end_pos] = syntax.AdjustBlockRegion(inner, do, start_pos, end_pos)
+      [start_pos, end_pos] = AdjustBlockRegion(inner, do, start_pos, end_pos)
     endif
   else
-    [start_pos, end_pos] = syntax.AdjustBlockRegion(inner, do, start_pos, end_pos)
+    [start_pos, end_pos] = AdjustBlockRegion(inner, do, start_pos, end_pos)
   endif
 
   view.lnum = start_pos[0]
@@ -223,19 +492,19 @@ def TextobjBlock(inner: bool, include_meta: bool): void
   endif
 
   TextobjSelectObj(view, start_pos, end_pos)
-endfunction
+enddef
 
 def HandleFn(origin: list<number>, inner: bool): list<number>
-  var fn_pos = searchpos('\<fn\>', 'Wbc', 0, 0, () => cursor.OnStringOrComment())
+  var fn_pos = searchpos('\<fn\>', 'Wbc', 0, 0, () => c.OnStringOrComment())
   var do_pos = EMPTY
   var end_pos = EMPTY
 
   if fn_pos == EMPTY
     return EMPTY3
   else
-    do_pos = searchpos('->', 'Wn', 0, 0, () => cursor.OnStringOrComment())
+    do_pos = searchpos('->', 'Wn', 0, 0, () => c.OnStringOrComment())
     do = '->'
-    end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', () => cursor.OnStringOrComment())
+    end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', () => c.OnStringOrComment())
     end_pos[1] += 2
 
     if util.InRange(origin, fn_pos, end_pos)
@@ -244,12 +513,12 @@ def HandleFn(origin: list<number>, inner: bool): list<number>
       return EMPTY3
     endif
   endif
-endfunction
+enddef
 
 
 # Text Objects: def {{{1
 
-def TextobjDef(keyword: string, inner: bool, include_annotations: bool): void
+def TextobjDef(kwd: string, inner: bool, include_annotations: bool): void
   var known_annotations = '@doc\>\|@spec\>\|@tag\>\|@requirements\>\|\<attr\>\|\<slot\>'
   var user_annotations: string = get(g:, 'mixer_known_annotations', '')
 
@@ -257,23 +526,23 @@ def TextobjDef(keyword: string, inner: bool, include_annotations: bool): void
     known_annotations = join([known_annotations, user_annotations], '\|')
   endif
 
-  const Skip = () => cursor.SynName() =~ 'String\|Comment'
+  const Skip = () => c.SynName() =~ 'String\|Comment'
   var view = winsaveview()
-  var keyword = '\<\%('.escape(keyword, '|').'\)\>'
-  var cursor_origin = cursor.Pos()
+  var keyword = '\<\%(' .. escape(kwd, '|') .. '\)\>'
+  var cursor_origin = c.Pos()
 
   # Being in the gutter of a def line is considered in range
   normal! ^
-  var cursor_start = cursor.Pos()
+  var cursor_start = c.Pos()
 
-  if syntax.CheckForMeta(known_annotations)
+  if CheckForMeta(known_annotations)
     search(keyword, 'W', 0, 0, Skip)
   endif
 
   # Search backward
   var def_pos = searchpos(keyword, 'Wcb', 0, 0, Skip)
-  var do_pos = syntax.FindDo('W')
-  var end_pos = syntax.FindEndPos(def_pos, do_pos)
+  var do_pos = FindDo('W')
+  var end_pos = FindEndPos(def_pos, do_pos)
 
   if !util.InRange(cursor_start, def_pos, end_pos) || do_pos == EMPTY
     winrestview(view)
@@ -281,45 +550,48 @@ def TextobjDef(keyword: string, inner: bool, include_annotations: bool): void
     def_pos = searchpos(keyword, 'W', 0, 0, Skip)
   endif
 
-  if def_pos == EMPTY | return winrestview(view) | endif
+  if def_pos == EMPTY
+    winrestview(view)
+    return
+  endif
 
   if !inner && include_annotations
-    def_pos = syntax.FindFirstFuncHead(def_pos)
+    def_pos = FindFirstFuncHead(def_pos)
   endif
 
   cursor(def_pos)
 
-  do_pos = syntax.FindDo('W')
+  do_pos = FindDo('W')
 
   var first_head_has_keyword_do = expand('<cWORD>') ==# 'do:'
 
   cursor(def_pos)
 
   if !inner && include_annotations
-    syntax.find_last_func_head(def_pos)
-    do_pos = syntax.FindDo('Wc')
+    FindLastFuncHead(def_pos)
+    do_pos = FindDo('Wc')
   endif
 
-  start_pos = copy(def_pos)
-  end_pos = syntax.FindEndPos(def_pos, do_pos)
+  var start_pos = copy(def_pos)
+  end_pos = FindEndPos(def_pos, do_pos)
 
   cursor(def_pos)
 
   # Look for the meta
   if !inner && include_annotations
-    const func_name = syntax.GetFuncName(def_pos)
+    const func_name = GetFuncName(def_pos)
 
-    const stopline = max([1, search('\<end\>\|def\%(macro\)\?p\? \%('.func_name.'\)\@!', 'Wbn', 0, 0, () => cursor.SynName() =~ 'String\|Comment\|DocString\|markdown')])
+    const stopline = max([1, search('\<end\>\|def\%(macro\)\?p\? \%(' .. func_name .. '\)\@!', 'Wbn', 0, 0, () => c.SynName() =~ 'String\|Comment\|DocString\|markdown')])
 
-    search('^\s*$', 'Wb', stopline, 0, () -> cursor.SynName() =~ 'String\|Comment\|DocString\|markdown')
+    search('^\s*$', 'Wb', stopline, 0, () => c.SynName() =~ 'String\|Comment\|DocString\|markdown')
 
     while search(known_annotations, 'Wb', stopline) | endwhile
 
-    start_pos = cursor.Pos()
+    start_pos = c.Pos()
   endif
 
   if inner && first_head_has_keyword_do
-    " Clear `do:` When switching to insert, leave a space after it otherwise do not.
+    # Clear `do:` When switching to insert, leave a space after it otherwise do not.
     start_pos[0] = do_pos[0]
     start_pos[1] = do_pos[1] + (v:operator ==# 'c' ? 4 : 3)
   else
@@ -336,52 +608,55 @@ enddef
 # Text Objects: map {{{1
 
 def TextobjMap(inner: bool): void
-  const Skip = () => cursor.OnStringOrComment()
+  const Skip = () => c.OnStringOrComment()
 
   var view = winsaveview()
-  var cursor_origin = s:get_cursor_pos()
+  var cursor_origin = c.Pos()
   var open_regex = '%\%([a-zA-Z.]\+\)\?{'
 
-  if cursor.InGutter()
+  if c.InGutter()
     normal! ^
   endif
 
   var [start_lnr, start_col] = EMPTY2
 
-  if cursor.SynstackStr() =~ 'Map\|Struct'
+  if c.SynstackStr() =~ 'Map\|Struct'
     [start_lnr, start_col] = searchpos(open_regex, 'Wcb', 0, 0, Skip)
   else
     [start_lnr, start_col] = searchpos(open_regex, 'Wc', 0, 0, Skip)
   endif
 
   if [start_lnr, start_col] == EMPTY
-    return winrestview(view)
+    winrestview(view)
+    return
   endif
 
   normal! f{
   var [end_lnr, end_col] = searchpairpos('{', '', '}', 'W', Skip)
 
-  if cursor.Char() ==# '}'
+  if c.Char() ==# '}'
     searchpair(open_regex, '', '}', 'Wb', Skip)
   endif
 
-  while cursor.SynstackStr() =~ 'Map\|Struct' && cursor_origin[0] > end_lnr
-    if cursor.Char() ==# '}'
+  while c.SynstackStr() =~ 'Map\|Struct' && cursor_origin[0] > end_lnr
+    if c.Char() ==# '}'
       searchpair(open_regex, '', '}', 'Wb', Skip)
     endif
 
     [start_lnr, start_col] = searchpos(open_regex, 'Wb', 0, 0, Skip)
     normal! f{
 
-    if cursor.Char() ==# '{'
+    if c.Char() ==# '{'
       [end_lnr, end_col] = searchpairpos('{', '', '}', 'W', Skip)
     else
-      return winrestview(view)
+      winrestview(view)
+      return
     endif
   endwhile
 
   if start_lnr == 0 || end_lnr == 0
-    return winrestview(view)
+    winrestview(view)
+    return
   endif
 
   var handle_empty_map = false
@@ -446,34 +721,36 @@ def TextobjSigil(inner: bool): void
   # Skip delims
   # Manually skip ' and " because elixir.vim doesn't account for this.
   # I need to figure that out.
-  const Skip = { -> 
-  cursor.SynName() =~ 'DelimEscape\|RegexEscapePunctuation' ||
+  const Skip = () =>  (
+    c.SynName() =~ 'DelimEscape\|RegexEscapePunctuation' ||
     (
-      cursor.Char() =~ '"\|''' && cursor.Char(line('.') - 1) ==# '\'
+      c.Char() =~ '"\|''' && c.Char(line('.') - 1) ==# '\'
     )
-  }
+  )
 
   var view = winsaveview()
   const open_delimiters = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
-  if cursor.SynName() !~ 'Sigil' && cursor.Char() =~ '\k'
-    while cursor.Char() =~ '\k'
+  if c.SynName() !~ 'Sigil' && c.Char() =~ '\k'
+    while c.Char() =~ '\k'
       normal! h
 
       if col('.') == 1
-        return winrestview(view)
+        winrestview(view)
+        return
       endif
     endwhile
 
-    if cursor.SynName() !~ 'Sigil'
-      return winrestview(view)
+    if c.SynName() !~ 'Sigil'
+      winrestview(view)
+      return
     endif
   endif
 
   var [start_lnr: number, start_col: number] = EMPTY
   var [end_lnr: number, end_col: number] = EMPTY
 
-  if cursor.SynName() =~ 'Sigil'
+  if c.SynName() =~ 'Sigil'
     [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
   else
     [start_lnr, start_col] = searchpos('\~', 'Wc', 0, 0, Skip)
@@ -495,8 +772,8 @@ def TextobjSigil(inner: bool): void
 
   if inner
     search(open, 'W', 0, 0, Skip)
-    exec "normal! ".len(open)."\<space>"
-    [start_lnr, start_col] = cursor.Pos()
+    exec "normal! " .. len(open) .. "\<space>"
+    [start_lnr, start_col] = c.Pos()
     search(escape(close, '"'), 'W', 0, 0, Skip)
     exec "normal! 1\<left>"
   else
@@ -508,7 +785,7 @@ def TextobjSigil(inner: bool): void
     endwhile
   endif
 
-  [end_lnr, end_col] = cursor.Pos()
+  [end_lnr, end_col] = c.Pos()
 
   setpos("'<", [0, start_lnr, start_col, 0])
   setpos("'>", [0, end_lnr, end_col, 0])
@@ -524,13 +801,14 @@ def TextobjComment(inner: bool): void
 
   normal $
 
-  if !cursor.OnComment()
-    return winrestview(view)
+  if !c.OnComment()
+    winrestview(view)
+    return
   endif
 
-  var comment_type = cursor.OuterSynName()
+  var comment_type = c.OuterSynName()
 
-  while cursor.OnComment() && comment_type == cursor.OuterSynName()
+  while c.OnComment() && comment_type == c.OuterSynName()
     if line('.') == 1
       break
     endif
@@ -538,7 +816,7 @@ def TextobjComment(inner: bool): void
     normal k$
   endwhile
 
-  if !cursor.OnComment() || comment_type != cursor.OuterSynName()
+  if !c.OnComment() || comment_type != c.OuterSynName()
     normal j$
   endif
 
@@ -549,7 +827,7 @@ def TextobjComment(inner: bool): void
 
   normal $
 
-  while cursor.OnComment() && comment_type ==# cursor.OuterSynName()
+  while c.OnComment() && comment_type ==# c.OuterSynName()
     if line('.') == line('$')
       break
     endif
@@ -557,7 +835,7 @@ def TextobjComment(inner: bool): void
     normal j$
   endwhile
 
-  if !cursor.OnComment() || comment_type != cursor.OuterSynName()
+  if !c.OnComment() || comment_type != c.OuterSynName()
     normal k$
   endif
 

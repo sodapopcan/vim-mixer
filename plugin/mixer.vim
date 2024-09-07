@@ -15,10 +15,12 @@ g:loaded_mixer = true
 
 import autoload 'mixer/mix.vim'
 import autoload 'mixer/project.vim'
+import autoload 'mixer/textobj.vim'
 
 augroup mixer
   autocmd!
   autocmd BufNewFile,BufReadPost * SetupBuf()
+  autocmd FileType elixir,eelixir call textobj.Define()
 augroup END
 
 # class MixProject
