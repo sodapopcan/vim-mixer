@@ -1049,13 +1049,6 @@ function! s:append_dep(_id, _status) abort
   write
 endfunction
 
-function! mixer#DepsComplete(A, L, P)
-  let deps_tasks = filter(copy(b:mix_project.tasks), {-> v:val =~ '^deps' && v:val !=# 'deps'})
-  let bare_tasks = map(deps_tasks, {-> s:sub(v:val, '^deps\.', '')})
-  let bare_tasks = filter(bare_tasks, {-> v:val =~ a:A})
-
-  return bare_tasks
-endfunction
 
 " Mix: :Gen {{{1
 

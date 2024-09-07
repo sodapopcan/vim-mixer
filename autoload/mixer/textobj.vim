@@ -66,12 +66,14 @@ const EMPTY = [0, 0]
 const EMPTY2 = [[0, 0], [0, 0]]
 const EMPTY3 = [[0, 0], [0, 0], [0, 0]]
 
-const RESERVED = [
+const reserved = [
   'true', 'false', 'nil',
   'when', 'and', 'or', 'not', 'in',
   'fn',
   'do', 'end', 'catch', 'rescue', 'after', 'else'
 ]
+
+const RESERVED = '\<' .. join(reserved, '\>\|\<') .. '\>'
 
 const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
@@ -93,7 +95,7 @@ def FindDo(flags: string): list<number>
   return searchpos('\<do\>:\?', flags, 0, 0, () => c.OnStringOrComment())
 enddef
 
-def FindDoBlockHead(do_pos: list<number>, flags: list<number>): list<number>
+def FindDoBlockHead(do_pos: list<number>, flags: string): list<number>
   # This is a bit nuts because we want to be able to find user-defined macro
   # calls, not just the builtins.
 
@@ -126,21 +128,21 @@ def FindDoBlockHead(do_pos: list<number>, flags: list<number>): list<number>
   # '\%(\<end\>\|\%(,$\)\)'
   # let start = '\%(\<end\>\s\+\)\@!\zs'
   const start = ''
-  const no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|'.RESERVED.'\)\@!'
+  const no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|' .. RESERVED .. '\)\@!'
 
   return searchpos(start .. FUNC_CALL_REGEX .. no_follow, flags, 0, 0, Skip)
 enddef
 
-def ParenInRange(do_pos: list<number>): list<number>
+def ParenInRange(do_pos: list<number>): bool
   if expand('<cWORD>') =~ '\<\k\+\>('
     normal! f(
     const open_pos = c.Pos()
     const pair_pos = searchpairpos('(', '', ')', 'Wn', () => c.OnStringOrComment())
     normal! b
 
-    return util.InRage(do_pos, open_pos, pair_pos)
+    return util.InRange(do_pos, open_pos, pair_pos)
   else
-    return 1
+    return true
   endif
 enddef
 
@@ -372,7 +374,7 @@ def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos:
       end_col = len(getline(end_lnr)) + 1 # Include \n
     endif
 
-    exec start_lnr
+    exec ':' .. start_lnr
   endif
 
   return [[start_lnr, start_col], [end_lnr, end_col]]
@@ -385,6 +387,11 @@ def TextobjBlock(inner: bool, include_meta: bool): void
   var view = winsaveview()
 
   var origin = c.Pos()
+  var start_pos = EMPTY
+  var do_pos = EMPTY
+  var end_pos = EMPTY
+  var do = ''
+
   # First check if we are in `fn -> end`
   var fn_pos = HandleFn(origin, inner)
 
@@ -392,16 +399,15 @@ def TextobjBlock(inner: bool, include_meta: bool): void
     cursor(origin)
 
     # Then check if we are between a function call and a `do`
-    var do_pos = FindDo('Wc')
+    do_pos = FindDo('Wc')
 
-    var func_pos = find_do_block_head(do_pos, 'Wb')
-    var end_pos = [0, 0]
+    var func_pos = FindDoBlockHead(do_pos, 'Wb')
 
     if util.InRange(origin, func_pos, do_pos)
       end_pos = FindEndPos(func_pos, do_pos)
     else
       cursor(origin)
-      var end_pos = EMPTY
+      end_pos = EMPTY
 
       if expand('<cword>') =~# '\<end\>' && !c.OnStringOrComment()
         do_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>\zs', 'Wb', () => c.OnStringOrComment())
@@ -450,13 +456,13 @@ def TextobjBlock(inner: bool, include_meta: bool): void
     cursor(start_pos)
 
     normal! b
-    if cursor_char() !=# "="
+    if c.Char() !=# "="
       normal! w
     else
       normal! b
-      if cursor_char() =~ ')\}\|\|\]'
-        close_char = cursor_char()
-        open_char = GetPair(close_char)
+      if c.Char() =~ ')\}\|\|\]'
+        var close_char = c.Char()
+        var open_char = GetPair(close_char)
         start_pos = searchpairpos(open_char, '', close_char, 'Wb', () => c.OnStringOrComment())
         normal! F%
         start_pos[1] = col('.')
@@ -494,7 +500,7 @@ def TextobjBlock(inner: bool, include_meta: bool): void
   TextobjSelectObj(view, start_pos, end_pos)
 enddef
 
-def HandleFn(origin: list<number>, inner: bool): list<number>
+def HandleFn(origin: list<number>, inner: bool): list<list<number>>
   var fn_pos = searchpos('\<fn\>', 'Wbc', 0, 0, () => c.OnStringOrComment())
   var do_pos = EMPTY
   var end_pos = EMPTY
@@ -797,7 +803,7 @@ enddef
 
 def TextobjComment(inner: bool): void
   var view = winsaveview()
-  var cursor_origin = getcurpos('.')
+  var cursor_origin = c.Pos()
 
   normal $
 
@@ -823,7 +829,7 @@ def TextobjComment(inner: bool): void
   var start_lnr = line('.')
   var start_col = 0
 
-  setpos('.', cursor_origin)
+  cursor(cursor_origin)
 
   normal $
 
@@ -839,7 +845,8 @@ def TextobjComment(inner: bool): void
     normal k$
   endif
 
-  end_lnr = line('.')
+  var end_lnr = line('.')
+  var end_col: number
 
   if inner && comment_type ==# 'DocString'
     start_lnr += 1

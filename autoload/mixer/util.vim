@@ -25,7 +25,7 @@ export def Matches(str: string, pat: string): bool
 enddef
 
 export def IsBlank(string: string): bool
-  return line =~ '^\s*$'
+  return string =~ '^\s*$'
 enddef
 
 export def Unmapped(map: string, type: string): bool
