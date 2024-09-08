@@ -18,50 +18,50 @@ export def Define(): void
 
   const defregex = 'defp\=\|defmacrop\=\|defnp\='
 
-  exec "vnoremap <silent> <buffer> i" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:false)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. def .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. def .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. def .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:false, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. def .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. def .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:false, v:false)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:true)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:true)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:true, v:true)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. def_with_meta .. " :\<c-u>call <sid>TextobjDef('" .. defregex .. "', v:false, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. def_with_meta .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:true, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. def_with_meta .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. def_with_meta .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:true, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. def_with_meta .. " :\<c-u>call <sid>TextObj_def('" .. defregex .. "', v:false, v:true)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:true, v:false)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:false, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:true, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjDef('defmodule', v:false, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextObj_def('defmodule', v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextObj_def('defmodule', v:false, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextObj_def('defmodule', v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextObj_def('defmodule', v:false, v:false)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:true, v:true)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:false, v:true)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:true, v:true)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. quote .. " :\<c-u>call <sid>TextobjDef('quote', v:false, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. quote .. " :\<c-u>call <sid>TextObj_def('quote', v:true, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. quote .. " :\<c-u>call <sid>TextObj_def('quote', v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. quote .. " :\<c-u>call <sid>TextObj_def('quote', v:true, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. quote .. " :\<c-u>call <sid>TextObj_def('quote', v:false, v:true)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextobjBlock(v:false, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextobjBlock(v:false, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextObj_block(v:false, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextObj_block(v:false, v:false)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjBlock(v:false, v:true)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextobjBlock(v:true, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextobjBlock(v:false, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextObj_block(v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextObj_block(v:false, v:true)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextobjComment(v:true)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextobjComment(v:false)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextobjComment(v:true)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextobjComment(v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextObj_comment(v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextObj_comment(v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextObj_comment(v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextObj_comment(v:false)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. map .. " :\<c-u>call <sid>TextobjMap(v:true)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. map .. " :\<c-u>call <sid>TextobjMap(v:false)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. map .. " :\<c-u>call <sid>TextobjMap(v:true)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. map .. " :\<c-u>call <sid>TextobjMap(v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. map .. " :\<c-u>call <sid>TextObj_map(v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. map .. " :\<c-u>call <sid>TextObj_map(v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. map .. " :\<c-u>call <sid>TextObj_map(v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. map .. " :\<c-u>call <sid>TextObj_map(v:false)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:true)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:false)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:true)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextobjSigil(v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. sigil .. " :\<c-u>call <sid>TextObj_sigil(v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextObj_sigil(v:false)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. sigil .. " :\<c-u>call <sid>TextObj_sigil(v:true)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. sigil .. " :\<c-u>call <sid>TextObj_sigil(v:false)\<cr>"
 enddef
 
 # Constants {{{1
@@ -83,7 +83,7 @@ const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
 # Common {{{1
 
-def TextobjSelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
+def SelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
   const [start_lnr, start_col] = start_pos
   const [end_lnr, end_col] = end_pos
 
@@ -375,7 +375,7 @@ enddef
 
 # Text Object: block {{{1
 
-def TextobjBlock(inner: bool, include_meta: bool): void
+def TextObj_block(inner: bool, include_meta: bool): void
   var view = winsaveview()
 
   var origin = cursor.Pos()
@@ -489,7 +489,7 @@ def TextobjBlock(inner: bool, include_meta: bool): void
     view.col = start_pos[1]
   endif
 
-  TextobjSelectObj(view, start_pos, end_pos)
+  SelectObj(view, start_pos, end_pos)
 enddef
 
 def HandleFn(origin: list<number>, inner: bool): list<list<number>>
@@ -516,7 +516,7 @@ enddef
 
 # Text Object: def {{{1
 
-def TextobjDef(kwd: string, inner: bool, include_annotations: bool): void
+def TextObj_def(kwd: string, inner: bool, include_annotations: bool): void
   var known_annotations = '@doc\>\|@spec\>\|@tag\>\|@requirements\>\|\<attr\>\|\<slot\>'
   var user_annotations: string = get(g:, 'mixer_known_annotations', '')
 
@@ -599,13 +599,13 @@ def TextobjDef(kwd: string, inner: bool, include_annotations: bool): void
 
   view.lnum = start_pos[0]
   view.col = start_pos[1]
-  TextobjSelectObj(view, start_pos, end_pos)
+  SelectObj(view, start_pos, end_pos)
 enddef
 
 
 # Text Object: map {{{1
 
-def TextobjMap(inner: bool): void
+def TextObj_map(inner: bool): void
   const Skip = () => cursor.OnStringOrComment()
 
   var view = winsaveview()
@@ -715,7 +715,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 
 # Text Object: sigil {{{1
 
-def TextobjSigil(inner: bool): void
+def TextObj_sigil(inner: bool): void
   # Skip delims
   # Manually skip ' and " because elixir.vim doesn't account for this.
   # I need to figure that out.
@@ -793,7 +793,7 @@ enddef
 
 # Text Object: comment  {{{1
 
-def TextobjComment(inner: bool): void
+def TextObj_comment(inner: bool): void
   var view = winsaveview()
   var cursor_origin = cursor.Pos()
 
@@ -849,5 +849,5 @@ def TextobjComment(inner: bool): void
   endif
 
   view.lnum = start_lnr
-  TextobjSelectObj(view, [start_lnr, start_col], [end_lnr, end_col])
+  SelectObj(view, [start_lnr, start_col], [end_lnr, end_col])
 enddef
