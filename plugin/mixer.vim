@@ -65,8 +65,12 @@ def SetupBuf(): void
 
   var [project_root, mix_file, nested] = g:MixerDetect()
 
-  if !empty(project_root) && !exists('g:mix_projects') || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
+  if (!empty(project_root) && !exists('g:mix_projects')) || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
     project.Setup()
+  endif
+
+  if exists('g:mix_projects') && has_key(g:mix_projects, project_root)
+    b:mix_project = g:mix_projects[project_root]
   endif
 
   if exists('b:mix_project')
@@ -79,5 +83,3 @@ def SetupBuf(): void
     endif
   endif
 enddef
-
-defcompile
