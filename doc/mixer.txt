@@ -209,7 +209,7 @@ COMMANDS                                    *mixer-commands*
                       {:image, "~> 0.5"}
 <
 
-                                            *mixer-:Gen* *:Gen*
+                                            *mixer-:Gen*
 :Gen                Unified generator command with autocomplete.
 
                     Run any `*.gen*` task in your project without having to
@@ -235,7 +235,7 @@ COMMANDS                                    *mixer-commands*
                     always run via |:!|.
 
 
-                                            *mixer-:Iex* *:Iex*
+                                            *mixer-:Iex*
 :Iex[!]             Start `iex` in a `:terminal` session.  The exact command
                     used is:
 >
