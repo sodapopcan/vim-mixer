@@ -71,7 +71,6 @@ const EMPTY2 = [[0, 0], [0, 0]]
 const EMPTY3 = [[0, 0], [0, 0], [0, 0]]
 
 const reserved = [
-  'true', 'false', 'nil',
   'when', 'and', 'or', 'not', 'in',
   'fn',
   'do', 'end', 'catch', 'rescue', 'after', 'else'
