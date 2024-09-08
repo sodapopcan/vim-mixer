@@ -612,11 +612,12 @@ def TextObj_map(inner: bool): void
   var cursor_origin = cursor.Pos()
   var open_regex = '%\%([a-zA-Z.]\+\)\?{'
 
+  var start_lnr: number
+  var start_col: number
+
   if cursor.InGutter()
     normal! ^
   endif
-
-  var [start_lnr, start_col] = EMPTY2
 
   if cursor.SynstackStr() =~ 'Map\|Struct'
     [start_lnr, start_col] = searchpos(open_regex, 'Wcb', 0, 0, Skip)
