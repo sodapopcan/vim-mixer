@@ -162,7 +162,7 @@ def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos:
     endif
 
     if v:operator ==# 'c'
-      exec start_lnr + 1
+      exec ':' .. start_lnr + 1
       if do !=# '->'
         start_col = indent(start_lnr) + 1
         end_col = len(getline(end_lnr))
