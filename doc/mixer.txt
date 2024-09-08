@@ -1,14 +1,15 @@
-*mixer.txt*  Utilities for working with The Elixir Programming Language <3
+*mixer.txt*  Plugin for working with Mix projects and Elixir files.
 
 Author:  Andrew Haust <https://andrew.hau.st>
 License: Same terms as Vim itself (see |license|)
 
-Requires Vim 9
 
-=============================================================================
-          This plugin has a fairly hard dependency on elixir.vim
-                https://github.com/elixir-lang/vim-elixir
-=============================================================================
+Dependencies~
+
+  * Vim 9
+  * |elixir.vim| <https://github.com/elixir-lang/vim-elixir>
+  * |projectionist.vim| <https://github.com/tpope/vim-projectionist>
+
 
 TABLE OF CONTENTS                           *mixer*
 
@@ -153,7 +154,7 @@ COMMANDS                                    *mixer-commands*
                     This works regardless of what you have called it.
 
 :{range}Deps[!] {task} [args]
-                    A wrapper around `:Mix deps` .
+                    A wrapper around `:Mix deps`
 
                     When the current buffer is `mix.exs` it will first write
                     the buffer if it is modified.
@@ -196,9 +197,7 @@ COMMANDS                                    *mixer-commands*
                     also available.
 
                                             *mixer-:Deps_add*
-:Deps add {dep}     Insert {dep} into the current buffer.  This is available
-                    anywhere so it's best to make your cursor is where you
-                    want the dep to be inserted.
+:Deps add {dep}     Insert {dep} below the cursor.
 
                     For example, with \%# being your cursor:
 >
@@ -280,11 +279,12 @@ COMMANDS                                    *mixer-commands*
 >
                       term ++close iex -S mix
 <
-                    When called with a bang [!] it will simply start a plain
-                    `iex` session (without Mix).  Outside of a mix project both
+                    When called with a bang [!] it will start a plain iex
+                    session without Mix.  Outside of a mix project both
                     versions of the command start a plain `iex` session.
 
                     Accepts |:command-modifiers|.
+
 
 MAPPINGS                                    *mixer-mappings*
 
@@ -305,6 +305,7 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
 TEXT OBJECTS                                *mixer-text-objects*
                                             *mixer-text-object*
                                             *mixer-textobj*
+
 Text objects are defined for general Elixir blocks (do/end, fn/end), as well
 as maps, sigils, and comments/docstrings.  There are some specialized objects
 for the def* family of macros where the 'aF' version includes specs,
