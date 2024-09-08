@@ -71,7 +71,8 @@ export def Setup(): void
   if exists('g:loaded_matchit')
     augroup mixerMatchWords
       autocmd!
-      autocmd CursorHold,BufEnter *.ex call DoMatchWords()
+      autocmd CursorHold,BufEnter *.ex call SetMatchWords()
+      autocmd CursorHold,BufEnter *.ex call SetCommentString()
     augroup END
   endif
 
@@ -82,16 +83,7 @@ export def Setup(): void
   # endif
 enddef
 
-def SetCommentString(str: string): void
-  # This check is done due to a now fixed bug: https://github.com/vim/vim/issues/15462
-  if escape(&commentstring, ' ') !=# str
-    const cursor_pos = getcurpos()
-    exec 'setlocal commentstring=' .. str
-    call setpos('.', cursor_pos)
-  endif
-enddef
-
-def DoMatchWords(): void
+def SetMatchWords(): void
   if exists('b:match_words') && !exists('b:elixir_match_words')
     b:elixir_match_words = b:match_words
   endif
@@ -104,11 +96,25 @@ def DoMatchWords(): void
 
   if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
     b:match_words = HTML_MATCH_WORDS
-    call SetCommentString('<%!--\ %s\ --%>')
   else
     b:match_words = b:elixir_match_words
-    call SetCommentString('#\ %s')
   endif
 enddef
 
-defcompile
+def SetCommentString(): void
+  const syn = cursor.OuterSynName()
+  var str: string
+
+  if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
+    str = '<%!--\ %s\ --%>'
+  else
+    str = '#\ %s'
+  endif
+
+  # This check is done due to a now fixed bug: https://github.com/vim/vim/issues/15462
+  if escape(&commentstring, ' ') !=# str
+    const cursor_pos = getcurpos()
+    exec 'setlocal commentstring=' .. str
+    call setpos('.', cursor_pos)
+  endif
+enddef
