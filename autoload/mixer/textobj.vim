@@ -467,6 +467,7 @@ def HandleFn(origin: list<number>, inner: bool): list<list<number>>
   var fn_pos = searchpos('\<fn\>', 'Wbc', 0, 0, () => cursor.OnStringOrComment())
   var do_pos = EMPTY
   var end_pos = EMPTY
+  var do: string
 
   if fn_pos == EMPTY
     return EMPTY3
