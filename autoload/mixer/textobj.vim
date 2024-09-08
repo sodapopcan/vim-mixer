@@ -43,10 +43,10 @@ export def Define(): void
   exec "onoremap <silent> <buffer> i" .. block .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
   exec "onoremap <silent> <buffer> a" .. block .. " :\<c-u>call <sid>TextObj_block(v:false, v:false)\<cr>"
 
-  exec "vnoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
-  exec "vnoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextObj_block(v:false, v:true)\<cr>"
-  exec "onoremap <silent> <buffer> i" .. module .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
-  exec "onoremap <silent> <buffer> a" .. module .. " :\<c-u>call <sid>TextObj_block(v:false, v:true)\<cr>"
+  exec "vnoremap <silent> <buffer> i" .. block_with_meta .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
+  exec "vnoremap <silent> <buffer> a" .. block_with_meta .. " :\<c-u>call <sid>TextObj_block(v:false, v:true)\<cr>"
+  exec "onoremap <silent> <buffer> i" .. block_with_meta .. " :\<c-u>call <sid>TextObj_block(v:true, v:false)\<cr>"
+  exec "onoremap <silent> <buffer> a" .. block_with_meta .. " :\<c-u>call <sid>TextObj_block(v:false, v:true)\<cr>"
 
   exec "vnoremap <silent> <buffer> i" .. comment .. " :\<c-u>call <sid>TextObj_comment(v:true)\<cr>"
   exec "vnoremap <silent> <buffer> a" .. comment .. " :\<c-u>call <sid>TextObj_comment(v:false)\<cr>"
@@ -427,7 +427,7 @@ def TextObj_block(inner: bool, include_meta: bool): void
       normal! w
     else
       normal! b
-      if cursor.Char() =~ ')\}\|\|\]'
+      if cursor.Char() =~ ')\|}\|\]'
         var close_char = cursor.Char()
         var open_char = util.GetPair(close_char)
         start_pos = searchpairpos(open_char, '', close_char, 'Wb', () => cursor.OnStringOrComment())
