@@ -32,7 +32,6 @@ TEXT OBJECTS                                |mixer-text-objects|
   Map or struct                               |mixer-map|
   Sigil                                       |mixer-sigil|
   Comment                                     |mixer-comment|
-OPTIONS                                     |mixer-options|
 
 
 INTRODUCTION                                *mixer-introduction*
@@ -434,32 +433,6 @@ aa                  A function argument.
                     These are only available if the plugin sideways.vim is
                     installed.  You can find this on www.vim.org or on github
                     at <https://github.com/AndrewRadev/sideways.vim>.
-
-Text Object Options~
-                                            *mixer-text-objects-options*
-By default, text objects use the "seek" behaviour.  This means if you type
-`daf` outside of a function, it will delete the next function searching
-downward.  You may turn this off with the following setting:
->
-  let g:mixer_textobj_noseek = 'ALL'
-<
-Now your cursor must be on an object to operate on it.  `a` variants will
-still take whitespace into consideration.  For example, `daf` will still work
-if your cursor is on the first blank line above it.
-
-Fine-grained control over which objects use seek is possible by providing
-a comma comma-separate string where the possible values are:
->
-  let g:mixer_textobj_noseek = 'block'
-<
-This is the default.
-
-There is also a special setting for the `block` text object:
->
-  let g:mixer_textobj_block = 'doend'
-<
-This makes it so your cursor must be in the `do` to operate on it.  Some users
-may find this more intuitive.
 
 
   vim:tw=78:et:ft=help:norl:
