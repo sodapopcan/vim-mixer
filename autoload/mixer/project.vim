@@ -75,12 +75,6 @@ export def Setup(): void
       autocmd CursorHold,BufEnter <buffer> call SetCommentString()
     augroup END
   endif
-
-  # g:mixer_projections = get(g:, 'mixer_projections', 'replace')
-
-  # if g:mixer_projections !=# "disable"
-  #   call DefineProjections()
-  # endif
 enddef
 
 def SetMatchWords(): void
