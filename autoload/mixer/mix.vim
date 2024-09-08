@@ -207,10 +207,8 @@ enddef
 
 
 # Gen Command {{{1
-
-export def GenCommand(bang: bool, ...args: list<string>): void
+export def GenCommand(...args: list<string>): void
   var tasks = GetGenTasks()
-  var [meta, args] = RemoveMixerMeta(args)
 
   var task = copy(args[0])
 
@@ -219,7 +217,7 @@ export def GenCommand(bang: bool, ...args: list<string>): void
     return
   endif
 
-  call RunMixCommand(bang, tasks[task], extend(meta, args[1 :]))
+  exec ':!mix ' .. tasks[task] .. ' ' .. join(args[1 :], ' ')
 enddef
 
 export def GenComplete(A: string, L: string, P: number): list<string>

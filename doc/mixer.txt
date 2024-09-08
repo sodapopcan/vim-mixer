@@ -215,8 +215,7 @@ COMMANDS                                    *mixer-commands*
 <
 
                                             *mixer-:Gen* *:Gen*
-                                            *mixer-:Gen!* *:Gen!*
-:Gen[!]             Unified generator command with autocomplete.
+:Gen                Unified generator command with autocomplete.
 
                     Run any `*.gen*` task in your project without having to
                     provide its namespace.
@@ -237,9 +236,8 @@ COMMANDS                                    *mixer-commands*
 <
                     Tasks are sorted by their non-namespaced names.
 
-                    This command's bang [!] behaviour works the same as it
-                    does for |:Mix|.  Environment flags via `^` and `+` are
-                    recognized but like not very useful.
+                    Since many generators prompt for input, this task is
+                    always run via |:!|.
 
 
                                             *mixer-:Migrate* *:Migrate*
