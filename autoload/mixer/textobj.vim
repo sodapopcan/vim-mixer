@@ -245,23 +245,23 @@ def ParenInRange(do_pos: list<number>): bool
   endif
 enddef
 
-def DoFindEnd(): number
+def DoFindEnd(): bool
   search('(\|{\|\[', 'W', line('.')) # Check if do block is a construct or function call
 
   if expand('<cWORD>') =~ '\<\k\+\>:'
     # Not a construct or function call
-    return search(')\|,\|\n', 'W', 0, 0, () => cursor.SynName() =~ 'String\|Comment\|Atom\|Sigil\|Number')
+    return search(')\|,\|\n', 'W', 0, 0, () => cursor.SynName() =~ 'String\|Comment\|Atom\|Sigil\|Number') > 0
   else
     var open_char = cursor.Char()
     var close_char = util.GetPair(open_char)
 
-    if searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'W', () => cursor.OnStringOrComment())
+    if searchpair(escape(open_char, '['), '', escape(close_char, ']'), 'W', () => cursor.OnStringOrComment()) > 0
       if getline('.')[col('.')] ==# ','
         normal! l
       endif
     endif
 
-    return 1
+    return true
   endif
 enddef
 
