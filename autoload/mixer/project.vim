@@ -71,8 +71,8 @@ export def Setup(): void
   if exists('g:loaded_matchit')
     augroup mixerMatchWords
       autocmd!
-      autocmd CursorHold,BufEnter *.ex call SetMatchWords()
-      autocmd CursorHold,BufEnter *.ex call SetCommentString()
+      autocmd CursorHold,BufEnter <buffer> call SetMatchWords()
+      autocmd CursorHold,BufEnter <buffer> call SetCommentString()
     augroup END
   endif
 
