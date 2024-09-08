@@ -83,39 +83,15 @@ const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
 # Common {{{1
 
-def SelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): void
+def SelectObj(start_pos: list<number>, end_pos: list<number>): void
   const [start_lnr, start_col] = start_pos
   const [end_lnr, end_col] = end_pos
-
-  g:mixer_view = view
-
-  if v:operator ==# 'c'
-    unlet g:mixer_view.lnum
-    unlet g:mixer_view.col
-  endif
 
   setpos("'<", [0, start_lnr, start_col, 0])
   setpos("'>", [0, end_lnr, end_col, 0])
 
   normal! gv
-
-  if v:operator ==# 'c'
-    feedkeys("\<c-r>=g:MixerRestoreViewInsert()\<cr>", 'n')
-  else
-    feedkeys("\<Plug>(MixerRestorView)", 'n')
-  endif
 enddef
-
-def g:MixerRestoreViewInsert(): string
-  winrestview(g:mixer_view)
-  unlet g:mixer_view
-
-  return ""
-enddef
-
-nnoremap <silent> <Plug>(MixerRestorView)
-      \ :call winrestview(g:mixer_view)<bar>
-      \ :unlet g:mixer_view<cr>
 
 def AdjustWhitespace(start_pos: list<number>): list<number>
   var [start_lnr, start_col] = start_pos
@@ -484,12 +460,7 @@ def TextObj_block(inner: bool, include_meta: bool): void
     [start_pos, end_pos] = AdjustBlockRegion(inner, do, start_pos, end_pos)
   endif
 
-  view.lnum = start_pos[0]
-  if inner
-    view.col = start_pos[1]
-  endif
-
-  SelectObj(view, start_pos, end_pos)
+  SelectObj(start_pos, end_pos)
 enddef
 
 def HandleFn(origin: list<number>, inner: bool): list<list<number>>
@@ -597,9 +568,7 @@ def TextObj_def(kwd: string, inner: bool, include_annotations: bool): void
     [start_pos, end_pos] = AdjustBlockRegion(inner, 'do', start_pos, end_pos)
   endif
 
-  view.lnum = start_pos[0]
-  view.col = start_pos[1]
-  SelectObj(view, start_pos, end_pos)
+  SelectObj(start_pos, end_pos)
 enddef
 
 
@@ -849,6 +818,5 @@ def TextObj_comment(inner: bool): void
     end_col = len(getline(end_lnr)) + 1
   endif
 
-  view.lnum = start_lnr
-  SelectObj(view, [start_lnr, start_col], [end_lnr, end_col])
+  SelectObj([start_lnr, start_col], [end_lnr, end_col])
 enddef
