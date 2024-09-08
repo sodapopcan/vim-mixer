@@ -8,7 +8,6 @@ Dependencies~
 
   * Vim 9
   * |elixir.vim| <https://github.com/elixir-lang/vim-elixir>
-  * |projectionist.vim| <https://github.com/tpope/vim-projectionist>
 
 
 TABLE OF CONTENTS                           *mixer*
@@ -134,7 +133,7 @@ COMMANDS                                    *mixer-commands*
                       :Mix =test compile
 <
                     This works for any custom environment you have outside of
-                    the standard "dev", "test", and "prod".  The `^` here
+                    the standard "dev", "test", and "prod".  The `=` here
                     simply means "environment name."
 
                                             *mixer-:Mix-add-env*
