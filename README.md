@@ -1,8 +1,8 @@
 # mixer.vim
 
-Extra goodies for developing Elixir applications and Mix projects.
+Plugin for working with Mix projects and Elixir files.
 
-Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-projectionist).
+Text objects require [elixir.vim](https://github.com/elixir-editors/vim-elixir).
 
 ## Features
 
@@ -20,8 +20,7 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
   - `'commentstring'` is dynamically set in embedded HEEx/Surface.
   - [matchit](https://www.vim.org/scripts/script.php?script_id=39) works in
     embedded HEEx/Surface templates.
-  - Automatically sets `:compiler` if the appropriate plugin is found.  (for Vim
-    users, this requires elixir.vim)
+  - Automatically sets `:compiler` if the appropriate plugin is found.
 
 - Commands
   - `:Mix`: Run a mix command with autocomplete.  Uses
@@ -29,17 +28,11 @@ Some functionality depends on [projectionist.vim](https://github.com/tpope/vim-p
     [asyncrun](https://github.com/skywind3000/asyncrun.vim)if available.
   - `:Deps` for added `:Mix deps` functionality, like dynamically adding
     packages or just jumping to your `deps` function (no matter what you've call it).
-  - `:Gen` is a unified command for running `gen` tasks, eg:
+  - `:Gen` is a unified command for running `gen` tasks (with autocomplete!), eg:
     - `:Gen migration add_name_to_users`
     - `:Gen live Accounts User users name:string age:integer`
-  - `:R` for jumping between controllers and templates
-    - If the module has a `render/1` function, it will jump to those and back to
-      where you were before.
 
-- [Projectionist](https://github.com/tpope) support with dynamic definitions
-  based on your project's name.
-
-See `:help mixer` for full details.
+See `:help mixer` for more!
 
 ## Recommended Plugins
 
@@ -61,44 +54,14 @@ See `:help mixer` for full details.
 
 - [endwise.vim](https://github.com/tpope/vim-endwise)
 
-  Auto-adds `end` after hitting `<cr>` in insert mode.
+  Auto-adds `end` after hitting `<cr>` in insert mode (or just use copilot,
+  I guess).
 
--------------------
-  - With your cursor within the `index` controller action, `:R` will take you to
-    either `index.html.heex` or to the relevant `HTML` module with your cursor
-    placed on the `index` component.
-  - In a LiveView that uses separate heex templates, it will jump between the
-    two files.
-  - In a LiveView with a render function, it will jump between `render` and
-    wherever your cursor was last at.  If called for the first time from a render
-    function, it will take to you the first available callback.
-- [projectionist.vim](https://github.com/tpope/vim-projectionist) support\
-  I generally believe projectionist commands are very personal, so mixer
-  aims to provide something a little more special than a typical configuration.
-  Elixir-ext will figure out a bunch of things about your
-  project to define projections.  In a standard Phoenix directory structure,
-  you will get the following commands:
-  - `:Edomain`: Edit files in `lib/my_app`, eg: `:Edomain accounts/users`
-  - `:Eweb`: Edit files in `lib/my_app_web`, eg: `:Eweb router`
-  - `:Eapplication`: Edit the application file.
-    - Looks in the following places:
-      - `lib/my_app/application.ex`
-      - `lib/my_app/app.ex`
-      - `lib/my_app_application.ex`
-      - `lib/my_app_app.ex`
-  - `:Ejavascript`: Edit files in `assets/js`
-  - `:Estyle`: Edit files in `assets/css`
-  - `:Erouter`: Edit the router
-  - `:Eendpoint`: Edit the endpoint
-  - `:Emix`: Edit `mix.exs`
-  - `:Egettext`: Edit `gettext.ex`
-  - `:Evendor`: Edit files in `assets/vendor`
-  - `:Etailwind`: Edit `assets/tailwind.config.js`
+## In the works
 
-## TODO
-- [ ] Fix "ci" going into insert mode when no textobj is found
-- [ ] Detect umbrella projects
-- [ ] Detect nested projects
+- Projections
+- Migration commands
+- Text Object improvements
 
 ## License
 
