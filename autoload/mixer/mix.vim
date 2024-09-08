@@ -6,8 +6,9 @@ import './cursor.vim'
 
 # AWK command from @mhandberg
 const MIX_HELP = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
+const ENV_SET_SWITCH = '^='
 const ENV_ADD_SWITCH = '^+'
-const ENV_SET_SWITCH = '^\^'
+const DEFAULT_ENV = 'dev'
 
 g:mixer_async_runners = [
   'Dispatch',
@@ -274,56 +275,55 @@ enddef
 # Run Mix Command {{{1
 
 def RunMixCommand(bang: bool, cmd: string, args: list<string>): void
-  var envs = []
-  final targs = []
-  const default_env = 'dev'
-
+  final envs = []
+  final cmd_args = []
 
   var run_async = true
-  if len(args) && args[0] ==# '!'
+  if len(args) > 0 && args[0] ==# '!'
     run_async = false
-    extend(targs, args[1 :])
+    extend(cmd_args, args[1 :])
   else
-    extend(targs, args)
+    extend(cmd_args, args)
   endif
 
-  const rest_args = copy(targs)
-  var env_pipe = ''
+  var env_arg = ''
 
-  for arg in rest_args
+  for arg in copy(cmd_args)
     if arg =~ ENV_ADD_SWITCH
       if empty(envs)
-        add(envs, default_env)
+        add(envs, DEFAULT_ENV)
       endif
 
-      env_pipe = remove(args, 0)
-      add(envs, util.Sub(env_pipe, ENV_ADD_SWITCH, ''))
+      env_arg = remove(cmd_args, 0)
+      add(envs, util.Sub(env_arg, ENV_ADD_SWITCH, ''))
     elseif arg =~ ENV_SET_SWITCH
-      env_pipe = remove(args, 0)
-      add(envs, util.Sub(env_pipe, ENV_SET_SWITCH, ''))
+      env_arg = remove(cmd_args, 0)
+      add(envs, util.Sub(env_arg, ENV_SET_SWITCH, ''))
     else
       break
     endif
   endfor
 
   if empty(envs)
-    add(envs, default_env)
+    add(envs, DEFAULT_ENV)
   endif
 
   if !empty(cmd)
-    insert(args, cmd, 0)
+    insert(cmd_args, cmd, 0)
   endif
 
   var mix_tasks = []
+
+  var env_pipe: string
 
   for env in envs
     if env ==# 'dev'
       env_pipe = ''
     else
-      env_pipe = 'MIX_ENV=' .. env_pipe
+      env_pipe = 'MIX_ENV=' .. env
     endif
 
-    add(mix_tasks, env_pipe .. ' mix ' .. join(args, ' '))
+    add(mix_tasks, env_pipe .. ' mix ' .. join(cmd_args, ' '))
   endfor
 
   const mix_cmd = join(mix_tasks, ' && ')
@@ -356,7 +356,7 @@ def RemoveMixerMeta(args: list<string>): list<any>
   var meta = []
 
   for arg in args
-    if arg =~ '^!\|+\|-'
+    if arg =~ ENV_SET_SWITCH .. '\|' .. ENV_ADD_SWITCH
       call add(meta, arg)
       call remove(local_args, 0)
     else
