@@ -100,13 +100,13 @@ def SelectObj(view: dict<any>, start_pos: list<number>, end_pos: list<number>): 
   normal! gv
 
   if v:operator ==# 'c'
-    feedkeys("\<c-r>=g:MixerRestoreViewInsert()\<cr>")
+    feedkeys("\<c-r>=g:MixerRestoreViewInsert()\<cr>", 'n')
   else
-    feedkeys("\<Plug>(MixerRestorView)")
+    feedkeys("\<Plug>(MixerRestorView)", 'n')
   endif
 enddef
 
-def g:MixerRestoreViewInsert()
+def g:MixerRestoreViewInsert(): string
   winrestview(g:mixer_view)
   unlet g:mixer_view
 
@@ -162,7 +162,7 @@ def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos:
     endif
 
     if v:operator ==# 'c'
-      exec ':' .. start_lnr + 1
+      exec ':' .. (start_lnr + 1)
       if do !=# '->'
         start_col = indent(start_lnr) + 1
         end_col = len(getline(end_lnr))
