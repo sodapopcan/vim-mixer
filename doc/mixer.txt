@@ -22,8 +22,6 @@ COMMANDS                                    |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
   :Gen                                        |mixer-:Gen|
-  :Migrate                                    |mixer-:Migrate|
-  :Rollback                                   |mixer-:Rollback|
 MAPPINGS                                    |mixer-mappings|
 NAVIGATION                                  |mixer-navigation|
 TEXT OBJECTS                                |mixer-text-objects|
@@ -236,40 +234,6 @@ COMMANDS                                    *mixer-commands*
                     Since many generators prompt for input, this task is
                     always run via |:!|.
 
-
-                                            *mixer-:Migrate* *:Migrate*
-:{count}Migrate[!] [arg]
-                    Run migrations with autocomplete.
-
-                    {count} will be passed to `--step`.  [arg] is either
-                    a path to or filename of a migration which will be passed
-                    to `--to`.  This can be a relative or absolute path, or
-                    simply the migration name.  The former does not work in
-                    umbrella apps unless your cd into the app.
-
-                    This command's bang [!] behaviour  works the same as it
-                    does for |:Mix|.  Environment flags via `^` and `+` are
-                    also available.
-
-                    Only available in a mix project with Ecto.
-
-
-                                            *mixer-:Rollback* *:Rollback*
-:{count}Rollback[!] [arg]
-                    Rollback migrations with autocomplete.
-
-                    Works just like |:Migrate| in reverse.
-
-                    A fun trick with `:Rollback` is to navigate to a migration
-                    file you want to rollback to and issue:
->
-                      :Rollback %
-<
-                    This will rollback to this migration.  `:Migrate` works
-                    the same way should you find yourself not wanting to fully
-                    migrate back to latest.
-
-                    Only available in mix projects with Ecto.
 
                                             *mixer-:Iex* *:Iex*
 :Iex[!]             Start `iex` in a `:terminal` session.  The exact command
