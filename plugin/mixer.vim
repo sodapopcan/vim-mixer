@@ -21,24 +21,11 @@ augroup mixer
   autocmd!
   autocmd BufNewFile,BufReadPost * SetupBuf()
   autocmd FileType elixir,eelixir call textobj.Define()
+  autocmd DirChanged * var [project_root, _, _] = g:MixerDetect()
+    | if !empty(project_root)
+    |   call mixer#setup_mix_project()
+    | endif
 augroup END
-
-# class MixProject
-#   var root: string
-#   var name: string
-#   var alias: string
-#   var deps_fun_name: string
-#   var apps_path: string
-#   var binding_prefix = 'phx-'
-#   var has_phoenix: bool
-#   var has_ecto: bool
-#   var is_nested: bool
-#   var tasks = []
-
-#   def Path(path: string): string
-#     return this.root->join(path, '/')
-#   enddef
-# endclass
 
 def g:MixerDetect(): list<any>
   var mix_file = findfile('mix.exs', '.;', 2)
@@ -72,8 +59,8 @@ def SetupBuf(): void
     command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
   endif
 
-  if !Exists('Console')
-    command -buffer -nargs=0 -bang Console mix.ConsoleCommand(<bang>false, <q-mods>)
+  if !Exists('Iex')
+    command -buffer -nargs=0 -bang Iex mix.IexCommand(<bang>false, <q-mods>, <f-args>)
   endif
 
   var [project_root, mix_file, nested] = g:MixerDetect()

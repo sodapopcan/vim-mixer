@@ -257,15 +257,17 @@ def GetGenTasks(): dict<string>
 enddef
 
 
-# Console Command {{{1
+# Iex Command {{{1
 
-export def ConsoleCommand(bang: bool, mods: string): void
+export def IexCommand(bang: bool, mods: string, ...args: list<string>): void
+  const arg_str = join(args, ' ')
+
   if bang
-    exec mods .. " term ++close iex"
+    exec mods .. " term ++close iex " .. arg_str
   elseif exists('b:mix_project') && !bang
-    exec mods .. " term ++close iex -S mix"
+    exec mods .. " term ++close iex -S mix " .. arg_str
   else
-    exec mods .. " term ++close iex"
+    exec mods .. " term ++close iex " .. arg_str
   endif
 enddef
 

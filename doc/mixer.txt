@@ -273,8 +273,8 @@ COMMANDS                                    *mixer-commands*
 
                     Only available in mix projects with Ecto.
 
-                                            *mixer-:Console* *:Console*
-:Console[!]         Start `iex` in a `:terminal` session.  The exact command
+                                            *mixer-:Iex* *:Iex*
+:Iex[!]             Start `iex` in a `:terminal` session.  The exact command
                     used is:
 >
                       term ++close iex -S mix
