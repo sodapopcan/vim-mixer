@@ -75,3 +75,7 @@ enddef
 export def PrevLine(): string
   return getline(line('.') - 1)
 enddef
+
+export def NextLine(): string
+  return getline(line('.') + 1)
+enddef

@@ -84,7 +84,7 @@ def SetupBuf(): void
 
   if exists('b:mix_project')
     if !Exists('Deps')
-      command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>0, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+      command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
     endif
 
     if !Exists('Gen')

@@ -44,6 +44,8 @@ export def MixComplete(A: string, L: string, P: number): list<string>
   return filter(tasks, (_, v) => v =~ A)
 enddef
 
+# DepsCommand {{{1
+
 export def DepsCommand(
     bang: bool,
     mods: string,
@@ -65,7 +67,7 @@ export def DepsCommand(
     endif
 
     exec mods cmd b:mix_project.root .. "/mix.exs"
-    search('defp\?\s\+' .. b:mix_project.deps_fun, 'c')
+    search('defp\=\s*' .. b:mix_project.deps_fun, 'c')
     exec "normal! z\<cr>"
 
     return
@@ -100,8 +102,6 @@ export def DepsCommand(
 
   call RunMixCommand(bang, task, args)
 enddef
-
-# DepsCommand {{{1
 
 export def DepsComplete(A: string, L: string, P: number): list<string>
   return b:mix_project.tasks
@@ -150,7 +150,8 @@ def AppendDep(_id: job, _status: number): void
   unlet g:mixer_deps_add
 
   if empty(dep)
-    echom "Dependency not found" | return
+    echom "Dependency not found"
+    return
   endif
 
   var line = getline(lnr)
@@ -159,72 +160,46 @@ def AppendDep(_id: job, _status: number): void
 
   if line =~# '\[\s*\]'
     # Just an empty [] or even [           ]
-    exec lnr .. "delete_"
+    exec ':' .. lnr .. 'delete _'
     append(lnr - 1, ["[", dep, "]"])
-    cursor.Set(lnr, 1)
+    cursor.Set([lnr, 1])
     normal! 3==
     cursor.Set(cursor_origin)
 
     return
   endif
 
-  if line =~# '\]$'
-    searchpair('\[', '', '\]', 'Wb', () => cursor.OnStringOrComment())
-  endif
+  var last_non_blank_line: string
 
-  if line =~# '\[$\|\%( \+\)\|\%( \+#\)\|^\s*$'
-    # An empty [] but on different lines
-    normal! j^
-
-    while cursor.IsBlank() || cursor.SynName() =~# 'Comment'
-      normal! j^
-    endwhile
-
-    search_direction = 'down'
-  elseif line =~# '\]$\|\%( \+\)\|\%( \+#\)'
-    # Same thing but look down.  This is a very bone-headed way to do this.
-    # Refactor this.
-    normal! k^
-
-    while cursor.IsBlank() || cursor.SynName() =~# 'Comment'
-      normal! k^
-    endwhile
-
-    search_direction = 'up'
-  endif
-
-  var checked_lnr = line('.')
-  var checked_line = getline('.')
-
-  if checked_line =~# '\]$'
-    # empty [] on different lines
-    search('\[', 'Wb', 0, 0, () => cursor.OnStringOrComment())
-    append(line('.'), [dep])
-    normal! j==k
-  elseif checked_line =~# '\[$'
-    append(line('.'), [dep])
-    normal! j==k
-  elseif checked_line =~# '}$'
-    setline(line('.'), checked_line .. ',')
-    append(checked_lnr, [dep])
-    normal! j==k
-  elseif checked_line =~# '},\?$'
-    if checked_line =~# '}$'
-      setline(checked_lnr, checked_line .. ',')
-    endif
-
-    if search_direction ==# 'down' && getline(checked_lnr - 1) =~ '\%(\s\+\)\?#'
-      # Add under comment
-      checked_lnr = line('.') - 1
-    endif
-
-    append(checked_lnr, [dep])
-
-    cursor.Set(checked_lnr + 1, 1)
+  if line =~# '\s*\]'
+    append(lnr - 1, [dep])
+    cursor.Set([lnr, 1])
     normal! ==
-
-    cursor.Set(cursor_origin)
+  else
+    append(lnr, [dep])
+    normal! j^
+    normal! ==
   endif
+
+  while cursor.PrevLine() !~ '^\s*\%({\|\[\)'
+    normal! k^
+  endwhile
+
+  if getline(line('.') - 1) =~# '}$'
+    setline(line('.') - 1, getline(line('.') - 1) .. ',')
+  endif
+
+  cursor.Set([lnr + 1, 1])
+
+  while cursor.NextLine() !~ '^\s*\%({\|\]\)'
+    normal! j^
+  endwhile
+
+  if getline(line('.') + 1) =~# '^\s*{'
+    setline(lnr + 1, getline(lnr + 1) .. ',')
+  endif
+
+  cursor.Set(cursor_origin)
 
   write
 enddef
