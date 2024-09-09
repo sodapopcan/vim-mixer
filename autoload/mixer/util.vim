@@ -66,7 +66,7 @@ export def InRange(pos: list<number>, start: list<number>, end: list<number>): b
   var [end_lnr, end_col] = end
 
   if lnr > start_lnr && lnr < end_lnr
-    return 1
+    return true
   endif
 
   if lnr == start_lnr && lnr == end_lnr
@@ -74,12 +74,12 @@ export def InRange(pos: list<number>, start: list<number>, end: list<number>): b
   endif
 
   if lnr == start_lnr && col >= start_col
-    return 1
+    return true
   endif
 
   if lnr == end_lnr && col <= end_col
-    return 1
+    return true
   endif
 
-  return 0
+  return false
 enddef
