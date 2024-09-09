@@ -15,8 +15,6 @@ export def Setup(): void
 
   g:mix_projects = get(g:, 'mix_projects', {})
 
-  SetCompiler(project_root)
-
   var contents = ''
   var project_name = ''
   var deps_fun = ''
@@ -110,15 +108,5 @@ def SetCommentString(): void
     const cursor_pos = getcurpos()
     exec 'setlocal commentstring=' .. str
     call setpos('.', cursor_pos)
-  endif
-enddef
-
-def SetCompiler(root: string): void
-  if util.FileExists(root .. '/Makefile') && &makeprg ==# 'make'
-    return
-  elseif &ft =~ 'elixir' && expand('%:p') =~ '_test.exs$' && util.RuntimeExists('compiler/exunit.vim')
-    compiler exunit
-  elseif &ft =~ 'elixir' && util.RuntimeExists('compiler/mix.vim')
-    compiler mix
   endif
 enddef

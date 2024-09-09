@@ -16,6 +16,7 @@ g:loaded_mixer = true
 import autoload 'mixer/mix.vim'
 import autoload 'mixer/project.vim'
 import autoload 'mixer/textobj.vim'
+import autoload 'mixer/util.vim'
 
 augroup mixer
   autocmd!
@@ -69,6 +70,8 @@ def SetupBuf(): void
 
   var [project_root, mix_file, nested] = g:MixerDetect()
 
+  SetCompiler(project_root)
+
   if (!empty(project_root) && !exists('g:mix_projects')) || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
     project.Setup()
   endif
@@ -81,5 +84,17 @@ def SetupBuf(): void
     if !Exists('Deps')
       command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
     endif
+  endif
+enddef
+
+def SetCompiler(root: string): void
+  var [project_root, mix_file, nested] = g:MixerDetect()
+
+  if util.FileExists(root .. '/Makefile') && &makeprg ==# 'make'
+    return
+  elseif &ft =~ 'elixir' && expand('%:p') =~ '_test.exs$' && util.RuntimeExists('compiler/exunit.vim')
+    compiler exunit
+  elseif &ft =~ 'elixir' && util.RuntimeExists('compiler/mix.vim')
+    compiler mix
   endif
 enddef
