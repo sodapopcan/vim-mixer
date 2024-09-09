@@ -170,8 +170,6 @@ def AppendDep(_id: job, _status: number): void
     return
   endif
 
-  var last_non_blank_line: string
-
   if line =~# '\s*\]'
     append(lnr - 1, [dep])
     cursor.Set([lnr, 1])
