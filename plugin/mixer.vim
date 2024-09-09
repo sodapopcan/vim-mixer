@@ -63,6 +63,10 @@ def SetupBuf(): void
     command -buffer -nargs=0 -bang IEx mix.IExCommand(<bang>false, <q-mods>, <f-args>)
   endif
 
+  if !Exists('Gen')
+    command -buffer -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<f-args>)
+  endif
+
   var [project_root, mix_file, nested] = g:MixerDetect()
 
   if (!empty(project_root) && !exists('g:mix_projects')) || (exists('g:mix_projects') && !has_key(g:mix_projects, project_root))
@@ -76,10 +80,6 @@ def SetupBuf(): void
   if exists('b:mix_project')
     if !Exists('Deps')
       command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
-    endif
-
-    if !Exists('Gen')
-      command -buffer -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<f-args>)
     endif
   endif
 enddef
