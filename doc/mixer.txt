@@ -235,8 +235,8 @@ COMMANDS                                    *mixer-commands*
                     always run via |:!|.
 
 
-                                            *mixer-:Iex*
-:Iex[!]             Start `iex` in a `:terminal` session.  The exact command
+                                            *mixer-:IEx*
+:IEx[!]             Start `iex` in a `:terminal` session.  The exact command
                     used is:
 >
                       term ++close iex -S mix

@@ -59,8 +59,8 @@ def SetupBuf(): void
     command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
   endif
 
-  if !Exists('Iex')
-    command -buffer -nargs=0 -bang Iex mix.IexCommand(<bang>false, <q-mods>, <f-args>)
+  if !Exists('IEx')
+    command -buffer -nargs=0 -bang IEx mix.IExCommand(<bang>false, <q-mods>, <f-args>)
   endif
 
   var [project_root, mix_file, nested] = g:MixerDetect()

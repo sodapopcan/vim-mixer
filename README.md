@@ -39,8 +39,8 @@ Text objects require [elixir.vim](https://github.com/elixir-editors/vim-elixir).
   - `:Gen` is a unified command for running `gen` tasks (with autocomplete!), eg:
     - `:Gen migration add_name_to_users`
     - `:Gen live Accounts User users name:string age:integer`
-  - `:Iex` starts a :term window running iex. Within a mix project it will assume -S mix.
-    Use `:Iex!` to get a plain session within a mix project.
+  - `:IEx` starts a :term window running iex.  Within a mix project it will assume `-S mix`.
+    Use `:IEx!` to get a plain session within a mix project.
 
 See `:help mixer` for more details!
 

@@ -255,9 +255,9 @@ def GetGenTasks(): dict<string>
 enddef
 
 
-# Iex Command {{{1
+# IEx Command {{{1
 
-export def IexCommand(bang: bool, mods: string, ...args: list<string>): void
+export def IExCommand(bang: bool, mods: string, ...args: list<string>): void
   const arg_str = join(args, ' ')
 
   if bang
