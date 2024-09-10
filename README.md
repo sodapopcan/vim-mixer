@@ -4,10 +4,6 @@ Plugin for working with Mix projects and Elixir files.
 
 Some functionality, like text objects, depend on [elixir.vim](https://github.com/elixir-editors/vim-elixir).
 
-> [!NOTE]
-> This plugin is quite new and probably has bugs.  It has not been tested on
-> Windows yet.
-
 ## Features
 
 - Text objects
@@ -16,7 +12,8 @@ Some functionality, like text objects, depend on [elixir.vim](https://github.com
   - `aD` - Like `ad` but include any assignment and/or attached comments (`iD`
     exists for convenience but is identical to `id`).
   - `af`/`if` - A function/macro definition
-  - `aF` - A Like `af` but include all heads, docs, and annotations (`iF` exists
+  - `aF` - Like `af` but include all heads, docs, annotations, `attr` and
+    `slot` declarations, and even matching `do_`-prefixed heads (`iF` exists
     for convenience but is identical to `if`).
   - `iS`/`aS`- A sigil
   - `im`/`am`- A map or struct
@@ -55,7 +52,7 @@ See `:help mixer` for more details!
 - [closetag](https://github.com/alvan/vim-closetag)
 
   Auto-close HTML tags.  Mixer is aware of this plugin and will extend
-  `g:closetag_regions` for you do it will work with your cursor inside
+  `g:closetag_regions` for you so it will work with your cursor inside
   `~H` or `~F`.  Due to the way closetag is implemented, you must
   configure the appropriate filetypes on your own.
 
