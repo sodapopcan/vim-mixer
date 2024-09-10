@@ -2,7 +2,11 @@
 
 Plugin for working with Mix projects and Elixir files.
 
-Text objects require [elixir.vim](https://github.com/elixir-editors/vim-elixir).
+Some functionality, like text objects, depend on [elixir.vim](https://github.com/elixir-editors/vim-elixir).
+
+> [!NOTE]
+> This plugin is quite new and probably has bugs.  It has not been tested on
+> Windows yet.
 
 ## Features
 
@@ -33,6 +37,8 @@ Text objects require [elixir.vim](https://github.com/elixir-editors/vim-elixir).
     [dispatch](https://github.com/tpope/vim-dispatch), [neomake](https://github.com/neomake/neomake),
     [asyncrun](https://github.com/skywind3000/asyncrun.vim), or [asyncdo](https://github.com/hauleth/asyncdo.vim)
     if available.
+    - `:Mix!` does what ever the `!` of your async runner does
+    - `:Mix ! cmd` to run via `:!`
   - `:Deps` doesn't just wrap `Mix deps` but adds functionality like dynamically adding
     packages under your cursor (`:Deps add floki`, for example) or jumping to your `deps`
     function no matter what you've called it (`:Deps` with no args).
@@ -61,15 +67,6 @@ See `:help mixer` for more details!
 
   Auto-adds `end` after hitting `<cr>` in insert mode (or just use copilot,
   I guess).
-
-## In the works
-
-- Projections
-- Migration commands
-- Text Object improvements
-  - Better targeting for keyword syntax
-  - Counts
-  - Repeats
 
 ## License
 
