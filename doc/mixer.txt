@@ -7,7 +7,7 @@ License: Same terms as Vim itself (see |license|)
 Dependencies~
 
   * Vim 9
-  * |elixir.vim| <https://github.com/elixir-lang/vim-elixir>
+  * |elixir.txt| <https://github.com/elixir-lang/vim-elixir>
 
 
 TABLE OF CONTENTS                           *mixer*
