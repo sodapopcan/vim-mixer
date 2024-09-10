@@ -211,10 +211,12 @@ COMMANDS                                    *mixer-commands*
 <
 
                                             *mixer-:Gen*
-:Gen                Unified generator command with autocomplete.
+:Gen[!] {args}      Unified generator command with autocomplete.
 
                     Run any `*.gen*` task in your project without having to
-                    provide its namespace.
+                    provide its namespace.  If successful, load the generated
+                    files into the quickfix list.  Call with a bang [!] to
+                    surpress jumping to the first file.
 
                     For example:
 >

@@ -66,7 +66,7 @@ def SetupBuf(): void
   endif
 
   if !Exists('Gen')
-    command -buffer -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<f-args>)
+    command -buffer -bang -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<bang>false, <f-args>)
   endif
 
   var [project_root, mix_file, nested] = g:MixerDetect()

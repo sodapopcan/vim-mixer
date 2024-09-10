@@ -205,7 +205,7 @@ enddef
 
 
 # Gen Command {{{1
-export def GenCommand(...args: list<string>): void
+export def GenCommand(bang: bool, ...args: list<string>): void
   var tasks = GetGenTasks()
 
   var task = copy(args[0])
@@ -215,7 +215,23 @@ export def GenCommand(...args: list<string>): void
     return
   endif
 
-  exec ':!mix ' .. tasks[task] .. ' ' .. join(args[1 :], ' ')
+  var cmd = 'mix ' .. tasks[task] .. ' ' .. join(args[1 :], ' ')
+
+  # This implementation largely taken from @tpope
+  const old_makeprg = &l:makeprg
+  const old_errorformat = &l:errorformat
+  try
+    &l:makeprg = cmd
+    &l:errorformat = '%# creating %f,%# injecting %f,%-G%.%#'
+    noautocmd make!
+  finally
+    &l:errorformat = old_errorformat
+    &l:makeprg = old_makeprg
+  endtry
+
+  if !bang && !empty(getqflist())
+    cfirst
+  endif
 enddef
 
 export def GenComplete(A: string, L: string, P: number): list<string>
