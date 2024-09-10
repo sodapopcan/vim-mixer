@@ -57,7 +57,7 @@ def HandlePhxHook(token: string, cursor_pos: list<number>): void
     var lnr = result[1]
     normal! m'
     exec "silent keepjumps edit" file
-    exec "keepjumps" lnr
+    exec "keepjumps :" .. lnr
   else
     if exists('b:mix_project')
       var files = FindJsFile(token)
