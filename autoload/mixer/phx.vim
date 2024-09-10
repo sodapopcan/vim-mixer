@@ -83,12 +83,10 @@ enddef
 def FindJsFile(token_arg: string): list<string>
   final tracked = systemlist("git ls-files -- '*.js' ':!:priv/'")
   final untracked = systemlist("git ls-files --others -- '*.js' ':!:deps/' ':!:priv/'")
-  var files = extend(tracked, untracked)
-
+  const files = extend(tracked, untracked)
   var token = util.Gsub(token_arg, '-\|_', '')
-  files = matchfuzzy(files, token)
 
-  return files
+  return matchfuzzy(files, token)
 enddef
 
 def HandlePhxEvent(token: string, cursor_pos: list<number>): void
