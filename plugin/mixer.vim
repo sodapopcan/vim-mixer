@@ -23,8 +23,8 @@ augroup mixer
   autocmd!
   autocmd BufNewFile,BufReadPost * SetupBuf()
   autocmd FileType elixir,eelixir call textobj.Define()
-  autocmd DirChanged * var [project_root, _, _] = g:MixerDetect()
-    | if !empty(project_root)
+  autocmd DirChanged * var [mix_project_root, _, _] = g:MixerDetect()
+    | if !empty(mix_project_root)
     |   call project.Setup()
     | endif
 augroup END
