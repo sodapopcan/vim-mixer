@@ -51,7 +51,7 @@ enddef
 def HandlePhxHook(token: string, cursor_pos: list<number>): void
   var results = systemlist("git grep -n '" .. token .. " = ' -- :/'*.js' :/'*.ts'")
 
-  if len(results)
+  if len(results) > 0
     const result = split(results[0], ':')
     var file = result[0]
     var lnr = result[1]
