@@ -69,8 +69,8 @@ export def Setup(): void
   if exists('g:loaded_matchit')
     augroup mixerMatchWords
       autocmd!
-      autocmd CursorHold,BufEnter <buffer> call SetMatchWords()
-      autocmd CursorHold,BufEnter <buffer> call SetCommentString()
+      autocmd CursorHold,BufEnter,VimEnter <buffer> call SetMatchWords()
+      autocmd CursorHold,BufEnter,VimEnter <buffer> call SetCommentString()
     augroup END
   endif
 enddef
@@ -84,7 +84,7 @@ def SetMatchWords(): void
     return
   endif
 
-  const syn = cursor.OuterSynName()
+  const syn = cursor.OuterSynNameFull()
 
   if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
     b:match_words = HTML_MATCH_WORDS
@@ -94,7 +94,7 @@ def SetMatchWords(): void
 enddef
 
 def SetCommentString(): void
-  const syn = cursor.OuterSynName()
+  const syn = cursor.OuterSynNameFull()
   var str: string
 
   if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'

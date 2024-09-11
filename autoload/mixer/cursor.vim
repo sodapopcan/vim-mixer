@@ -50,6 +50,17 @@ export def OuterSynName(): string
     -> util.Sub('Delimiter', '')
 enddef
 
+# Need to do something about this-we do not need both of these functions.
+export def OuterSynNameFull(): string
+  var terms = GetTerms()
+
+  if empty(terms)
+    return ''
+  endif
+
+  return terms[0]
+enddef
+
 export def SynstackStr(): string
   return join(GetTerms(), ',')
 enddef
