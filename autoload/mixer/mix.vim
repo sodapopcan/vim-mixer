@@ -74,7 +74,7 @@ export def DepsCommand(
     return
   elseif len(rest) > 0 && args[0] ==# 'add'
     if len(rest) == 1
-      echom "What do you want me to add?" | return
+      util.Error("No dep given.") | return
     endif
 
     FindDep(args[1])
@@ -139,7 +139,7 @@ enddef
 
 def AppendDep(_id: job, _status: number): void
   if expand('%:p:t') !=# 'mix.exs'
-    echom "You switched buffers on me."
+    util.Error("You switched buffers on me.")
 
     return
   endif
@@ -151,7 +151,7 @@ def AppendDep(_id: job, _status: number): void
   unlet g:mixer_deps_add
 
   if empty(dep)
-    echom "Dependency not found"
+    util.Error("Dependency not found")
     return
   endif
 
@@ -211,7 +211,7 @@ export def GenCommand(bang: bool, ...args: list<string>): void
   var task = copy(args[0])
 
   if !has_key(tasks, task)
-    echom "No task with that name"
+    util.Error("No task with that name.")
     return
   endif
 

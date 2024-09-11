@@ -67,7 +67,7 @@ def HandlePhxHook(token: string, cursor_pos: list<number>): void
       exec "silent keepjumps edit" files[0]
     else
       call cursor.Set(cursor_pos)
-      echom "Can't find definition"
+      util.Error("Can't find definition")
 
       return
     endif
@@ -97,14 +97,14 @@ def HandlePhxEvent(token: string, cursor_pos: list<number>): void
 
       exec "silent keepjumps edit" exfile
     else
-      echom "Cannot find Elixir file"
+      util.Error("Cannot find Elixir file")
 
       return
     endif
   endif
 
   if !search('def handle_event(\_.*"\<' .. token .. '\>', flags)
-    echom "Cannot find definition"
+    util.Error("Cannot find definition")
 
     if !empty(template)
       exec "silent keepjumps edit" template

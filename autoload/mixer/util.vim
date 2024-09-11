@@ -1,15 +1,22 @@
 vim9script
 
-const PAIRS = {
-  '(': ')',
-  ')': '(',
-  '{': '}',
-  '}': '{',
-  '[': ']',
-  ']': '[',
-}
+export def Error(msg: string): void
+  echohl ErrorMsg
+  echomsg msg
+  echohl None
+  v:errmsg = msg
+enddef
 
 export def GetPair(delim: string): string
+  const PAIRS = {
+    '(': ')',
+    ')': '(',
+    '{': '}',
+    '}': '{',
+    '[': ']',
+    ']': '[',
+  }
+
   return get(PAIRS, delim, 0)
 enddef
 
