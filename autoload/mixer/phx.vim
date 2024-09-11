@@ -59,23 +59,17 @@ def HandlePhxHook(token: string, cursor_pos: list<number>): void
     exec "silent keepjumps edit" file
     exec "keepjumps :" .. lnr
   else
-    if exists('b:mix_project')
-      var files = FindJsFile(token)
+    var files = FindJsFile(token)
 
-      if !empty(files)
-        normal! m'
+    if !empty(files)
+      normal! m'
 
-        exec "silent keepjumps edit" files[0]
-      else
-        call cursor.Set(cursor_pos)
-        echom "Can't find definition"
-
-        return
-      endif
+      exec "silent keepjumps edit" files[0]
     else
       call cursor.Set(cursor_pos)
+      echom "Can't find definition"
 
-      echom "Not a mix project"
+      return
     endif
   endif
 enddef
