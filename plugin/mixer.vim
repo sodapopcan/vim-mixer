@@ -14,6 +14,7 @@ endif
 g:loaded_mixer = true
 
 import autoload 'mixer/util.vim'
+import autoload 'mixer/elixir.vim'
 import autoload 'mixer/mix.vim'
 import autoload 'mixer/project.vim'
 import autoload 'mixer/phx.vim'
@@ -25,6 +26,10 @@ augroup mixer
   autocmd BufNewFile,BufReadPost * SetupBuf()
   autocmd FileType elixir,eelixir call textobj.Define()
   autocmd FileType elixir,eelixir call integrations.Define()
+  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetMatchWords()
+  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetCommentString()
+  autocmd FileType eelixir b:match_words = elixir.HTML_MATCH_WORDS
+    | exec "set commentstring=" .. elixir.HEEX_COMMENTSTRING
   autocmd DirChanged * var [mix_project_root, _, _] = g:MixerDetect()
     | if !empty(mix_project_root)
     |   call project.Setup()

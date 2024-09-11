@@ -4,8 +4,6 @@ import autoload './util.vim'
 import autoload './mix.vim'
 import autoload './cursor.vim'
 
-const HTML_MATCH_WORDS = '<!--:-->,<:>,<\@<=[ou]l\>[^>]*\%(>\|$\):<\@<=li\>:<\@<=/[ou]l>,<\@<=dl\>[^>]*\%(>\|$\):<\@<=d[td]\>:<\@<=/dl>,<\@<=\([^/!][^ \t>]*\)[^>]*\%(>\|$\):<\@<=/\1>'
-
 export def Setup(): void
   var [project_root, mix_file, nested] = g:MixerDetect()
 
@@ -64,49 +62,5 @@ export def Setup(): void
     mix.PopulateMixTasks()
   else
     b:mix_project = g:mix_projects[project_root]
-  endif
-
-  if exists('g:loaded_matchit')
-    augroup mixerMatchWords
-      autocmd!
-      autocmd CursorHold,BufEnter,VimEnter <buffer> call SetMatchWords()
-      autocmd CursorHold,BufEnter,VimEnter <buffer> call SetCommentString()
-    augroup END
-  endif
-enddef
-
-def SetMatchWords(): void
-  if exists('b:match_words') && !exists('b:elixir_match_words')
-    b:elixir_match_words = b:match_words
-  endif
-
-  if !exists('b:elixir_match_words')
-    return
-  endif
-
-  const syn = cursor.OuterSynNameFull()
-
-  if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
-    b:match_words = HTML_MATCH_WORDS
-  else
-    b:match_words = b:elixir_match_words
-  endif
-enddef
-
-def SetCommentString(): void
-  const syn = cursor.OuterSynNameFull()
-  var str: string
-
-  if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
-    str = '<%!--\ %s\ --%>'
-  else
-    str = '#\ %s'
-  endif
-
-  # This check is done due to a now fixed bug: https://github.com/vim/vim/issues/15462
-  if escape(&commentstring, ' ') !=# str
-    const cursor_pos = getcurpos()
-    exec 'setlocal commentstring=' .. str
-    call setpos('.', cursor_pos)
   endif
 enddef
