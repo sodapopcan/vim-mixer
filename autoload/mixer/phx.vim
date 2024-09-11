@@ -109,7 +109,7 @@ def HandlePhxEvent(token: string, cursor_pos: list<number>): void
     endif
   endif
 
-  if !search('def handle_event(\%(\%(\s\|\n\)\+\)\?"\<' .. token .. '\>', flags)
+  if !search('def handle_event(\_.*"\<' .. token .. '\>', flags)
     echom "Cannot find definition"
 
     if !empty(template)
