@@ -13,16 +13,18 @@ if get(g:, 'loaded_mixer', false)
 endif
 g:loaded_mixer = true
 
+import autoload 'mixer/util.vim'
 import autoload 'mixer/mix.vim'
 import autoload 'mixer/project.vim'
 import autoload 'mixer/phx.vim'
 import autoload 'mixer/textobj.vim'
-import autoload 'mixer/util.vim'
+import autoload 'mixer/integrations.vim'
 
 augroup mixer
   autocmd!
   autocmd BufNewFile,BufReadPost * SetupBuf()
   autocmd FileType elixir,eelixir call textobj.Define()
+  autocmd FileType elixir,eelixir call integrations.Define()
   autocmd DirChanged * var [mix_project_root, _, _] = g:MixerDetect()
     | if !empty(mix_project_root)
     |   call project.Setup()
