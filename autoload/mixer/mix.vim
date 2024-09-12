@@ -338,7 +338,7 @@ def RunMixCommand(bang: bool, cmd: string, args: list<string>)
     insert(cmd_args, cmd, 0)
   endif
 
-  var mix_tasks = []
+  final mix_tasks = []
 
   var env_pipe: string
 

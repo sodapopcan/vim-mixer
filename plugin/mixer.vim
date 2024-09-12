@@ -61,22 +61,10 @@ def g:MixerDetect(): list<any>
   return [project_root, mix_file, nested]
 enddef
 
-def Exists(cmd: string): bool
-  return exists(':' .. cmd) == 2
-enddef
-
 def SetupBuf()
-  if !Exists('Mix')
-    command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
-  endif
-
-  if !Exists('IEx')
-    command -buffer -nargs=0 -bang IEx mix.IExCommand(<bang>false, <q-mods>, <f-args>)
-  endif
-
-  if !Exists('Gen')
-    command -buffer -bang -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<bang>false, <f-args>)
-  endif
+  command! -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
+  command! -buffer -nargs=0 -bang IEx mix.IExCommand(<bang>false, <q-mods>, <f-args>)
+  command! -buffer -bang -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<bang>false, <f-args>)
 
   var [project_root, mix_file, nested] = g:MixerDetect()
 
@@ -91,9 +79,7 @@ def SetupBuf()
   endif
 
   if exists('b:mix_project')
-    if !Exists('Deps')
-      command -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
-    endif
+    command! -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()
