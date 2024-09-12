@@ -5,7 +5,7 @@ import autoload './util.vim'
 
 # Map Definitions {{{1
 
-export def Define(): void
+export def Define()
   const def = get(g:, 'mixer_textobj_def', 'f')
   const def_with_meta = get(g:, 'mixer_textobj_def_with_meta', 'F')
   const block = get(g:, 'mixer_textobj_block', 'd')
@@ -82,7 +82,7 @@ const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
 # Common {{{1
 
-def SelectObj(start_pos: list<number>, end_pos: list<number>): void
+def SelectObj(start_pos: list<number>, end_pos: list<number>)
   const [start_lnr, start_col] = start_pos
   const [end_lnr, end_col] = end_pos
 
@@ -350,7 +350,7 @@ enddef
 
 # Text Object: block {{{1
 
-def TextObj_block(inner: bool, include_meta: bool): void
+def TextObj_block(inner: bool, include_meta: bool)
   var view = winsaveview()
 
   var origin = cursor.Pos()
@@ -487,7 +487,7 @@ enddef
 
 # Text Object: def {{{1
 
-def TextObj_def(kwd: string, inner: bool, include_annotations: bool): void
+def TextObj_def(kwd: string, inner: bool, include_annotations: bool)
   var known_annotations = '@doc\>\|@spec\>\|@tag\>\|@requirements\>\|\<attr\>\|\<slot\>'
   var user_annotations: string = get(g:, 'mixer_known_annotations', '')
 
@@ -574,7 +574,7 @@ enddef
 
 # Text Object: map {{{1
 
-def TextObj_map(inner: bool): void
+def TextObj_map(inner: bool)
   const Skip = () => cursor.OnStringOrComment()
 
   var view = winsaveview()
@@ -685,7 +685,7 @@ nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
 
 # Text Object: sigil {{{1
 
-def TextObj_sigil(inner: bool): void
+def TextObj_sigil(inner: bool)
   # Skip delims
   # Manually skip ' and " because elixir.vim doesn't account for this.
   # I need to figure that out.
@@ -763,7 +763,7 @@ enddef
 
 # Text Object: comment  {{{1
 
-def TextObj_comment(inner: bool): void
+def TextObj_comment(inner: bool)
   var view = winsaveview()
   var cursor_origin = cursor.Pos()
 

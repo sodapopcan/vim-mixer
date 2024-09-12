@@ -4,7 +4,7 @@ import autoload './util.vim'
 import autoload './mix.vim'
 import autoload './cursor.vim'
 
-export def Setup(): void
+export def Setup()
   var [project_root, mix_file, nested] = g:MixerDetect()
 
   if empty(mix_file)

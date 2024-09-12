@@ -29,7 +29,7 @@ enddef
 
 # MixCommand {{{1
 
-export def MixCommand(bang: bool, ...rest: list<string>): void
+export def MixCommand(bang: bool, ...rest: list<string>)
   RunMixCommand(bang, '', rest)
 enddef
 
@@ -54,7 +54,7 @@ export def DepsCommand(
     line1: number,
     line2: number,
     ...rest: list<string>
-    ): void
+    )
   var [meta, args] = RemoveMixerMeta(rest)
 
   var cmd: string
@@ -120,7 +120,7 @@ def NewDepDict(dep: string): dict<any>
   })
 enddef
 
-def FindDep(dep: string): void
+def FindDep(dep: string)
   echom "Finding deps..."
   var cmd = 'mix hex.info ' .. dep
 
@@ -133,11 +133,11 @@ def FindDep(dep: string): void
   })
 enddef
 
-def GatherDepOutput(_channel: channel, line: string): void
+def GatherDepOutput(_channel: channel, line: string)
   add(g:mixer_deps_add.output, line)
 enddef
 
-def AppendDep(_id: job, _status: number): void
+def AppendDep(_id: job, _status: number)
   if expand('%:p:t') !=# 'mix.exs'
     util.Error("You switched buffers on me.")
 
@@ -205,7 +205,7 @@ enddef
 
 
 # Gen Command {{{1
-export def GenCommand(bang: bool, ...args: list<string>): void
+export def GenCommand(bang: bool, ...args: list<string>)
   var tasks = GetGenTasks()
 
   var task = copy(args[0])
@@ -273,7 +273,7 @@ enddef
 
 # IEx Command {{{1
 
-export def IExCommand(bang: bool, mods: string, ...args: list<string>): void
+export def IExCommand(bang: bool, mods: string, ...args: list<string>)
   const arg_str = join(args, ' ')
   var cmd: string
 
@@ -292,7 +292,7 @@ export def IExCommand(bang: bool, mods: string, ...args: list<string>): void
     })
 enddef
 
-def IExExit(job: job, status: number): void
+def IExExit(job: job, status: number)
   try
     unlet t:mixer_term_bufnr
   catch
@@ -302,7 +302,7 @@ enddef
 
 # Run Mix Command {{{1
 
-def RunMixCommand(bang: bool, cmd: string, args: list<string>): void
+def RunMixCommand(bang: bool, cmd: string, args: list<string>)
   final envs = []
   final cmd_args = []
 

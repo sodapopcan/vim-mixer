@@ -12,7 +12,7 @@ if exists('g:loaded_matchit')
   augroup END
 endif
 
-export def SetMatchWords(): void
+export def SetMatchWords()
   if exists('b:match_words') && !exists('b:elixir_match_words')
     b:elixir_match_words = b:match_words
   endif
@@ -30,7 +30,7 @@ export def SetMatchWords(): void
   endif
 enddef
 
-export def SetCommentString(): void
+export def SetCommentString()
   const syn = cursor.OuterSynNameFull()
   var str: string
 

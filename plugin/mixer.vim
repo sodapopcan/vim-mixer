@@ -65,7 +65,7 @@ def Exists(cmd: string): bool
   return exists(':' .. cmd) == 2
 enddef
 
-def SetupBuf(): void
+def SetupBuf()
   if !Exists('Mix')
     command -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
   endif
@@ -101,7 +101,7 @@ def SetupBuf(): void
   endif
 enddef
 
-def SetCompiler(root: string): void
+def SetCompiler(root: string)
   var [project_root, mix_file, nested] = g:MixerDetect()
 
   if util.FileExists(root .. '/Makefile') && &makeprg ==# 'make'

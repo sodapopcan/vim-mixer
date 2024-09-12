@@ -5,13 +5,13 @@ import autoload './util.vim'
 
 # Jump to event handler/hook {{{1
 
-export def DefineFindEvent(): void
+export def DefineFindEvent()
   if !empty(system('command -v git'))
     nnoremap <silent> <buffer> <c-]> :call <sid>FindEvent()<cr>
   endif
 enddef
 
-def FindEvent(): void
+def FindEvent()
   const cursor_word = expand('<cWORD>')
   const prefix = b:mix_project.bindingPrefix
 
@@ -48,7 +48,7 @@ def FindEvent(): void
   endif
 enddef
 
-def HandlePhxHook(token: string, cursor_pos: list<number>): void
+def HandlePhxHook(token: string, cursor_pos: list<number>)
   var results = systemlist("git grep -n '" .. token .. " = ' -- :/'*.js' :/'*.ts'")
 
   if len(results) > 0
@@ -83,7 +83,7 @@ def FindJsFile(token_arg: string): list<string>
   return matchfuzzy(files, token)
 enddef
 
-def HandlePhxEvent(token: string, cursor_pos: list<number>): void
+def HandlePhxEvent(token: string, cursor_pos: list<number>)
   var template = ''
   var flags = 's'
 

@@ -6,7 +6,7 @@ vim9script
 import autoload './util.vim'
 
 # Just a wrapper around `cursor()` so that we don't have to alias this file's import.
-export def Set(pos: list<number>): void
+export def Set(pos: list<number>)
   cursor(pos)
 enddef
 
