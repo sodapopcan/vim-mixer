@@ -68,9 +68,9 @@ export def Camelcase(w: string): string
 enddef
 
 export def InRange(pos: list<number>, start: list<number>, end: list<number>): bool
-  var [lnr, col] = pos
-  var [start_lnr, start_col] = start
-  var [end_lnr, end_col] = end
+  const [lnr, col] = pos
+  const [start_lnr, start_col] = start
+  const [end_lnr, end_col] = end
 
   if lnr > start_lnr && lnr < end_lnr
     return true
