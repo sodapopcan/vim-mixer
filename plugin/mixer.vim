@@ -63,7 +63,7 @@ enddef
 
 def SetupBuf()
   command! -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
-  command! -buffer -nargs=0 -bang IEx mix.IExCommand(<bang>false, <q-mods>, <f-args>)
+  command! -buffer -bang -nargs=* -complete=file IEx mix.IExCommand(<bang>false, <q-mods>, <f-args>)
   command! -buffer -bang -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<bang>false, <f-args>)
 
   var [project_root, mix_file, nested] = g:MixerDetect()
