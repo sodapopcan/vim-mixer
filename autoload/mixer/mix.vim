@@ -277,9 +277,7 @@ export def IExCommand(bang: bool, mods: string, ...args: list<string>)
   const arg_str = join(args, ' ')
   var cmd: string
 
-  if bang
-    cmd = mods .. "iex "
-  elseif exists('b:mix_project') && !bang
+  if exists('b:mix_project') && !bang
     cmd = mods .. "iex -S mix"
   else
     cmd = mods .. "iex"
