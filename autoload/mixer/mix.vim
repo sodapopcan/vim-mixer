@@ -275,28 +275,23 @@ enddef
 
 export def IExCommand(bang: bool, mods: string, ...args: list<string>)
   const arg_str = join(args, ' ')
-  var cmd: string
+  var cmd = mods .. "iex"
 
   if exists('b:mix_project') && !bang
-    cmd = mods .. "iex -S mix"
-  else
-    cmd = mods .. "iex"
+    cmd = mods .. " -S mix"
   endif
 
   t:mixer_term_bufnr =
     term_start(cmd .. ' ' .. arg_str, {
       term_finish: 'close',
-      exit_cb: function('IExExit')
+      exit_cb: (_: job, _: number) => {
+        try
+          unlet t:mixer_term_bufnr
+        catch
+        endtry
+      }
     })
 enddef
-
-def IExExit(job: job, status: number)
-  try
-    unlet t:mixer_term_bufnr
-  catch
-  endtry
-enddef
-
 
 # Run Mix Command {{{1
 
