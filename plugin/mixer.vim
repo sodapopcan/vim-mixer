@@ -21,6 +21,8 @@ import autoload 'mixer/phx.vim'
 import autoload 'mixer/textobj.vim'
 import autoload 'mixer/integrations.vim'
 
+var mix_project_root: string
+
 augroup mixer
   autocmd!
   autocmd BufNewFile,BufReadPost * SetupBuf()
@@ -30,7 +32,7 @@ augroup mixer
   autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetCommentString()
   autocmd FileType eelixir b:match_words = elixir.HTML_MATCH_WORDS
     | exec "set commentstring=" .. elixir.HEEX_COMMENTSTRING
-  autocmd DirChanged * var [mix_project_root, _, _] = g:MixerDetect()
+  autocmd DirChanged * [mix_project_root, _, _] = g:MixerDetect()
     | if !empty(mix_project_root)
     |   call project.Setup()
     | endif
