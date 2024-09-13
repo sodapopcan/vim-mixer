@@ -3,6 +3,7 @@ vim9script
 import './util.vim'
 import './async.vim'
 import './cursor.vim'
+import './textprop.vim'
 
 # AWK command from @mhandberg
 const MIX_HELP = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
@@ -273,21 +274,110 @@ enddef
 
 # IEx Command {{{1
 
-export def IExCommand(bang: bool, mods: string, ...args: list<string>)
-  const arg_str = join(args, ' ')
-  var cmd = mods .. "iex"
+export def IExCommand(
+    bang: bool, 
+    mods: string, 
+    range: number,
+    line1: number,
+    line2: number,
+    ...given_args: list<string>)
 
-  if exists('b:mix_project') && !bang
-    cmd = mods .. " -S mix"
+  final args = copy(given_args)
+
+  t:mixer_term =
+    get(t:, 'mixer_term', {
+      fname: tempname(),
+      bufnr: 0,
+      srcbnr: bufnr(),
+      whole_file: false,
+      err_file: tempname()
+    })
+
+  if range > 0 && t:mixer_term.bufnr == 0
+    const iex_exs = findfile('.iex.exs', '.;')
+    final lines = getbufline(bufnr(), line1, line2)
+
+    if util.FileExists(iex_exs)
+      add(lines, 'import_file_if_available "' .. iex_exs .. '"')
+    endif
+
+    writefile(lines, t:mixer_term.fname)
+
+    extend(args, ['--dot-iex', t:mixer_term.fname])
+
+    if line1 == 1 && line2 == line('$')
+      t:mixer_term.whole_file = true
+    else
+      textprop.Ensure('mixerIEx', {bufnr: t:mixer_term.srcbnr})
+      textprop.Multi('mixerIEx', t:mixer_term.srcbnr, line1, line2)
+    endif
+
+    augroup mixerIEx
+      autocmd!
+      autocmd BufWritePost <buffer> UpdateIEx()
+    augroup END
   endif
 
-  t:mixer_term_bufnr =
-    term_start(cmd .. ' ' .. arg_str, {
+  const arg_str = join(args, ' ')
+  var cmd = ' iex ' .. arg_str
+
+  if exists('b:mix_project') && !bang
+    cmd = cmd .. ' -S mix'
+  endif
+
+  if t:mixer_term.bufnr != 0
+    util.BufFocus(t:mixer_term.bufnr)
+  else
+    exec mods "TermStart('" .. cmd .. "')"
+  endif
+enddef
+
+def UpdateIEx()
+  var lines = []
+
+  if t:mixer_term.whole_file
+    lines = getbufline(t:mixer_term.srcbnr, 1, line('$'))
+  else
+    lines = textprop.GetLines('mixerIEx')
+  endif
+
+  const curr_lines =
+    t:mixer_term.fname
+    -> readfile()
+    -> filter((_, v) => v != 'import_file_if_available ".iex.exs"')
+
+  if lines != curr_lines
+    writefile(lines, t:mixer_term.fname)
+    term_sendkeys(t:mixer_term.bufnr, "import_file \"" .. t:mixer_term.fname .. "\"\<cr>")
+  endif
+enddef
+
+def TermStart(cmd: string)
+  t:mixer_term.bufnr =
+    term_start(cmd, {
       term_finish: 'close',
-      exit_cb: (_: job, _: number) => {
+      err_io: "file",
+      err_name: t:mixer_term.err_file,
+      exit_cb: (_: job, status: number) => {
         try
-          unlet t:mixer_term_bufnr
+          t:mixer_term.status = status
+          textprop.Remove('mixerIEx', t:mixer_term.srcbnr)
+          autocmd_delete([{group: 'mixerIEx', bufnr: t:mixer_term.srcbnr}])
         catch
+        finally
+          if status != 0
+            var contents =
+              t:mixer_term.err_file
+              -> readfile()
+              -> map((_, v) => util.Gsub(v, '\e\[[0-9;]\+[mK]', ''))
+              -> map((_, v) => util.Sub(v, '└─', ''))
+
+            writefile(contents, t:mixer_term.err_file)
+
+            exec 'cfile' t:mixer_term.err_file
+            copen
+          endif
+          unlet t:mixer_term
         endtry
       }
     })

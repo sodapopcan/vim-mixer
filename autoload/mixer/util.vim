@@ -7,6 +7,13 @@ export def Error(msg: string)
   v:errmsg = msg
 enddef
 
+export def BufFocus(bufnr: number)
+  const switchbuf_cached = &switchbuf
+  set switchbuf=useopen
+  exec 'sb ' .. bufnr
+  exec 'set switchbuf=' .. switchbuf_cached
+enddef
+
 export def GetPair(delim: string): string
   const PAIRS = {
     '(': ')',
