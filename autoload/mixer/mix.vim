@@ -273,12 +273,32 @@ enddef
 
 # IEx Command {{{1
 
-export def IExCommand(bang: bool, mods: string, ...args: list<string>)
+export def IExCommand(
+    bang: bool, 
+    mods: string, 
+    range: number,
+    line1: number,
+    line2: number,
+    ...given_args: list<string>)
+
+  final args = copy(given_args)
+
+  if range > 0
+    const t:mixer_term_fname = tempname() .. '.ex'
+
+    bufnr()
+      -> getbufline(line1, line2)
+      -> writefile(t:mixer_term_fname)
+
+    args->extend(['-r', t:mixer_term_fname])
+  endif
+
   const arg_str = join(args, ' ')
-  var cmd = mods .. "iex"
+  var cmd = mods .. 'iex'
+  var range_args = ''
 
   if exists('b:mix_project') && !bang
-    cmd = mods .. " -S mix"
+    cmd = mods .. ' ' .. range_args .. ' -S mix'
   endif
 
   t:mixer_term_bufnr =
