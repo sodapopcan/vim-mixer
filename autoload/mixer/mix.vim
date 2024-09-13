@@ -286,11 +286,12 @@ export def IExCommand(
   if range > 0
     const t:mixer_term_fname = tempname() .. '.ex'
 
-    bufnr()
-      -> getbufline(line1, line2)
-      -> writefile(t:mixer_term_fname)
+    final lines =
+      bufnr()
+        -> getbufline(line1, line2)
+        -> writefile(t:mixer_term_fname)
 
-    args->extend(['-r', t:mixer_term_fname])
+    extend(args, ['--dot-iex', t:mixer_term_fname])
   endif
 
   const arg_str = join(args, ' ')
