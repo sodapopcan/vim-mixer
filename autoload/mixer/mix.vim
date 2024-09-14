@@ -285,17 +285,21 @@ export def IExCommand(
   final args = copy(given_args)
 
   if range > 0 && !exists('t:mixer_term_bufnr')
-    t:mixer_term_fname = tempname()
-    t:mixer_term_conn_bufnr = bufnr()
+    t:mixer_term = {
+      fname: tempname(),
+      bnr: 0,
+      srcbnr: bufnr()
+    }
+
     const iex_exs = findfile('.iex.exs', '.;')
 
     final lines =
       bufnr()
         -> getbufline(line1, line2)
         -> add('import_file_if_available "' .. iex_exs .. '"')
-        -> writefile(t:mixer_term_fname)
+        -> writefile(t:mixer_term.fname)
 
-    extend(args, ['--dot-iex', t:mixer_term_fname])
+    extend(args, ['--dot-iex', t:mixer_term.fname])
 
     textprop.Ensure('mixerIEx')
     textprop.Multi('mixerIEx', line1, line2)
@@ -314,16 +318,14 @@ export def IExCommand(
     cmd = mods .. ' ' .. range_args .. ' -S mix'
   endif
 
-  t:mixer_term_bufnr =
+  t:mixer_term.bufnr =
     term_start(cmd .. ' ' .. arg_str, {
       term_finish: 'close',
       exit_cb: (_: job, status: number) => {
         try
-          prop_remove({bufnr: t:mixer_term_conn_bufnr, type: 'mixerIEx'})
-          autocmd_delete([{bufnr: t:mixer_term_conn_bufnr, group: 'mixerIEx'}])
-          unlet t:mixer_term_bufnr
-          unlet t:mixer_term_conn_bufnr
-          unlet t:mixer_term_fname
+          prop_remove({bufnr: t:mixer_term.srcbnr, type: 'mixerIEx'})
+          autocmd_delete([{bufnr: t:mixer_term.srcbnr, group: 'mixerIEx'}])
+          unlet t:mixer_term
         catch
         endtry
       }
@@ -334,13 +336,13 @@ def UpdateIEx()
   const lines = textprop.GetLines('mixerIEx')
 
   const curr_lines =
-    t:mixer_term_fname
+    t:mixer_term.fname
       -> readfile()
       -> filter((_, v) => v != 'import_file_if_available ".iex.exs"')
 
   if lines != curr_lines
-    writefile(lines, t:mixer_term_fname)
-    term_sendkeys(t:mixer_term_bufnr, "c \"" .. t:mixer_term_fname .. "\"\<cr>")
+    writefile(lines, t:mixer_term.fname)
+    term_sendkeys(t:mixer_term.bufnr, "c \"" .. t:mixer_term.fname .. "\"\<cr>")
   endif
 enddef
 
