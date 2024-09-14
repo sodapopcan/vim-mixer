@@ -34,7 +34,7 @@ Some functionality, like text objects, depend on [elixir.vim](https://github.com
     [dispatch](https://github.com/tpope/vim-dispatch), [neomake](https://github.com/neomake/neomake),
     [asyncrun](https://github.com/skywind3000/asyncrun.vim), or [asyncdo](https://github.com/hauleth/asyncdo.vim)
     if available.
-    - `:Mix!` does what ever the `!` of your async runner does
+    - `:Mix!` does whatever the `!` of your async runner does
     - `:Mix ! cmd` to run via `:!`
   - `:Deps` doesn't just wrap `Mix deps` but adds functionality like dynamically adding
     packages under your cursor (`:Deps add floki`, for example) or jumping to your `deps`

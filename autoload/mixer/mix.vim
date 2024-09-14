@@ -303,8 +303,8 @@ export def IExCommand(
 
     extend(args, ['--dot-iex', t:mixer_term.fname])
 
-    textprop.Ensure('mixerIEx')
-    textprop.Multi('mixerIEx', line1, line2)
+    textprop.Ensure('mixerIEx', {bufnr: t:mixer_term.srcbnr})
+    textprop.Multi('mixerIEx', t:mixer_term.srcbnr, line1, line2)
 
     augroup mixerIEx
       autocmd!
@@ -326,15 +326,16 @@ export def IExCommand(
       err_name: t:mixer_term.err_file,
       exit_cb: (_: job, status: number) => {
         try
-          prop_remove({bufnr: t:mixer_term.srcbnr, type: 'mixerIEx'})
-          autocmd_delete([{bufnr: t:mixer_term.srcbnr, group: 'mixerIEx'}])
-
-          if status != 0
-            exec 'pedit' t:mixer_term.err_file
-          endif
-
-          unlet t:mixer_term
+          t:mixer_term.status = status
+          textprop.Remove('mixerIEx', t:mixer_term.srcbnr)
+          autocmd_delete([{group: 'mixerIEx', bufnr: t:mixer_term.srcbnr}])
         catch
+        finally
+          if status != 0
+            exec 'cfile' t:mixer_term.err_file
+            copen
+          endif
+          unlet t:mixer_term
         endtry
       }
     })
