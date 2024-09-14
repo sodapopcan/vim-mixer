@@ -3,6 +3,7 @@ vim9script
 import './util.vim'
 import './async.vim'
 import './cursor.vim'
+import './textprop.vim'
 
 # AWK command from @mhandberg
 const MIX_HELP = "mix help | awk -F ' ' '{printf \"%s\\n\", $2}' | grep -E \"[^-#]\\w+\""
@@ -283,15 +284,25 @@ export def IExCommand(
 
   final args = copy(given_args)
 
-  if range > 0
-    const t:mixer_term_fname = tempname() .. '.ex'
+  if range > 0 && !exists('t:mixer_term_bufnr')
+    t:mixer_term_fname = tempname()
+    const iex_exs = findfile('.iex.exs', '.;')
 
     final lines =
       bufnr()
         -> getbufline(line1, line2)
+        -> add('import_file_if_available "' .. iex_exs .. '"')
         -> writefile(t:mixer_term_fname)
 
     extend(args, ['--dot-iex', t:mixer_term_fname])
+
+    textprop.Ensure('mixerIEx')
+    textprop.Multi('mixerIEx', line1, line2)
+
+    augroup mixerIEx
+      autocmd!
+      autocmd BufWritePost <buffer> UpdateIEx()
+    augroup END
   endif
 
   const arg_str = join(args, ' ')
@@ -307,11 +318,27 @@ export def IExCommand(
       term_finish: 'close',
       exit_cb: (_: job, _: number) => {
         try
+          prop_remove({bufnr: t:mixer_term_bufnr, type: 'mixerIEx'})
+          autocmd_delete([{bufnr: t:mixer_term_bufnr}, {group: 'mixerIEx'}])
           unlet t:mixer_term_bufnr
         catch
         endtry
       }
     })
+enddef
+
+def UpdateIEx()
+  const lines = textprop.GetLines('mixerIEx')
+
+  const curr_lines =
+    t:mixer_term_fname
+      -> readfile()
+      -> filter((_, v) => v != 'import_file_if_available ".iex.exs"')
+
+  if lines != curr_lines
+    writefile(lines, t:mixer_term_fname)
+    term_sendkeys(t:mixer_term_bufnr, "c \"" .. t:mixer_term_fname .. "\"\<cr>")
+  endif
 enddef
 
 # Run Mix Command {{{1
