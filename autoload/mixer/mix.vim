@@ -286,6 +286,7 @@ export def IExCommand(
 
   if range > 0 && !exists('t:mixer_term_bufnr')
     t:mixer_term_fname = tempname()
+    t:mixer_term_conn_bufnr = bufnr()
     const iex_exs = findfile('.iex.exs', '.;')
 
     final lines =
@@ -316,11 +317,12 @@ export def IExCommand(
   t:mixer_term_bufnr =
     term_start(cmd .. ' ' .. arg_str, {
       term_finish: 'close',
-      exit_cb: (_: job, _: number) => {
+      exit_cb: (_: job, status: number) => {
         try
-          prop_remove({bufnr: t:mixer_term_bufnr, type: 'mixerIEx'})
-          autocmd_delete([{bufnr: t:mixer_term_bufnr}, {group: 'mixerIEx'}])
+          prop_remove({bufnr: t:mixer_term_conn_bufnr, type: 'mixerIEx'})
+          autocmd_delete([{bufnr: t:mixer_term_conn_bufnr, group: 'mixerIEx'}])
           unlet t:mixer_term_bufnr
+          unlet t:mixer_term_conn_bufnr
           unlet t:mixer_term_fname
         catch
         endtry
