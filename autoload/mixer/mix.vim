@@ -284,20 +284,22 @@ export def IExCommand(
 
   final args = copy(given_args)
 
-  if range > 0 && !exists('t:mixer_term_bufnr')
-    t:mixer_term = {
+  t:mixer_term =
+    get(t:, 'mixer_term', {
       fname: tempname(),
-      bnr: 0,
-      srcbnr: bufnr()
-    }
+      bufnr: 0,
+      srcbnr: bufnr(),
+      err_file: tempname()
+    })
 
+  if range > 0 && t:mixer_term.bufnr == 0
     const iex_exs = findfile('.iex.exs', '.;')
 
     final lines =
       bufnr()
-        -> getbufline(line1, line2)
-        -> add('import_file_if_available "' .. iex_exs .. '"')
-        -> writefile(t:mixer_term.fname)
+      -> getbufline(line1, line2)
+      -> add('import_file_if_available "' .. iex_exs .. '"')
+      -> writefile(t:mixer_term.fname)
 
     extend(args, ['--dot-iex', t:mixer_term.fname])
 
@@ -311,20 +313,26 @@ export def IExCommand(
   endif
 
   const arg_str = join(args, ' ')
-  var cmd = mods .. 'iex'
-  var range_args = ''
+  var cmd = mods .. ' iex ' .. arg_str
 
   if exists('b:mix_project') && !bang
-    cmd = mods .. ' ' .. range_args .. ' -S mix'
+    cmd = cmd .. ' -S mix'
   endif
 
   t:mixer_term.bufnr =
-    term_start(cmd .. ' ' .. arg_str, {
+    term_start(cmd, {
       term_finish: 'close',
+      err_io: "file",
+      err_name: t:mixer_term.err_file,
       exit_cb: (_: job, status: number) => {
         try
           prop_remove({bufnr: t:mixer_term.srcbnr, type: 'mixerIEx'})
           autocmd_delete([{bufnr: t:mixer_term.srcbnr, group: 'mixerIEx'}])
+
+          if status != 0
+            exec 'pedit' t:mixer_term.err_file
+          endif
+
           unlet t:mixer_term
         catch
         endtry
@@ -337,8 +345,8 @@ def UpdateIEx()
 
   const curr_lines =
     t:mixer_term.fname
-      -> readfile()
-      -> filter((_, v) => v != 'import_file_if_available ".iex.exs"')
+    -> readfile()
+    -> filter((_, v) => v != 'import_file_if_available ".iex.exs"')
 
   if lines != curr_lines
     writefile(lines, t:mixer_term.fname)
