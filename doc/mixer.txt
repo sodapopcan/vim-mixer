@@ -239,16 +239,56 @@ COMMANDS                                    *mixer-commands*
 
 
                                             *mixer-:IEx*
-:IEx[!]             Start `iex` in a `:terminal` session.  The exact command
-                    used is:
->
-                      term ++close iex -S mix
-<
+:{range}IEx[!]      Start an `iex` session in a `:terminal` window.
+
+                    Exiting with `<C-C><C-C>` will close out the terminal
+                    window.
+
                     When called with a bang [!] it will start a plain iex
                     session without Mix.  Outside of a mix project both
                     versions of the command start a plain `iex` session.
 
-                    Accepts |:command-modifiers|.
+                    When called with a {range}, the given lines will be loaded
+                    into the terminal session.  For as long as the terminal
+                    window is open, any time you save the original buffer,
+                    edits to the region you initially specified will continue
+                    to be sent to the terminal window.
+
+                    For example, with the following buffer:
+>
+                       1 defmodule Foo do
+                       2   defmodule Bar do
+                       3     def bar, do: "bar"
+                       4   end
+                       5
+                       6   defmodule Baz do
+                       7     def baz, do: "baz"
+                       8   end
+                       9 end
+<
+                    Calling `:2,4Iex` will load the `Bar` module into the
+                    terminal session.  Now if you `:write` the following
+                    changes:
+>
+                       1 defmodule Foo do
+                       2   defmodule Bar do
+                       3     def bar, do: "bar"
+                       4     def bar2, do: "bar2"
+                       5   end
+                       6
+                       7   defmodule Baz do
+                       8     def baz, do: "baz"
+                       9   end
+                      10 end
+<
+                    Only the `Bar` module will be reloaded in the terminal.
+
+                    Closing the terminal window breaks this connection.
+
+                    Tip: Use `%IEx` to load an entire file into an `iex`
+                    session.
+
+                    This command accepts |:command-modifiers|.
 
 
 MAPPINGS                                    *mixer-mappings*

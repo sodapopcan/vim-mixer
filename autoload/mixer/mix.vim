@@ -321,6 +321,7 @@ export def IExCommand(
           prop_remove({bufnr: t:mixer_term_bufnr, type: 'mixerIEx'})
           autocmd_delete([{bufnr: t:mixer_term_bufnr}, {group: 'mixerIEx'}])
           unlet t:mixer_term_bufnr
+          unlet t:mixer_term_fname
         catch
         endtry
       }
