@@ -23,6 +23,7 @@ COMMANDS                                    |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
   :Gen                                        |mixer-:Gen|
+  :IEx                                        |mixer-:IEx|
 MAPPINGS                                    |mixer-mappings|
 NAVIGATION                                  |mixer-navigation|
 TEXT OBJECTS                                |mixer-text-objects|
