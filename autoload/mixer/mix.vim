@@ -294,12 +294,13 @@ export def IExCommand(
 
   if range > 0 && t:mixer_term.bufnr == 0
     const iex_exs = findfile('.iex.exs', '.;')
+    final lines = getbufline(bufnr(), line1, line2)
 
-    final lines =
-      bufnr()
-      -> getbufline(line1, line2)
-      -> add('import_file_if_available "' .. iex_exs .. '"')
-      -> writefile(t:mixer_term.fname)
+    if util.FileExists(iex_exs)
+      add(lines, 'import_file_if_available "' .. iex_exs .. '"')
+    endif
+
+    writefile(lines, t:mixer_term.fname)
 
     extend(args, ['--dot-iex', t:mixer_term.fname])
 
