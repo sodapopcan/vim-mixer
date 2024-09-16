@@ -22,13 +22,7 @@ export def Remove(type: string, bufnr: number)
 enddef
 
 export def GetLines(type: string): list<string>
-  final lines = []
-
-  for prop in prop_list(1, {end_lnum: line('$')})
-    if prop.type == type
-      add(lines, getline(prop.lnum))
-    endif
-  endfor
-
-  return lines
+  return prop_list(1, {end_lnum: line('$')})
+    -> filter((_, prop) => prop.type == type)
+    -> map((_, prop) => getline(prop.lnum))
 enddef
