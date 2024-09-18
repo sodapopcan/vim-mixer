@@ -25,7 +25,6 @@ COMMANDS                                    |mixer-mix-commands|
   :Gen                                        |mixer-:Gen|
   :IEx                                        |mixer-:IEx|
 MAPPINGS                                    |mixer-mappings|
-NAVIGATION                                  |mixer-navigation|
 TEXT OBJECTS                                |mixer-text-objects|
   Do/end block                                |mixer-text-object-do-end|
   Function                                    |mixer-function|
@@ -37,12 +36,7 @@ TEXT OBJECTS                                |mixer-text-objects|
 INTRODUCTION                                *mixer-introduction*
 
 Provides utilities for working with the Elixir programming language
-<https://elixir-lang.org>.  For Vim users, this compliments elixir.vim
-<https://github.com/elixir-lang/vim-elixir>.  This plugin is designed to work
-with nvim as well, though nvim users may also want to evaluate
-elixir-tools.nvim <https://github.com/elixir-tools/elixir-tools.nvim>.  This
-plugin can be used along-side it.
-
+<https://elixir-lang.org>.
 
     PLEASE NOTE                                                        ~
   +--------------------------------------------------------------------+~
