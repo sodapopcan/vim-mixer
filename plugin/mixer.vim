@@ -20,6 +20,7 @@ import autoload 'mixer/project.vim'
 import autoload 'mixer/phx.vim'
 import autoload 'mixer/textobj.vim'
 import autoload 'mixer/integrations.vim'
+import autoload 'mixer/projections.vim'
 
 var mix_project_root: string
 
@@ -85,6 +86,8 @@ def SetupBuf()
       phx.DefineFindEvent()
     endif
   endif
+
+  projections.Define()
 enddef
 
 def SetCompiler(root: string)
