@@ -90,3 +90,33 @@ enddef
 export def NextLine(): string
   return getline(line('.') + 1)
 enddef
+
+# Returns the name of the PUBLIC function the cursor is in,
+# otherwise, retuns empty string.
+export def PublicFunction(): string
+  const cursor_origin = cursor.Pos()
+  const view = winsaveview()
+  var def_pos = [0, 0]
+  var end_pos = [0, 0]
+
+  def_pos = searchpos('\s*\zs\<def\>', 'Wbc', 0, 0, Skip)
+
+  if def_pos != [0, 0]
+    end_pos = searchpairpos('\<def\>\|\<fn\>', '', '\<end\>', 'W', Skip)
+  else
+    return ''
+  endif
+
+  if util.InRange(cursor_origin, def_pos, end_pos)
+    Set(def_pos)
+    normal! W
+    const func = expand('<cword>')
+    winrestview(view)
+
+    return func
+  else
+    winrestview(view)
+
+    return ''
+  endif
+enddef

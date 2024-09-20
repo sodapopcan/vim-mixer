@@ -3,6 +3,88 @@ vim9script
 import autoload './cursor.vim'
 import autoload './util.vim'
 
+const RENDER = '^\s*\zsdef render\%((assigns.*)\|(.*=\s\+assigns)\)'
+const DEFS = ['mount', 'handle_', 'update']
+const Skip = () => cursor.OnStringOrComment()
+
+# RCommand {{{1
+
+export def HasRender(): bool
+  return search(RENDER, 'n', 0, 0, () => cursor.OnStringOrComment()) > 0
+enddef
+
+# TODO: Handle keyword syntax
+def InRender(): bool
+  const cursor_origin = cursor.Pos()
+  const view = winsaveview()
+  var def_pos = [0, 0]
+  var end_pos = [0, 0]
+
+  def_pos = searchpos(RENDER, 'Wbc', 0, 0, Skip)
+
+  if def_pos != [0, 0]
+    end_pos = searchpairpos('\<def\>\|\<fn\>', '', '\<end\>', 'W', Skip)
+  else
+    return false
+  endif
+
+  winrestview(view)
+
+  return util.InRange(cursor_origin, def_pos, end_pos)
+enddef
+
+const R = {
+  alt_pos: [0, 0],
+  render_pos: [[0, 0]],
+  render_index: 0
+}
+
+export def RCommand(type: string): void
+  if HasRender()
+    b:mixer_impl = get(b:, 'mixer_impl', {
+      def_pos: [0, 0],
+      cursor_pos: [0, 0],
+    })
+
+    b:mixer_render = get(b: 'mixer_render', {
+      def_pos
+    })
+
+    if InRender()
+      b:mixer_rel.imp_pos = cursor.Pos()
+
+      if b:imixer_rel.mpl_pos != [0, 0]
+        exec ':' .. b:impl_lnr
+      else
+        for def in DEFS
+          if search('^\s*def\s\+' .. def .. '(') > 0
+            break
+          endif
+        endfor
+      endif
+    else
+      b:impl_lnr = line('.')
+
+      if b:tpl_lnr
+        exec ':' .. b:tpl_lnr
+      else
+        search('^\s\+def render(')
+      endif
+    endif
+  else
+    var basename: string
+    if &ft ==# 'elixir'
+      basename = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
+    else
+      basename = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
+    endif
+
+    if util.FileExists(basename)
+      exec type basename
+    endif
+  endif
+enddef
+
 # Jump to event handler/hook {{{1
 
 export def DefineFindEvent()
