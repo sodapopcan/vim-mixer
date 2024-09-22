@@ -2,8 +2,9 @@ vim9script
 
 import autoload './cursor.vim'
 import autoload './util.vim'
+import autoload './textprop.vim'
 
-const RENDER = '^\s*\zsdef render\%((assigns.*)\|(.*=\s\+assigns)\)'
+const RENDER = '^\s*def render\%((assigns.*)\|(.*=\s\+assigns)\)'
 const DEFS = ['mount', 'handle_', 'update']
 const Skip = () => cursor.OnStringOrComment()
 
@@ -18,6 +19,7 @@ def InRender(): bool
   const cursor_origin = cursor.Pos()
   const view = winsaveview()
   var def_pos = [0, 0]
+  var do_pos = [0, 0]
   var end_pos = [0, 0]
 
   def_pos = searchpos(RENDER, 'Wbc', 0, 0, Skip)
@@ -35,53 +37,79 @@ enddef
 
 const R = {
   alt_pos: [0, 0],
-  render_pos: [[0, 0]],
+  render_pos: [0, 0],
   render_index: 0
 }
 
-export def RCommand(type: string): void
-  if HasRender()
-    b:mixer_impl = get(b:, 'mixer_impl', {
-      def_pos: [0, 0],
-      cursor_pos: [0, 0],
-    })
+export def MarkRenderFunctions()
+  textprop.Ensure('render')
+  cursor.Set([1, 1])
 
-    b:mixer_render = get(b: 'mixer_render', {
-      def_pos
-    })
+  while search(RENDER, 'W') > 0
+    var [end_lnr, _] = searchpairpos('\<def\>\|\<fn\>', '', '\<end\>', 'Wn', Skip)
+    textprop.Multi('render', bufnr(), line('.'), end_lnr)
+  endwhile
+enddef
+
+export def RCommand(render_number: number)
+  if HasRender()
+    if !exists('b:mixer_r')
+      var view = winsaveview()
+      b:mixer_r = deepcopy(R)
+
+      if InRender()
+        b:mixer_r.alt_pos = [1, 1]
+      else
+        b:mixer_r.alt_pos = cursor.Pos()
+      endif
+
+      autocmd CursorHold,InsertLeave *.ex,*.exs,*.heex,*.sface,*.leex if InRender()
+        |   b:mixer_r.alt_pos = cursor.Pos()
+        | else
+        |   b:mixer_r.alt_pos = cursor.Pos()
+        | endif
+
+      winrestview(view)
+    endif
 
     if InRender()
-      b:mixer_rel.imp_pos = cursor.Pos()
-
-      if b:imixer_rel.mpl_pos != [0, 0]
-        exec ':' .. b:impl_lnr
-      else
-        for def in DEFS
-          if search('^\s*def\s\+' .. def .. '(') > 0
-            break
-          endif
-        endfor
-      endif
+      cursor.Set(b:mixer_r.alt_pos)
     else
-      b:impl_lnr = line('.')
-
-      if b:tpl_lnr
-        exec ':' .. b:tpl_lnr
-      else
-        search('^\s\+def render(')
-      endif
-    endif
-  else
-    var basename: string
-    if &ft ==# 'elixir'
-      basename = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
-    else
-      basename = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
+      cursor.Set(b:mixer_r.render_pos)
     endif
 
-    if util.FileExists(basename)
-      exec type basename
-    endif
+    #     if InRender()
+    #       b:mixer_rel.imp_pos = cursor.Pos()
+
+    #       if b:imixer_rel.mpl_pos != [0, 0]
+    #         exec ':' .. b:impl_lnr
+    #       else
+    #         for def in DEFS
+    #           if search('^\s*def\s\+' .. def .. '(') > 0
+    #             break
+    #           endif
+    #         endfor
+    #       endif
+    #     else
+    #       b:impl_lnr = line('.')
+
+    #       if b:tpl_lnr
+    #         exec ':' .. b:tpl_lnr
+    #       else
+    #         search('^\s\+def render(')
+    #       endif
+    #     endif
+    #   else
+    #     var basename: string
+    #     if &ft ==# 'elixir'
+    #       basename = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
+    #     else
+    #       basename = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
+    #     endif
+
+    #     if util.FileExists(basename)
+    #       exec type basename
+    #     endif
   endif
 enddef
 

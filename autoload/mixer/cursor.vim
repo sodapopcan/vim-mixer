@@ -94,7 +94,8 @@ enddef
 # Returns the name of the PUBLIC function the cursor is in,
 # otherwise, retuns empty string.
 export def PublicFunction(): string
-  const cursor_origin = cursor.Pos()
+  const Skip = () => OnStringOrComment()
+  const cursor_origin = Pos()
   const view = winsaveview()
   var def_pos = [0, 0]
   var end_pos = [0, 0]
@@ -106,6 +107,7 @@ export def PublicFunction(): string
   else
     return ''
   endif
+  echom end_pos
 
   if util.InRange(cursor_origin, def_pos, end_pos)
     Set(def_pos)

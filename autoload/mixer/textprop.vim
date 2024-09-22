@@ -2,7 +2,7 @@ vim9script
 
 import './util.vim'
 
-export def Ensure(type: string, props: dict<any>)
+export def Ensure(type: string, props = {})
   if !util.InList(prop_type_list(extend({type: type}, copy(props))), type)
     prop_type_add(type, props)
   endif
@@ -25,4 +25,8 @@ export def GetLines(type: string): list<string>
   return prop_list(1, {end_lnum: line('$')})
     -> filter((_, prop) => prop.type == type)
     -> map((_, prop) => getline(prop.lnum))
+enddef
+
+export def GetStartPositions(type)
+  return prop_find(type)
 enddef

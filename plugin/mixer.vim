@@ -28,6 +28,8 @@ augroup mixer
   autocmd BufNewFile,BufReadPost * SetupBuf()
   autocmd FileType elixir,eelixir call textobj.Define()
   autocmd FileType elixir,eelixir call integrations.Define()
+  autocmd FileType elixir,eelixir call phx.MarkRenderFunctions()
+  autocmd BufWritePost elixir call phx.MarkRenderFunctions()
   autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetMatchWords()
   autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetCommentString()
   autocmd FileType eelixir b:match_words = elixir.HTML_MATCH_WORDS
@@ -83,6 +85,8 @@ def SetupBuf()
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()
+
+      command! -buffer -nargs=0 -count=1 R phx.RCommand(<count>)
     endif
   endif
 enddef
