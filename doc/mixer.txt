@@ -234,14 +234,10 @@ COMMANDS                                    *mixer-commands*
 
 
                                             *mixer-:IEx*
-:{range}IEx[!]      Start an `iex` session in a `:terminal` window.
+:{range}IEx         Start an `iex` session in a `:terminal` window.
 
                     Exiting with `<C-C><C-C>` will close out the terminal
                     window.
-
-                    When called with a bang [!] it will start a plain iex
-                    session without Mix.  Outside of a mix project both
-                    versions of the command start a plain `iex` session.
 
                     Currently there is only one session per tab allowed
                     (though this will change).

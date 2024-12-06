@@ -275,7 +275,6 @@ enddef
 # IEx Command {{{1
 
 export def IExCommand(
-    bang: bool, 
     mods: string, 
     range: number,
     line1: number,
@@ -321,10 +320,6 @@ export def IExCommand(
 
   const arg_str = join(args, ' ')
   var cmd = ' iex ' .. arg_str
-
-  if exists('b:mix_project') && !bang
-    cmd = cmd .. ' -S mix'
-  endif
 
   if t:mixer_term.bufnr != 0
     util.BufFocus(t:mixer_term.bufnr)

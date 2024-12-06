@@ -43,7 +43,6 @@ Some functionality, like text objects, depend on [elixir.vim](https://github.com
   - `:Gen migration add_name_to_users`
   - `:Gen live Accounts User users name:string age:integer`
 - `:IEx` starts a `:term` window running iex.
-  - Within a mix project `-S mix` is the default; use `:IEx!` to get a plain session.
   - Give a range or in visual mode, load the selected lines into a new `:term`
     session.  This "connects" the two, updating the terminal with any changes
     to the selected region.
