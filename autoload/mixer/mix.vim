@@ -315,6 +315,7 @@ export def IExCommand(
     augroup mixerIEx
       autocmd!
       autocmd BufWritePost <buffer> UpdateIEx()
+      autocmd BufWipeout <buffer> echom "hiiiiiiiiiiiii"
     augroup END
   endif
 
@@ -378,6 +379,9 @@ def TermStart(cmd: string)
             copen
           endif
           unlet t:mixer_term
+          augroup mixerIEx
+            autocmd!
+          augroup END
         endtry
       }
     })
