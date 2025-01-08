@@ -76,7 +76,7 @@ const reserved = [
   'do', 'end', 'catch', 'rescue', 'after', 'else'
 ]
 
-const RESERVED = '\<' .. join(reserved, '\>\|\<') .. '\>'
+const RESERVED_REGEX = '\<' .. join(reserved, '\>\|\<') .. '\>'
 
 const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
 
@@ -175,7 +175,7 @@ def FindDoBlockHead(do_pos: list<number>, flags: string): list<number>
 
   # let stop = search('\%(\<end\>\|^\s*$\)', 'Wbn')
   const Skip = () => (
-    expand('<cword>') =~ RESERVED ||
+    expand('<cword>') =~ RESERVED_REGEX ||
     !ParenInRange(do_pos) ||
     cursor.SynName() =~ 'Operator\|Number\|Atom\|String\|Tuple\|List\|Map\|Struct\|Sigil'
   )
@@ -202,7 +202,7 @@ def FindDoBlockHead(do_pos: list<number>, flags: string): list<number>
   # '\%(\<end\>\|\%(,$\)\)'
   # let start = '\%(\<end\>\s\+\)\@!\zs'
   const start = ''
-  const no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|' .. RESERVED .. '\)\@!'
+  const no_follow = '\%(=\|\~\|<\|>\|\!\|&\||\|+\|\*\|\/\|-\|' .. RESERVED_REGEX .. '\)\@!'
 
   return searchpos(start .. FUNC_CALL_REGEX .. no_follow, flags, 0, 0, Skip)
 enddef
