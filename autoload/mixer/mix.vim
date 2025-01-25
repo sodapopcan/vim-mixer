@@ -387,8 +387,11 @@ enddef
 def RunMixCommand(bang: bool, cmd: string, args: list<string>)
   final envs = []
   final cmd_args = []
+  const mix_file = findfile('mix.exs', '.;', 1)
+  var mix_dir = fnamemodify(mix_file, ':p:h')
 
   var run_async = true
+  echom '...' .. cmd
   if len(args) > 0 && args[0] ==# '!'
     run_async = false
     extend(cmd_args, args[1 :])
@@ -436,7 +439,7 @@ def RunMixCommand(bang: bool, cmd: string, args: list<string>)
     add(mix_tasks, env_pipe .. ' mix ' .. join(cmd_args, ' '))
   endfor
 
-  const mix_cmd = join(mix_tasks, ' && ')
+  var mix_cmd = join(mix_tasks, ' && ')
   var async_cmd = get(g:, 'mixer_async_command', 0)
 
   if !async_cmd
@@ -453,8 +456,17 @@ def RunMixCommand(bang: bool, cmd: string, args: list<string>)
       async_cmd = async_cmd .. '!'
     endif
 
+    if exists(':Dispatch') > 0
+      async_cmd ..= " -dir=" .. mix_dir
+    endif
+
     exec async_cmd mix_cmd
   else
+    if mix_dir != "./"
+      mix_cmd = 'cd ' .. mix_dir .. ' && ' .. mix_cmd
+    endif
+    echom mix_cmd
+
     exec '!' mix_cmd
   endif
 enddef
