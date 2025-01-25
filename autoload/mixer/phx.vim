@@ -43,13 +43,13 @@ enddef
 
 export def RCommand()
   if HasRender()
-    HandleRender()
+    HandleInlineTemplate()
   else
-    HandleHeex()
+    HandleTemplateFile()
   endif
 enddef
 
-def HandleRender()
+def HandleInlineTemplate()
   if !exists('b:mixer_r')
     var view = winsaveview()
     b:mixer_r = deepcopy(R)
@@ -79,7 +79,7 @@ def HandleRender()
   endif
 enddef
 
-def HandleHeex()
+def HandleTemplateFile()
   var alt_file: string
 
   if &ft ==# 'elixir'
