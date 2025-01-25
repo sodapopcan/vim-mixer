@@ -19,11 +19,15 @@ INTRODUCTION                                |mixer-introduction|
     matchit.vim in embedded templates           |mixer-matchit|
     Compiler                                    |mixer-compiler|
     Syntax Hilighting                           |mixer-syntax-highlighting|
-COMMANDS                                    |mixer-mix-commands|
-  :Mix                                        |mixer-:Mix|
-  :Deps                                       |mixer-:Deps|
-  :Gen                                        |mixer-:Gen|
-  :IEx                                        |mixer-:IEx|
+COMMANDS                                    |mixer-commands|
+  Mix~
+    :Mix                                        |mixer-:Mix|
+    :Deps                                       |mixer-:Deps|
+    :Gen                                        |mixer-:Gen|
+    :IEx                                        |mixer-:IEx|
+  Phoenix~
+    :R                                          |mixer-:R|
+
 MAPPINGS                                    |mixer-mappings|
 TEXT OBJECTS                                |mixer-text-objects|
   Do/end block                                |mixer-text-object-do-end|

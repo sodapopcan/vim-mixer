@@ -2,7 +2,7 @@ vim9script
 
 import './util.vim'
 
-export def Ensure(type: string, props: dict<any>)
+export def Ensure(type: string, props: dict<any> = {})
   if !util.InList(prop_type_list(extend({type: type}, copy(props))), type)
     prop_type_add(type, props)
   endif

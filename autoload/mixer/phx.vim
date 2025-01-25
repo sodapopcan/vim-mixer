@@ -4,11 +4,11 @@ import autoload './cursor.vim'
 import autoload './util.vim'
 import autoload './textprop.vim'
 
+# RCommand {{{1
+
 const RENDER_REGEX = '^\s*def render\%((assigns.*)\|(.*=\s\+assigns)\)'
 const DEFS = ['mount', 'handle_', 'update']
 const Skip = () => cursor.OnStringOrComment()
-
-# RCommand {{{1
 
 export def HasRender(): bool
   return search(RENDER_REGEX, 'n', 0, 0, Skip) > 0
@@ -47,7 +47,6 @@ export def RCommand()
   else
     HandleHeex()
   endif
-
 enddef
 
 def HandleRender()
