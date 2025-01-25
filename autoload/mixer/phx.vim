@@ -80,42 +80,54 @@ def HandleInlineTemplate()
 enddef
 
 def HandleTemplateFile()
-  var alt_file: string
-
   if &ft ==# 'elixir'
-    alt_file = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
+    # First just see if there is a collocated heex file with the same name
+    const collocated = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
+
+    if util.FileExists(collocated)
+      exec "edit" collocated
+
+      return
+    endif
+
+    # Assuming controller for now
+    var func = cursor.CurrentFunction()
+    const template_regex = 'render(conn, [:"]\zs\k\+\%(\.\k\+\)\='
+
+    var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
+
+    if render_lnr == 0
+      render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
+    endif
+
+    var render_line = getline(render_lnr)
+
+    var view = matchstr(render_line, template_regex)
+
+    if empty(view)
+      view = func.name
+    endif
+
+    if match(view, '\.html$') < 0
+      view ..= ".html"
+    endif
+
+    const file = findfile(view, fnamemodify(expand("%"), ":p:h") .. "/**/*")
+
+    if file != ""
+      exec "edit" file
+    else
+      echom "Can't find view"
+    endif
+
   else
-    alt_file = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
-  endif
+    const collocated = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
 
-  # Assuming controller for now
-  var func = cursor.CurrentFunction()
-  const template_regex = 'render(conn, [:"]\zs\k\+\%(\.\k\+\)\='
+    if util.FileExists(collocated)
+      exec "edit" collocated
 
-  var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
-
-  if render_lnr == 0
-    render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
-  endif
-
-  var render_line = getline(render_lnr)
-
-  var view = matchstr(render_line, template_regex)
-
-  if empty(view)
-    view = func.name
-  endif
-
-  if match(view, '\.html$') < 0
-    view ..= ".html"
-  endif
-
-  const file = findfile(view, fnamemodify(expand("%"), ":p:h") .. "/**/*")
-
-  if file != ""
-    exec "edit" file
-  else
-    echom "Can't find view"
+      return
+    endif
   endif
 enddef
 
