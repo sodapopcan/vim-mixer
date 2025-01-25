@@ -43,13 +43,13 @@ enddef
 
 export def RCommand()
   if HasRender()
-    HandleInlineTemplate()
+    HandleEmbeddedTemplate()
   else
     HandleTemplateFile()
   endif
 enddef
 
-def HandleInlineTemplate()
+def HandleEmbeddedTemplate()
   if !exists('b:mixer_r')
     var view = winsaveview()
     b:mixer_r = deepcopy(R)
