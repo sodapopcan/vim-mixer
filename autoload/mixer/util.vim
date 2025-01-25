@@ -74,6 +74,10 @@ export def Camelcase(w: string): string
   endif
 enddef
 
+export def RelativeDir(): string
+  return fnamemodify(expand("%"), ":p:h")
+enddef
+
 export def InRange(pos: list<number>, start: list<number>, end: list<number>): bool
   const [lnr, col] = pos
   const [start_lnr, start_col] = start

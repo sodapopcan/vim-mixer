@@ -80,6 +80,9 @@ def HandleEmbeddedTemplate()
 enddef
 
 def HandleTemplateFile()
+  var file: string
+  var jump: number
+
   if &ft ==# 'elixir'
     # First just see if there is a collocated heex file with the same name
     const collocated = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
@@ -92,7 +95,6 @@ def HandleTemplateFile()
 
     const template_regex = 'render(conn, [:"]\zs\k\+\%(\.\k\+\)\='
     var func = cursor.CurrentFunction()
-    var file: string
 
     if func.name != ''
       var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
@@ -111,16 +113,10 @@ def HandleTemplateFile()
         view ..= ".html"
       endif
 
-      file = findfile(view, fnamemodify(expand("%"), ":p:h") .. "/**/*")
+      file = findfile(view, util.RelativeDir() .. "/**/*")
     endif
-
-    if file != ""
-      exec "edit" file
-    else
-      echom "Can't find view"
-    endif
-
   else
+    # Look for collocated first, this should take care of LiveViews
     const collocated = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
 
     if util.FileExists(collocated)
@@ -128,6 +124,15 @@ def HandleTemplateFile()
 
       return
     endif
+
+    const action = expand('%:t')->split('\.')[0]
+    file = expand('%:h')->util.Sub('_html', '_controller.ex')
+  endif
+
+  if file != ""
+    exec "edit" file
+  else
+    echom "Can't find file"
   endif
 enddef
 
