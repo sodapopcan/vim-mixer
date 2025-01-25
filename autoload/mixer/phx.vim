@@ -2,6 +2,123 @@ vim9script
 
 import autoload './cursor.vim'
 import autoload './util.vim'
+import autoload './textprop.vim'
+
+const RENDER_REGEX = '^\s*def render\%((assigns.*)\|(.*=\s\+assigns)\)'
+const DEFS = ['mount', 'handle_', 'update']
+const Skip = () => cursor.OnStringOrComment()
+
+# RCommand {{{1
+
+export def HasRender(): bool
+  return search(RENDER_REGEX, 'n', 0, 0, Skip) > 0
+enddef
+
+const R = {
+  alt_pos: [0, 0],
+  render_pos: [0, 0],
+  render_index: 0
+}
+
+export def MarkRenderFunctions()
+  textprop.Ensure('render')
+
+  const view = winsaveview()
+
+  try
+    cursor.Set([1, 1])
+
+    while search(RENDER_REGEX, 'W') > 0
+      var [end_lnr, _] = searchpairpos('\<def\>\|\<fn\>', '', '\<end\>', 'Wn', Skip)
+      textprop.Multi('render', bufnr(), line('.'), end_lnr)
+    endwhile
+  finally
+    winrestview(view)
+  endtry
+enddef
+
+export def DefineRCommand()
+  command! -buffer -nargs=0 R RCommand()
+enddef
+
+export def RCommand()
+  if HasRender()
+    HandleRender()
+  else
+    HandleHeex()
+  endif
+
+enddef
+
+def HandleRender()
+  if !exists('b:mixer_r')
+    var view = winsaveview()
+    b:mixer_r = deepcopy(R)
+
+    if cursor.InRender()
+      b:mixer_r.alt_pos = [1, 1]
+    else
+      b:mixer_r.alt_pos = cursor.Pos()
+    endif
+
+    augroup mixerRCommand
+      autocmd!
+      autocmd CursorHold,InsertLeave *.ex,*.exs,*.heex,*.sface,*.leex if cursor.InRender()
+        |   b:mixer_r.alt_pos = cursor.Pos()
+        | else
+        |   b:mixer_r.alt_pos = cursor.Pos()
+        | endif
+    augroup END
+
+    winrestview(view)
+  endif
+
+  if cursor.InRender()
+    cursor.Set(b:mixer_r.alt_pos)
+  else
+    cursor.Set(b:mixer_r.render_pos)
+  endif
+enddef
+
+def HandleHeex()
+  var alt_file: string
+
+  if &ft ==# 'elixir'
+    alt_file = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
+  else
+    alt_file = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
+  endif
+
+  # Assuming controller for now
+  var func = cursor.CurrentFunction()
+  const template_regex = 'render(conn, [:"]\zs\k\+\%(\.\k\+\)\='
+
+  var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
+
+  if render_lnr == 0
+    render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
+  endif
+
+  var render_line = getline(render_lnr)
+
+  var view = matchstr(render_line, template_regex)
+
+  if empty(view)
+    view = func.name
+  endif
+
+  if match(view, '\.html$') < 0
+    view ..= ".html"
+  endif
+
+  const file = findfile(view, fnamemodify(expand("%"), ":p:h") .. "/**/*")
+
+  if file != ""
+    exec "edit" file
+  else
+    echom "Can't find view"
+  endif
+enddef
 
 # Jump to event handler/hook {{{1
 

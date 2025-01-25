@@ -90,3 +90,69 @@ enddef
 export def NextLine(): string
   return getline(line('.') + 1)
 enddef
+
+# Returns a dict with info about the current function:
+# {
+#   name: <string>,
+#   def_pos: list<integer>,
+#   do_pos: list<integer>,
+#   end_pos: list<integer>
+# }
+#
+export def CurrentFunction(): dict<any>
+  const Skip = () => OnStringOrComment()
+  const cursor_origin = Pos()
+  const view = winsaveview()
+
+  final func = {
+    name: "",
+    def_pos: [0, 0],
+    do_pos: [0, 0],
+    end_pos: [0, 0]
+  }
+
+
+  func.def_pos = searchpos('\s*\zs\<def\>', 'Wbc', 0, 0, Skip)
+  func.do_pos = searchpos('\<do\>:\@!')
+
+  if func.def_pos != [0, 0]
+    func.end_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
+    func.end_pos[1] += 2
+  else
+    return func
+  endif
+
+  if util.InRange(cursor_origin, func.def_pos, func.end_pos)
+    Set(func.def_pos)
+    normal! W
+    func.name = expand('<cword>')
+    winrestview(view)
+
+    return func
+  else
+    winrestview(view)
+
+    return func
+  endif
+enddef
+
+# TODO: Handle keyword syntax
+export def InRender(): bool
+  const cursor_origin = cursor.Pos()
+  const view = winsaveview()
+  var def_pos = [0, 0]
+  var do_pos = [0, 0]
+  var end_pos = [0, 0]
+
+  def_pos = searchpos(RENDER_REGEX, 'Wbc', 0, 0, Skip)
+
+  if def_pos == [0, 0]
+    return false
+  endif
+
+  end_pos = searchpairpos('\<def\>\|\<fn\>', '', '\<end\>', 'W', Skip)
+
+  winrestview(view)
+
+  return util.InRange(cursor_origin, def_pos, end_pos)
+enddef

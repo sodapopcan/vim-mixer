@@ -83,6 +83,7 @@ def SetupBuf()
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()
+      phx.DefineRCommand()
     endif
   endif
 enddef
