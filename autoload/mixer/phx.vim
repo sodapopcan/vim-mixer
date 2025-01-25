@@ -100,9 +100,7 @@ def HandleTemplateFile()
       render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
     endif
 
-    var render_line = getline(render_lnr)
-
-    var view = matchstr(render_line, template_regex)
+    var view = render_lnr->getline()->matchstr(template_regex)
 
     if empty(view)
       view = func.name
