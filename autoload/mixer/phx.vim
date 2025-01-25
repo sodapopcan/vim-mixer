@@ -90,27 +90,29 @@ def HandleTemplateFile()
       return
     endif
 
-    # Assuming controller for now
-    var func = cursor.CurrentFunction()
     const template_regex = 'render(conn, [:"]\zs\k\+\%(\.\k\+\)\='
+    var func = cursor.CurrentFunction()
+    var file: string
 
-    var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
+    if func.name != ''
+      var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
 
-    if render_lnr == 0
-      render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
+      if render_lnr == 0
+        render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
+      endif
+
+      var view = render_lnr->getline()->matchstr(template_regex)
+
+      if empty(view)
+        view = func.name
+      endif
+
+      if match(view, '\.html$') < 0
+        view ..= ".html"
+      endif
+
+      file = findfile(view, fnamemodify(expand("%"), ":p:h") .. "/**/*")
     endif
-
-    var view = render_lnr->getline()->matchstr(template_regex)
-
-    if empty(view)
-      view = func.name
-    endif
-
-    if match(view, '\.html$') < 0
-      view ..= ".html"
-    endif
-
-    const file = findfile(view, fnamemodify(expand("%"), ":p:h") .. "/**/*")
 
     if file != ""
       exec "edit" file

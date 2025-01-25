@@ -119,6 +119,8 @@ export def CurrentFunction(): dict<any>
     func.end_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', Skip)
     func.end_pos[1] += 2
   else
+    winrestview(view)
+
     return func
   endif
 
