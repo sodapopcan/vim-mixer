@@ -115,6 +115,8 @@ def HandleExternalTemplate()
       endif
 
       file = findfile(view, util.RelativeDir() .. "/**/*")
+    else
+      file = expand('%')->util.Sub('_controller', '_html')
     endif
   else
     # Look for collocated first, this should take care of LiveViews
