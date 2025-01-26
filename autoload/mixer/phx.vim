@@ -45,7 +45,7 @@ export def RCommand()
   if HasRender()
     HandleEmbeddedTemplate()
   else
-    HandleTemplateFile()
+    HandleExternalTemplate()
   endif
 enddef
 
@@ -79,7 +79,7 @@ def HandleEmbeddedTemplate()
   endif
 enddef
 
-def HandleTemplateFile()
+def HandleExternalTemplate()
   var file: string
   var action: string
   var jump: number
