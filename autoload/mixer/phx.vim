@@ -42,18 +42,18 @@ export def DefineRCommand()
 enddef
 
 export def RCommand()
-  if HandleCollocated()
+  if RCollocated()
     return
   endif
 
   if HasRender()
-    HandleEmbeddedTemplate()
+    REmbedded()
   else
-    HandleExternalTemplate()
+    RController()
   endif
 enddef
 
-def HandleCollocated(): bool
+def RCollocated(): bool
   var collocated: string
 
   if &ft == 'elixir'
@@ -73,7 +73,7 @@ def HandleCollocated(): bool
   return exists
 enddef
 
-def HandleExternalTemplate()
+def RController()
   var file: string
   var action: string
 
@@ -119,7 +119,7 @@ def HandleExternalTemplate()
   endif
 enddef
 
-def HandleEmbeddedTemplate()
+def REmbedded()
   if !exists('b:mixer_r')
     var view = winsaveview()
     b:mixer_r = deepcopy(R)
