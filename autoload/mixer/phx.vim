@@ -1,18 +1,14 @@
 vim9script
 
 import autoload './cursor.vim'
+import autoload './code.vim'
 import autoload './util.vim'
 import autoload './textprop.vim'
 
 # RCommand {{{1
 
-const RENDER_REGEX = '^\s*def render\%((assigns.*)\|(.*=\s\+assigns)\)'
 const DEFS = ['mount', 'handle_', 'update']
 const Skip = () => cursor.OnStringOrComment()
-
-export def HasRender(): bool
-  return search(RENDER_REGEX, 'n', 0, 0, Skip) > 0
-enddef
 
 const R = {
   alt_pos: [0, 0],
@@ -46,10 +42,29 @@ export def RCommand()
     return
   endif
 
-  if HasRender()
+  var file: string
+  var action: string
+
+  if code.HasRenderCallback()
     REmbedded()
+  elseif code.IsController()
+    [file, action] = FindTemplate()
+  elseif code.IsTemplateFile()
+    [file, action] = FindControllerFromTemplateFile()
+  elseif code.IsHtml()
+    [file, action] = FindControllerFromHtml()
+  elseif code.IsView()
+    [file, action] = FindControllerFromView()
+  endif
+
+  if file != ""
+    exec "edit" file
+
+    if !cursor.InFunction(action)
+      search("def " .. action)
+    endif
   else
-    RController()
+    echom "Can't find file"
   endif
 enddef
 
@@ -73,50 +88,51 @@ def RCollocated(): bool
   return exists
 enddef
 
-def RController()
-  var file: string
-  var action: string
+def FindTemplate(): list<string>
+  const action_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
+  var func = cursor.CurrentFunction()
 
-  if &ft ==# 'elixir'
-    const action_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
-    var func = cursor.CurrentFunction()
+  # Find the view
+  if func.name != ''
+    var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
 
-    # Find the view
-    if func.name != ''
-      var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
-
-      if render_lnr == 0
-        render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
-      endif
-
-      var view = render_lnr->getline()->matchstr(action_regex)
-
-      if empty(view)
-        view = func.name
-      endif
-
-      if match(view, '\.html$') < 0
-        view ..= ".html"
-      endif
-
-      file = findfile(view, util.RelativeDir() .. "/**/*")
-    else
-      file = expand('%')->util.Sub('_controller', '_html')
+    if render_lnr == 0
+      render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
     endif
+
+    var view = render_lnr->getline()->matchstr(action_regex)
+
+    if empty(view)
+      view = func.name
+    endif
+
+    if match(view, '\.html$') < 0
+      view ..= ".html"
+    endif
+
+    return [findfile(view, util.RelativeDir() .. "/**/*"), ""]
   else
-    action = expand('%:t')->split('\.')[0]
-    file = expand('%:h')->util.Sub('_html', '_controller.ex')
+    return [expand('%')->util.Sub('_controller', '_html'), ""]
   endif
 
-  if file != ""
-    exec "edit" file
+enddef
 
-    if !cursor.InFunction(action)
-      search("def " .. action)
-    endif
-  else
-    echom "Can't find file"
-  endif
+def FindControllerFromTemplateFile(): list<string>
+  return [
+    expand('%:h')->util.Sub('_html', '_controller.ex'),
+    expand('%:t')->split('\.')[0]
+  ]
+enddef
+
+def FindControllerFromHtml(): list<string>
+  const func = cursor.CurrentFunction()
+  const action = func.name
+  const file = expand('%:t')->util.Sub('_html.ex$', '_controller.ex')
+
+  return [
+    findfile(file, "**/*"),
+    action
+  ]
 enddef
 
 def REmbedded()
