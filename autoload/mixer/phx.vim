@@ -94,7 +94,7 @@ def HandleTemplateFile()
       return
     endif
 
-    const template_regex = 'render(conn, [:"]\zs\k\+\%(\.\k\+\)\='
+    const template_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
     var func = cursor.CurrentFunction()
 
     if func.name != ''
