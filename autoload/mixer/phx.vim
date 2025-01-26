@@ -42,6 +42,10 @@ export def DefineRCommand()
 enddef
 
 export def RCommand()
+  if HandleCollocated()
+    return
+  endif
+
   if HasRender()
     HandleEmbeddedTemplate()
   else
@@ -49,20 +53,31 @@ export def RCommand()
   endif
 enddef
 
+def HandleCollocated(): bool
+  var collocated: string
+
+  if &ft == 'elixir'
+    collocated = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
+  elseif &ft == 'eelixir'
+    collocated = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
+  else
+    return false
+  endif
+
+  const exists = util.FileExists(collocated)
+
+  if exists
+    exec "edit" collocated
+  endif
+
+  return exists
+enddef
+
 def HandleExternalTemplate()
   var file: string
   var action: string
 
   if &ft ==# 'elixir'
-    # First just see if there is a collocated heex file with the same name
-    const collocated = util.Sub(expand("%:p"), '\.ex$', '.html.heex')
-
-    if util.FileExists(collocated)
-      exec "edit" collocated
-
-      return
-    endif
-
     const action_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
     var func = cursor.CurrentFunction()
 
@@ -89,15 +104,6 @@ def HandleExternalTemplate()
       file = expand('%')->util.Sub('_controller', '_html')
     endif
   else
-    # Look for collocated first, this should take care of LiveViews
-    const collocated = util.Sub(expand("%:p"), '\.html.heex$', '.ex')
-
-    if util.FileExists(collocated)
-      exec "edit" collocated
-
-      return
-    endif
-
     action = expand('%:t')->split('\.')[0]
     file = expand('%:h')->util.Sub('_html', '_controller.ex')
   endif
