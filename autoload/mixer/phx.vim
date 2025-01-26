@@ -49,36 +49,6 @@ export def RCommand()
   endif
 enddef
 
-def HandleEmbeddedTemplate()
-  if !exists('b:mixer_r')
-    var view = winsaveview()
-    b:mixer_r = deepcopy(R)
-
-    if cursor.InRender()
-      b:mixer_r.alt_pos = [1, 1]
-    else
-      b:mixer_r.alt_pos = cursor.Pos()
-    endif
-
-    augroup mixerRCommand
-      autocmd!
-      autocmd CursorHold,InsertLeave *.ex,*.exs,*.heex,*.sface,*.leex if cursor.InRender()
-        |   b:mixer_r.alt_pos = cursor.Pos()
-        | else
-        |   b:mixer_r.alt_pos = cursor.Pos()
-        | endif
-    augroup END
-
-    winrestview(view)
-  endif
-
-  if cursor.InRender()
-    cursor.Set(b:mixer_r.alt_pos)
-  else
-    cursor.Set(b:mixer_r.render_pos)
-  endif
-enddef
-
 def HandleExternalTemplate()
   var file: string
   var action: string
@@ -93,9 +63,10 @@ def HandleExternalTemplate()
       return
     endif
 
-    const template_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
+    const action_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
     var func = cursor.CurrentFunction()
 
+    # Find the view
     if func.name != ''
       var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
 
@@ -103,7 +74,7 @@ def HandleExternalTemplate()
         render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
       endif
 
-      var view = render_lnr->getline()->matchstr(template_regex)
+      var view = render_lnr->getline()->matchstr(action_regex)
 
       if empty(view)
         view = func.name
@@ -139,6 +110,36 @@ def HandleExternalTemplate()
     endif
   else
     echom "Can't find file"
+  endif
+enddef
+
+def HandleEmbeddedTemplate()
+  if !exists('b:mixer_r')
+    var view = winsaveview()
+    b:mixer_r = deepcopy(R)
+
+    if cursor.InRender()
+      b:mixer_r.alt_pos = [1, 1]
+    else
+      b:mixer_r.alt_pos = cursor.Pos()
+    endif
+
+    augroup mixerRCommand
+      autocmd!
+      autocmd CursorHold,InsertLeave *.ex,*.exs,*.heex,*.sface,*.leex if cursor.InRender()
+        |   b:mixer_r.alt_pos = cursor.Pos()
+        | else
+        |   b:mixer_r.alt_pos = cursor.Pos()
+        | endif
+    augroup END
+
+    winrestview(view)
+  endif
+
+  if cursor.InRender()
+    cursor.Set(b:mixer_r.alt_pos)
+  else
+    cursor.Set(b:mixer_r.render_pos)
   endif
 enddef
 
