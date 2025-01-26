@@ -81,6 +81,7 @@ enddef
 
 def HandleTemplateFile()
   var file: string
+  var action: string
   var jump: number
 
   if &ft ==# 'elixir'
@@ -125,12 +126,16 @@ def HandleTemplateFile()
       return
     endif
 
-    const action = expand('%:t')->split('\.')[0]
+    action = expand('%:t')->split('\.')[0]
     file = expand('%:h')->util.Sub('_html', '_controller.ex')
   endif
 
   if file != ""
     exec "edit" file
+
+    if !cursor.InFunction(action)
+      search("def " .. action)
+    endif
   else
     echom "Can't find file"
   endif

@@ -138,6 +138,12 @@ export def CurrentFunction(): dict<any>
   endif
 enddef
 
+export def InFunction(func: string): bool
+  const current_func = CurrentFunction()
+
+  return util.InRange(Pos(), current_func.do_pos, current_func.end_pos)
+enddef
+
 # TODO: Handle keyword syntax
 export def InRender(): bool
   const cursor_origin = cursor.Pos()
