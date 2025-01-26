@@ -82,7 +82,6 @@ enddef
 def HandleExternalTemplate()
   var file: string
   var action: string
-  var jump: number
 
   if &ft ==# 'elixir'
     # First just see if there is a collocated heex file with the same name
