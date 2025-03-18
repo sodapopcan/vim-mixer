@@ -86,6 +86,7 @@ To turn off this behaviour, set:
 
 COMMANDS                                    *mixer-commands*
 
+Mix~
                                             *mixer-commands-mix*
                                             *mixer-:Mix*
 :Mix [args]         Run a mix command with autocomplete.
@@ -287,6 +288,22 @@ COMMANDS                                    *mixer-commands*
                     session.
 
                     This command accepts |:command-modifiers|.
+
+Phoenix~
+
+                                            *mixer-:R*
+:R                  Edit a file "related" to the current one.
+                    This command is meant as a to compliment |projectionist|
+                    though does not depend on it.
+
+    Current file                  Related file~
+    controller                    html or view
+    controller (in function)      html (cursor on action component) or template
+    html                          controller
+    html (in bodyless component)  template
+    html (in action component)    controller (cursor on action)
+    context                       schema (most intelligent guess dependent on
+                                          cursor position)
 
 
 MAPPINGS                                    *mixer-mappings*

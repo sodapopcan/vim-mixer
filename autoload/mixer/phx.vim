@@ -38,36 +38,20 @@ export def DefineRCommand()
 enddef
 
 export def RCommand()
-  if RCollocated()
-    return
-  endif
+  # Collocation is simple--just see try it and move on.
+  if RCollocated() | return | endif
 
-  var file: string
-  var action: string
+  # Heuristics
 
   if code.HasRenderCallback()
-    REmbedded()
-  elseif code.IsController()
-    [file, action] = FindTemplate()
-  elseif code.IsTemplateFile()
-    [file, action] = FindControllerFromTemplateFile()
-  elseif code.IsHtml()
-    [file, action] = FindControllerFromHtml()
-  elseif code.IsView()
-    [file, action] = FindControllerFromView()
-  endif
-
-  if file != ""
-    exec "edit" file
-
-    if !cursor.InFunction(action)
-      search("def " .. action)
-    endif
+    RLive()
   else
-    echom "Can't find file"
+    RDead()
   endif
 enddef
 
+# This is a super easy case, so this function exists to just get it done and
+# move on.
 def RCollocated(): bool
   var collocated: string
 
@@ -88,54 +72,118 @@ def RCollocated(): bool
   return exists
 enddef
 
-def FindTemplate(): list<string>
-  const action_regex = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
-  var func = cursor.CurrentFunction()
+# Phoenix has a million ways to do views and templates now so we have to handle
+# all of them.  Oh boy.  At a high level we need to jump from:
+#
+#   - Controller to either HTML or View
+#   - Controller action to HTML component or template (typically heex or json)
+#
 
-  # Find the view
-  if func.name != ''
-    var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
+def RDead()
+  const ACTION_REGEX = '\%(render(conn, \||> render(\)[:"]\zs\k\+\%(\.\k\+\)\='
+  const func = cursor.CurrentFunction()
+  const filename = expand('%:t')
+  var action: string
 
-    if render_lnr == 0
-      render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
+  # heuristic
+  #  Does it have a contoller directories?
+
+  # from controller body to html or view
+  if code.IsController()
+    [
+      "foo_html.ex",
+      "foo_html/foo.ex",
+      "foo_html/foo_html.ex",
+      "foo_html/html.ex",
+      "../html/foo.ex",
+      "../html/foo/foo.ex"
+    ]
+
+    [
+      "foo_html/{}.html.heex",
+    ]
+
+    # foo_controller.ex
+      # foo_html.ex
+      # foo_html/{}.html.heex
+      # foo_view/{}.html.heex
+
+      # foo_html
+      # ../foo_html
+
+    if !empty(func.name)
+      action = func.name
     endif
 
-    var view = render_lnr->getline()->matchstr(action_regex)
+  elseif code.IsHTML()
+    # foo_html
+      # foo_controller
+      # 
+  elseif code.IsHEEx()
+    # show.html.heex
+      # 
+  elseif code.IsView()
 
-    if empty(view)
-      view = func.name
-    endif
-
-    if match(view, '\.html$') < 0
-      view ..= ".html"
-    endif
-
-    return [findfile(view, util.RelativeDir() .. "/**/*"), ""]
-  else
-    return [expand('%')->util.Sub('_controller', '_html'), ""]
   endif
 
+  # if func.name == ''
+  #   ['']
+  # endif
+
+  # # Find the view
+  # if func.name != ''
+  #   var render_lnr = search('render(', 'Wnc', func.end_pos[0], 0, Skip)
+
+  #   if render_lnr == 0
+  #     render_lnr = search('render(', 'Wncb', func.def_pos[0], 0, Skip)
+  #   endif
+
+  #   var file = render_lnr->getline()->matchstr(ACTION_REGEX)
+  #   const action = file
+
+  #   if empty(file)
+  #     file = func.name
+  #   endif
+
+  #   return {
+  #     files: [file],
+  #     paths: ['./'],
+  #     func: func.name
+  #   }
+  # else
+  #   return {
+  #     files: [expand('%')->util.Sub('_controller', '_html')],
+  #     paths: ['./'],
+  #     func: ""
+  #   }
+  # endif
 enddef
 
-def FindControllerFromTemplateFile(): list<string>
-  return [
-    expand('%:h')->util.Sub('_html', '_controller.ex'),
-    expand('%:t')->split('\.')[0]
-  ]
-enddef
+# def FindController(): dict<any>
+#   if code.IsHtml()
+#     const func = cursor.CurrentFunction()
+#     echom "hiiiiiiiiiiiii"
 
-def FindControllerFromHtml(): list<string>
-  const func = cursor.CurrentFunction()
-  const action = func.name
-  const file = expand('%:t')->util.Sub('_html.ex$', '_controller.ex')
+#     return [
+#       [expand('%')->util.Sub('_html', '_controller')],
+#       func.name
+#     ]
+#   elseif code.IsView()
+#     return [
+#       [expand('%:h:h')->util.Sub('views/')],
+#       ""
+#     ]
+#   elseif code.IsTemplateFile()
+#     return [
+#       [expand('%:h')->util.Sub('_html', '_controller.ex')],
+#       expand('%:t')->split('\.')[0]
+#     ]
+#   else
+#     return ["", ""]
+#   endif
+# enddef
 
-  return [
-    findfile(file, "**/*"),
-    action
-  ]
-enddef
-
-def REmbedded()
+def RLive()
   if !exists('b:mixer_r')
     var view = winsaveview()
     b:mixer_r = deepcopy(R)
