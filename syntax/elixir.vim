@@ -4,5 +4,5 @@ hi link elixirStructDelimiters Type
 
 if get(g:, 'mixer_syntax_highlighting', 1)
   syn match elixirPhoenixRouter "\%(\C\(^\s*\)\@<=\<\(scope\|live\|on_mount\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\|assert_\%(\k\+\)\=\)\>\)\%( =\)\@!"
-  hi link elixirPhoenixRouter Include
+  hi link elixirPhoenixRouter Keyword
 endif
