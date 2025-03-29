@@ -28,6 +28,7 @@ export def Setup()
 
   const has_phoenix = util.FileExists(project_root .. "/deps/phoenix")
   const has_ecto = util.FileExists(project_root .. "/deps/ecto_sql")
+  const has_ash = util.FileExists(project_root .. "/deps/ash")
 
   var bindingPrefix = 'phx-'
 
@@ -43,6 +44,11 @@ export def Setup()
     endtry
   endif
 
+  if has_ash && get(g:, 'mixer_syntax_highlighting', 1)
+    syn match elixirPhoenixRouter "\%(\C\(^\s*\)\@<=\<\(create\|read\|update\|destroy\|defaults\|define\|calculations\|calculate\|aggregates\|identities\|admin\|authentication\|tokens\|resource\|code_interface\|pub_sub\|preparations\|changes\|validations\|multitenancy\|attributes\=\|actions\=\|policy\|policies\|relationships\|postgres\|sqlite\)\>\)\%( =\)\@!"
+    hi link elixirPhoenixRouter Keyword
+  endif
+
   if !has_key(g:mix_projects, project_root)
     g:mix_projects[project_root] = {
       'root': project_root,
@@ -54,6 +60,7 @@ export def Setup()
       'bindingPrefix': bindingPrefix,
       'has_phoenix': has_phoenix,
       'has_ecto': has_ecto,
+      'has_ash': has_ash,
       'tasks': []
     }
 
