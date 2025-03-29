@@ -314,7 +314,6 @@ export def IExCommand(
     augroup mixerIEx
       autocmd!
       autocmd BufWritePost <buffer> UpdateIEx()
-      autocmd BufWipeout <buffer> echom "hiiiiiiiiiiiii"
     augroup END
   endif
 
