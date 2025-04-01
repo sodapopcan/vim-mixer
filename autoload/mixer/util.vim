@@ -51,6 +51,10 @@ export def Matches(str: string, pat: string): bool
   return match(str, pat) >= 0
 enddef
 
+export def Glob(glob: string): list<string>
+  return glob(glob, 0, 1)
+enddef
+
 export def IsBlank(string: string): bool
   return string =~ '^\s*$'
 enddef
