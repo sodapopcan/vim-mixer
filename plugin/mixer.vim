@@ -20,6 +20,28 @@ import autoload 'mixer/project.vim'
 import autoload 'mixer/phx.vim'
 import autoload 'mixer/textobj.vim'
 import autoload 'mixer/integrations.vim'
+import autoload 'mixer/projections.vim'
+
+def g:MixerDetect(): list<any>
+  var mix_file = findfile('mix.exs', '.;', 2)
+  var nested = true
+
+  if empty(mix_file)
+    mix_file = findfile('mix.exs', '.;')
+    nested = false
+  endif
+
+  var project_root = ''
+  if !empty(mix_file)
+    project_root = fnamemodify(mix_file, ':p:h')
+
+    if empty(project_root)
+      project_root = expand(':p:h')
+    endif
+  endif
+
+  return [project_root, mix_file, nested]
+enddef
 
 var mix_project_root: string
 
@@ -40,28 +62,7 @@ augroup mixer
     | endif
 augroup END
 
-def g:MixerDetect(): list<any>
-  var mix_file = findfile('mix.exs', '.;', 2)
-  var nested: bool
-
-  if empty(mix_file)
-    mix_file = findfile('mix.exs', '.;')
-    nested = false
-  else
-    nested = true
-  endif
-
-  var project_root = ''
-  if !empty(mix_file)
-    project_root = fnamemodify(mix_file, ':p:h')
-
-    if empty(project_root)
-      project_root = expand(':p:h')
-    endif
-  endif
-
-  return [project_root, mix_file, nested]
-enddef
+autocmd User ProjectionistDetect call projections.Define()
 
 def SetupBuf()
   command! -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
