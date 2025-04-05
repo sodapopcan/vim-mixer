@@ -27,17 +27,15 @@ export def Detect()
   var files = globs->copy()->filter((_, g) => g =~ '\.ex')
   var dirs = globs->copy()->filter((_, g) => g !~ '\.ex')
 
-  var domain: string
-  const domain_index = index(files, project_name)
-
-  if domain_index > -1
-    domain = remove(files, domain_index)
-  endif
-
   projections['mix.exs'] = {
     type: 'mix',
     alternate: 'mix.lock',
     dispatch: 'mix deps.get'
+  }
+
+  projections['mix.lock'] = {
+    type: 'lock',
+    alternate: 'mix.exs'
   }
 
   projections['lib/mix/*.ex'] = {
@@ -46,8 +44,25 @@ export def Detect()
 
   projections['test/*_test.exs'] = {
     type: 'test',
-    alternate: 'lib/{}.ex'
+    alternate: 'lib/{}.ex',
+    dispatch: 'mix test'
   }
+
+  var web_dir = dirs->copy()->filter((_, d) => d =~ 'web$')
+
+  if len(web_dir) == 1
+    web_dir = web_dir[0]
+
+    projections['lib/' .. web_dir .. '/live/*_live.ex'] = {
+      type: 'live',
+      alternate: 'test/' .. web_dir .. '/live/{}_live_test.exs'
+    }
+
+    projections['lib/' .. web_dir .. '/controllers/*_controller.ex'] = {
+      type: 'controller',
+      alternate: 'test/' .. web_dir .. '/controllers/{}_controller_test.exs'
+    }
+  endif
 
   for file in files
     var type = util.Sub(file, '^' .. project_name .. '_', '')->util.Sub('\.ex$', '')
@@ -71,12 +86,11 @@ export def Detect()
       type = 'domain'
     endif
 
-    const path = util.Sub(dir, '\.ex$', '')
-
     projections['lib/' .. dir .. '/*.ex'] = {
       type: type,
       alternate: 'test/' .. dir .. '/{}_test.exs'
     }
   endfor
+
   projectionist#append('/Users/andrwe/GroupCollect/ops', projections)
 enddef

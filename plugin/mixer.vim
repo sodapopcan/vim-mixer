@@ -70,8 +70,6 @@ augroup mixer
   autocmd BufReadPost * if !exists('*ProjectionistHas') | SetupBuf() | endif
 augroup END
 
-autocmd User ProjectionistDetect call projections.Detect()
-
 def SetupBuf()
   command! -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
   command! -buffer -range -nargs=* -complete=file IEx mix.IExCommand(<q-mods>, <range>, <line1>, <line2>, <f-args>)
