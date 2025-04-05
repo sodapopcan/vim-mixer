@@ -54,18 +54,18 @@ export def Setup()
 
   if !has_key(g:mix_projects, project_root)
     g:mix_projects[project_root] = {
-      'root': project_root,
-      'name': project_name,
-      'namespace': project_namespace,
-      'alias': util.ToElixirAlias(project_name),
-      'deps_fun': deps_fun,
-      'apps_path': apps_path,
-      'nested': nested,
-      'bindingPrefix': bindingPrefix,
-      'has_phoenix': has_phoenix,
-      'has_ecto': has_ecto,
-      'has_ash': has_ash,
-      'tasks': []
+      root: project_root,
+      name: project_name,
+      alias: util.ToElixirAlias(project_name),
+      namespace: project_namespace,
+      deps_fun: deps_fun,
+      apps_path: apps_path,
+      nested: nested,
+      bindingPrefix: bindingPrefix,
+      has_phoenix: has_phoenix,
+      has_ecto: has_ecto,
+      has_ash: has_ash,
+      tasks: []
     }
 
     b:mix_project = g:mix_projects[project_root]

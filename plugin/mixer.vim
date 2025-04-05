@@ -24,11 +24,18 @@ import autoload 'mixer/projections.vim'
 
 def g:MixerDetect(): list<any>
   var mix_file = findfile('mix.exs', '.;', 2)
+  var lib_dir = finddir('lib', ',;', 2)
+
   var nested = true
 
   if empty(mix_file)
     mix_file = findfile('mix.exs', '.;')
+    lib_dir = finddir('lib/', '.;')
     nested = false
+  endif
+
+  if empty(mix_file) || empty(lib_dir)
+    return ['', '', '']
   endif
 
   var project_root = ''
@@ -47,7 +54,6 @@ var mix_project_root: string
 
 augroup mixer
   autocmd!
-  autocmd BufNewFile,BufReadPost * SetupBuf()
   autocmd FileType elixir,eelixir call textobj.Define()
   autocmd FileType elixir,eelixir call integrations.Define()
   autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetMatchWords()
@@ -60,9 +66,11 @@ augroup mixer
     | if !empty(mix_project_root)
     |   call project.Setup()
     | endif
+  autocmd User ProjectionistDetect | call SetupBuf() | call projections.Detect()
+  autocmd BufReadPost * if !exists('*ProjectionistHas') | SetupBuf() | endif
 augroup END
 
-autocmd User ProjectionistDetect call projections.Define()
+autocmd User ProjectionistDetect call projections.Detect()
 
 def SetupBuf()
   command! -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
