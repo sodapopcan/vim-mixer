@@ -48,14 +48,36 @@ export def Detect()
     dispatch: 'mix test'
   }
 
+  projections['config/config.exs'] = {
+    type: 'init'
+  }
+
+  projections['config/*.exs'] = {
+    type: 'init',
+    alternate: 'config/config.exs'
+  }
+
   var web_dir = dirs->copy()->filter((_, d) => d =~ 'web$')
 
   if len(web_dir) == 1
     web_dir = web_dir[0]
+    const web_alias = util.ToElixirAlias(web_dir)
 
     projections['lib/' .. web_dir .. '/live/*_live.ex'] = {
       type: 'live',
-      alternate: 'test/' .. web_dir .. '/live/{}_live_test.exs'
+      alternate: 'test/' .. web_dir .. '/live/{}_live_test.exs',
+      template: [
+        'defmodule ' .. web_alias .. '.{capitalize}Live do',
+        '  use ' .. web_alias  .. ', :live_view',
+        '',
+        '  @impl true',
+        '  def render(assigns) do',
+        '    ~H"""',
+        '',
+        '    """',
+        '  end',
+        'end'
+      ]
     }
 
     projections['lib/' .. web_dir .. '/controllers/*_controller.ex'] = {
@@ -92,5 +114,5 @@ export def Detect()
     }
   endfor
 
-  projectionist#append('/Users/andrwe/GroupCollect/ops', projections)
+  projectionist#append(root, projections)
 enddef
