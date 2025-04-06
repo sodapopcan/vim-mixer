@@ -27,34 +27,31 @@ export def Detect()
   var files = globs->copy()->filter((_, g) => g =~ '\.ex')
   var dirs = globs->copy()->filter((_, g) => g !~ '\.ex')
 
-  projections['mix.exs'] = {
-    type: 'mix',
-    alternate: 'mix.lock',
-    dispatch: 'mix deps.get'
-  }
-
-  projections['mix.lock'] = {
-    type: 'lock',
-    alternate: 'mix.exs'
-  }
-
-  projections['lib/mix/*.ex'] = {
-    type: 'mix'
-  }
-
-  projections['test/*_test.exs'] = {
-    type: 'test',
-    alternate: 'lib/{}.ex',
-    dispatch: 'mix test'
-  }
-
-  projections['config/config.exs'] = {
-    type: 'init'
-  }
-
-  projections['config/*.exs'] = {
-    type: 'init',
-    alternate: 'config/config.exs'
+  projections = {
+    'mix.exs': {
+      type: 'mix',
+      alternate: 'mix.lock',
+      dispatch: 'mix deps.get'
+    },
+    'mix.lock': {
+      type: 'lock',
+      alternate: 'mix.exs'
+    },
+    'lib/mix/*.ex': {
+      type: 'mix'
+    },
+    'test/*_test.exs': {
+      type: 'test',
+      alternate: 'lib/{}.ex',
+      dispatch: 'mix test'
+    },
+    'config/config.exs': {
+      type: 'init'
+    },
+    'config/*.exs': {
+      type: 'init',
+      alternate: 'config/config.exs'
+    }
   }
 
   var web_dir = dirs->copy()->filter((_, d) => d =~ 'web$')
@@ -63,11 +60,11 @@ export def Detect()
     web_dir = web_dir[0]
     const web_alias = util.ToElixirAlias(web_dir)
 
-    projections['lib/' .. web_dir .. '/live/*_live.ex'] = {
+    projections['lib/' .. web_dir .. '/live/*.ex'] = {
       type: 'live',
-      alternate: 'test/' .. web_dir .. '/live/{}_live_test.exs',
+      alternate: 'test/' .. web_dir .. '/live/{}_test.exs',
       template: [
-        'defmodule ' .. web_alias .. '.{capitalize}Live do',
+        'defmodule ' .. web_alias .. '.{dirname|capitalize|dot}Live.{basename|camelcase|capitalize} do',
         '  use ' .. web_alias  .. ', :live_view',
         '',
         '  @impl true',
