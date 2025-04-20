@@ -7,26 +7,24 @@ export def Detect()
     return
   endif
 
-  var project_name: string
+  const mix_project = get(b:, 'mix_project', {})
 
-  const project = get(b:, 'mix_project', {})
-
-  if empty(project)
+  if empty(mix_project)
     return
   endif
 
-  project_name = project.name
+  const root = mix_project.root
 
-  var projections: dict<dict<any>>
-
-  const root = b:mix_project.root
   if !filereadable(root .. '/mix.exs')
     return
   endif
-  const contents = join(readfile(root .. '/mix.exs'), '\n')
-  project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
 
-  var globs = util.Glob(root .. '/lib/*')-> map((_, f) => fnamemodify(f, ':t'))
+  var projections: dict<dict<any>>
+
+  const contents = join(readfile(root .. '/mix.exs'), '\n')
+  const project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
+
+  var globs = util.Glob(root .. '/lib/*')->map((_, f) => fnamemodify(f, ':t'))
   var files = globs->copy()->filter((_, g) => g =~ '\.ex')
   var dirs = globs->copy()->filter((_, g) => g !~ '\.ex')
 
@@ -54,6 +52,21 @@ export def Detect()
     'config/*.exs': {
       type: 'init',
       alternate: 'config/config.exs'
+    },
+    'lib/mix/tasks/*.ex': {
+      type: 'task',
+      template: [
+        'defmodule Mix.Task.{camelcase|capitalize|dot} do',
+        '  use Mix.Task',
+        '',
+        '  @shortdoc "Short description"',
+        '',
+        '  @impl true',
+        '  def run([]) do',
+        '',
+        '  end',
+        'end'
+      ]
     }
   }
 
@@ -61,13 +74,23 @@ export def Detect()
 
   if len(web_dir) == 1
     web_dir = web_dir[0]
+
     const web_alias = util.ToElixirAlias(web_dir)
+    const web_globs = util.Glob(root .. '/lib/**/*')
+
+    var live_defmodule: string
+
+    if match(web_globs, '_live\.ex') >= 0
+      live_defmodule = 'defmodule ' .. web_alias .. '.{basename|camelcase|capitalize}Live do'
+    else
+      live_defmodule = 'defmodule ' .. web_alias .. '.{basename|camelcase|capitalize} do'
+    endif
 
     projections['lib/' .. web_dir .. '/live/*.ex'] = {
       type: 'live',
       alternate: 'test/' .. web_dir .. '/live/{}_test.exs',
       template: [
-        'defmodule ' .. web_alias .. '.{dirname|capitalize|dot}Live.{basename|camelcase|capitalize} do',
+        live_defmodule,
         '  use ' .. web_alias  .. ', :live_view',
         '',
         '  @impl true',
