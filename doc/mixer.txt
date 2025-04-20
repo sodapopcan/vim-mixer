@@ -31,7 +31,7 @@ TEXT OBJECTS                                |mixer-text-objects|
   Map or struct                               |mixer-map|
   Sigil                                       |mixer-sigil|
   Comment                                     |mixer-comment|
-
+PROJECTIONIST                               |mixer-projectionist|
 
 INTRODUCTION                                *mixer-introduction*
 
@@ -439,5 +439,91 @@ aa                  A function argument.
                     installed.  You can find this on www.vim.org or on github
                     at <https://github.com/AndrewRadev/sideways.vim>.
 
+PROJECTIONIST
+
+Custom heuristics for common project |projectionist|.
+
+* <https://github.com/tpope/vim-projectionist>
+
+Mixer provides tailored support for the |projectionist| plugin.  Using custom
+heuristics (on top of projectionist's), it can detect a few common project
+layouts as well as create generic commands for common Phoenix layouts based
+on your project's name.
+
+Whether you use the standard `lib/my_app` and `lib/my_app_web` or `core` and
+`web`, Mixer will instruct projectionist to create two generic commands:
+
+  :Edomain - Edit files in `lib/my_app` or `lib/core`
+  :Eweb    - Edit files in `lib/my_app_web` or `lib/web`
+
+Commands for all directorys within `lib/` will also be created.  For example,
+with the following project layout:
+>
+  lib/
+    my_blog/
+    my_blog_web/
+    util/
+    my_blog.ex
+    my_bog_web.ex
+    util.ex
+<
+These navigation commands will be created:
+
+  Edomain - Edit files in lib/my_blog
+  Eweb    - Edit files in lib/my_blog_web
+  Eutil   - Edit files in lib/util
+
+On top of that, because Mixer is aware of the project name, projections names
+are shorter.  IE, editing `lib/my_blog_web/controllers/foo_controller` will be
+`:Eweb controllers/foo_controller` .
+
+                                            *mixer-:Edomain*
+:Edomain [{name}]       Edit the given domain file.  This is any file inside
+                        `lib/my_app`.  This is inferred from the `project`
+                        definition inside `mix.exs`.  If `lib/core` exists and
+                        no other directories inside `lib` match the project's
+                        name, then it will be used.
+
+                                            *mixer-:Eweb*
+:Eweb [{function}]      Edit the web root file and optionally jump to the
+                        specified function.
+
+                                            *mixer-:Elive*
+:Elive [{name}]         Edit the given LiveView within the web directory.  In
+                        a project with no existing LiveViews,
+                        `live/**/*_live/index.ex` style will be used.
+                        Otherwise, `live/**/*_live.ex` is used. If no `live`
+                        directory exists, it will look for
+                        `lib/my_app_web/**/*_live.ex`.
+
+                                            *mixer-:Econtroller*
+:Econtroller [{name}]   Edit the given controller.  In a project with no
+                        existing controllers, `controllers/**/foo_controller.ex`
+                        style will be used, otherwise it will look for files
+                        ending in `_controller.ex`.
+
+                                            *mixer-:Ecomponent*
+:Ecomponent [{name}]    Edit the given component.
+
+                                            *mixer-:Eplug*
+:Eplug [{name}]         Edit the given plug.  Looks for files ending in
+                        `_plug.ex` within the web directory as well as files
+                        within `lib/my_app_web/plugs`.
+
+                                            *mixer-:Ehook*
+:Ehook [{name}]         Edit the given LiveView hook (note, LiveView hooks,
+                        not JS hooks) within the web directory.  Checks in
+                        `hooks`, `live_hooks` directories as well as files
+                        ending in `_hook.ex`.
+
+                                            *mixer-:Etask*
+:Etask [{name}]         Edit the given Mix task.  Looks in `mix/tasks` within
+                        the domain directory.
+
+                                            *mixer-:Ecss*
+:Ecss [{name}]          Edit the given CSS file.
+
+                                            *mixer-:Ejs*
+:Ejs [{name}]           Edit the given JavaScript file.
 
   vim:tw=78:et:ft=help:norl:
