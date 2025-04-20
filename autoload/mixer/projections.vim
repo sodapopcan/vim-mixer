@@ -20,6 +20,9 @@ export def Detect()
   var projections: dict<dict<any>>
 
   const root = b:mix_project.root
+  if !filereadable(root .. '/mix.exs')
+    return
+  endif
   const contents = join(readfile(root .. '/mix.exs'), '\n')
   project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
 
