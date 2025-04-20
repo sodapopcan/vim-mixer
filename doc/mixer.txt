@@ -489,8 +489,8 @@ are shorter.  IE, editing `lib/my_blog_web/controllers/foo_controller` will be
                         specified function.
 
                                             *mixer-:Elive*
-:Elive [{name}]         Edit the given LiveView within the web directory.  In
-                        a project with no existing LiveViews,
+:Elive [{name}]         Edit the given LiveView within the web directory.
+                        In a project with no existing LiveViews,
                         `live/**/*_live/index.ex` style will be used.
                         Otherwise, `live/**/*_live.ex` is used. If no `live`
                         directory exists, it will look for
