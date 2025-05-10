@@ -34,6 +34,9 @@ def g:MixerDetect(): list<any>
     nested = false
   endif
 
+  mix_file = util.Sub(mix_file, '^\w\+://', '')
+  lib_dir = util.Sub(lib_dir, '^\w\+://', '')
+
   if empty(mix_file) || empty(lib_dir)
     return ['', '', '']
   endif
