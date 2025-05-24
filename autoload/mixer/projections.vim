@@ -2,14 +2,33 @@ vim9script
 
 import autoload "./util.vim"
 
-const PREFIXES = {
-  E: 'edit',
-  S: 'split',
-  V: 'vsplit',
-  T: 'tabedit',
-  O: 'drop',
-  D: 'read'
-}
+const PREFIXES = [
+  ['E', 'edit'],
+  ['S', 'split'],
+  ['V', 'vsplit'],
+  ['T', 'tabedit'],
+  ['O', 'drop'],
+  ['D', 'read']
+]
+
+def EditMigrationFile(command: string, count: number): void
+  if count == 0
+    exec command 'priv/repo/seeds.exs'
+
+    return
+  endif
+
+  const migrations_path = 'priv/repo/migrations'
+  const migrations = util.Glob(migrations_path .. '/*')
+
+  if expand('%:h') ==# migrations_path
+    const index = index(migrations, expand('%'))
+
+    exec command migrations[index - 1]
+  else
+    exec command migrations[-1]
+  endif
+enddef
 
 export def Detect()
   if exists('b:projectionist_file')
@@ -32,7 +51,6 @@ export def Detect()
   const project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
 
   var globs = util.Glob(ROOT .. '/lib/*')->map((_, f) => fnamemodify(f, ':t'))
-  var files = globs->copy()->filter((_, g) => g =~ '\.ex')
   var dirs = globs->copy()->filter((_, g) => g !~ '\.ex')
 
   var web_dir =
@@ -45,9 +63,7 @@ export def Detect()
   # Basic projections
 
   projections = {
-    '*': {
-      console: 'iex -S mix'
-    },
+    '*': {console: 'iex -S mix'},
     'mix.exs': {
       type: 'mix',
       alternate: 'mix.lock',
@@ -70,7 +86,7 @@ export def Detect()
     },
     'config/*.exs': {
       type: 'init',
-      alternate: 'config/config.exs',
+      relative: 'config/config.exs',
       template: [
         'import Config',
       ]
@@ -89,13 +105,6 @@ export def Detect()
         '  end',
         'end'
       ]
-    },
-    'priv/repo/migrations/*.exs': {
-      type: 'migration',
-      dispatch: mix_project.has_ash ? 'mix ash.migrate' : 'mix ecto.migrate',
-    },
-    'priv/repo/seeds.exs': {
-      type: 'seeds'
     }
   }
 
@@ -112,13 +121,13 @@ export def Detect()
       live_defmodule = 'defmodule ' .. web_alias .. '.{camelcase|capitalize|dot}Live do'
       web_glob = 'lib/' .. web_dir .. '/live/*_live.ex'
     elseif match(web_globs, '\/live\/') >= 0
-      live_defmodule = 'defmodule ' .. web_alias .. '.{dirname|camelcase|capitalize}Live.{basename|camelcase|capitalize|dot} do'
+      live_defmodule = 'defmodule ' .. web_alias .. '.{dirname|camelcase|capitalize}Live{dot}{basename|camelcase|capitalize|dot} do'
       web_glob = 'lib/' .. web_dir .. '/live/**_live.ex'
     elseif match(web_globs, '_live\.ex$') >= 0
       live_defmodule = 'defmodule ' .. web_alias .. '.{camelcase|capitalize|dot}Live do'
       web_glob = 'lib/' .. web_dir .. '/*_live.ex'
     else
-      live_defmodule = 'defmodule ' .. web_alias .. '.{dirname|camelcase|capitalize}Live.{basename|camelcase|capitalize|dot} do'
+      live_defmodule = 'defmodule ' .. web_alias .. '.{dirname|camelcase|capitalize}Live{dot}{basename|camelcase|capitalize|dot} do'
       web_glob = 'lib/' .. web_dir .. '/*_live.ex'
     endif
 
@@ -151,22 +160,11 @@ export def Detect()
       type: 'controller',
       alternate: 'test/' .. web_dir .. '/controllers/{}_controller_test.exs'
     }
-  endif
 
-  for file in files
-    var type = util.Sub(file, '^' .. project_name .. '_', '')->util.Sub('\.ex$', '')
-
-    if type == project_name
-      type = 'domain'
-    endif
-
-    const path = util.Sub(file, '\.ex$', '')
-
-    projections['lib/' .. path .. '.ex'] = {
-      type: type,
-      alternate: 'test/' .. path .. '_test.exs'
+    projections['lib/' .. web_dir .. '/*_plug.ex'] = {
+      type: 'plug'
     }
-  endfor
+  endif
 
   for dir in dirs
     var type = util.Sub(dir, '^' .. project_name .. '_', '')
@@ -177,9 +175,22 @@ export def Detect()
 
     projections['lib/' .. dir .. '/*.ex'] = {
       type: type,
+      related: [
+        'lib/' .. dir .. '.ex'
+      ],
       alternate: 'test/' .. dir .. '/{}_test.exs'
     }
   endfor
+
+  # Migrations
+
+  for [type, command] in PREFIXES
+    exec 'command! -count=1' type .. 'migration' 'EditMigrationFile("' .. command .. '", <count>)'
+  endfor
+
+  projections['priv/repo/migrations/*.exs'] = {
+    dispatch: mix_project.has_ash ? 'mix ash.migrate' : 'mix ecto.migrate',
+  }
 
   projectionist#append(ROOT, projections)
 enddef
