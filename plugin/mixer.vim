@@ -20,6 +20,7 @@ import autoload 'mixer/project.vim'
 import autoload 'mixer/phx.vim'
 import autoload 'mixer/textobj.vim'
 import autoload 'mixer/integrations.vim'
+import autoload 'mixer/navigation.vim'
 
 var mix_project_root: string
 
@@ -82,6 +83,10 @@ def SetupBuf()
 
   if exists('b:mix_project')
     command! -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
+
+    if get(g:, 'mixer_enable_goto_definition', v:false) && executable('rg')
+      nnoremap <silent> <buffer> gd :call <sid>navigation.GotoDefinition()<cr>
+    endif
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()
