@@ -15,12 +15,14 @@ export def Setup()
 
   var contents = ''
   var project_name = ''
+  var project_namespace = ''
   var deps_fun = ''
   var apps_path = ''
 
   try
     contents = join(readfile(mix_file), '\n')
     project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
+    project_namespace = matchstr(contents, 'defmodule \zs\K*/ze.*MixProject$')
     deps_fun = matchstr(contents, 'def project\%(()\)\=\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
     apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zsk\+\ze"')
   catch
@@ -53,6 +55,7 @@ export def Setup()
     g:mix_projects[project_root] = {
       'root': project_root,
       'name': project_name,
+      'namespace': project_namespace,
       'alias': util.ToElixirAlias(project_name),
       'deps_fun': deps_fun,
       'apps_path': apps_path,
