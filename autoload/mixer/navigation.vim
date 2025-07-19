@@ -34,6 +34,14 @@ export def GotoDefinition(): void
     vim_regex = '^\s*def\%(macro\)\?p\? \<' .. fn .. '\>'
   endif
 
+  const line = search(vim_regex, 'Wn', 0, 0, () => cursor.OnStringOrComment())
+
+  if line != 0
+    exec 'normal! ' .. line .. 'gg^'
+
+    return
+  endif
+
   var results = Grep(rg_regex)
 
   if len(results) > 0
@@ -54,22 +62,17 @@ enddef
 def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
   const file = results[0]
 
-  if file ==# expand('%')
-    search(vim_regex, 'W', 0, 0, () => cursor.OnStringOrComment())
-    normal! ^
-  else
-    for f in results
-      const cmd = edit ? 'edit' : 'view'
-      const line = FindDef(readfile(file), vim_regex)
+  for f in results
+    const cmd = edit ? 'edit' : 'view'
+    const line = FindDef(readfile(file), vim_regex)
 
-      if line != 0
-        exec cmd '+' .. line file
-        normal! zz^
+    if line != 0
+      exec cmd '+' .. line file
+      normal! zz^
 
-        return
-      endif
-    endfor
-  endif
+      return
+    endif
+  endfor
 enddef
 
 def FindDef(lines: list<string>, regex: string): number
