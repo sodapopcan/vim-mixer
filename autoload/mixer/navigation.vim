@@ -4,7 +4,25 @@ import autoload './util.vim'
 import autoload './cursor.vim'
 
 export def GotoDefinition(): void
-  const fn = expand('<cword>')
+  const token = expand('<cword>')
+
+  if token =~# '^\u'
+    return
+  endif
+
+  var qualified: list<string>
+
+  if !cursor.OnHEEx()
+    qualified = expand('<cexpr>')->split('\.')
+  endif
+
+  var mod: string
+
+  const fn = qualified[-1]
+  if len(qualified) > 1
+    mod = qualified[0 : -2]->join('.')
+  endif
+
   var rg_regex: string
   var vim_regex: string
 
@@ -19,42 +37,66 @@ export def GotoDefinition(): void
   var results = Grep(rg_regex)
 
   if len(results) > 0
-    HandleResults(results, v:true)
+    HandleResults(results, vim_regex, v:true)
   else
     results = Grep(rg_regex .. " ./deps")
 
     if len(results) > 0
-      HandleResults(results, v:false)
+      HandleResults(results, vim_regex, v:false)
     endif
   endif
-
-  if len(results) > 0
-    SearchDefinition(vim_regex)
-  endif
 enddef
 
-def Grep(cmd: string): list<list<string>>
-  return system("rg -n --type elixir " .. cmd)
-    ->split("\n")
-    ->map((_, val) => split(val, ':'))
-    ->map((_, val) => [val[0], val[1]])
-    ->filter((_, val) => val[0] !~ '%\(ex\|exs\)$')
+def Grep(cmd: string): list<string>
+  return systemlist("rg -l --type elixir " .. cmd)
 enddef
 
-def HandleResults(results: list<list<string>>, edit: bool): void
-  const [file, line] = results[0]
+def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
+  const file = results[0]
 
   if file ==# expand('%')
-    exec "normal! " .. line .. "gg"
+    search(vim_regex, 'W', 0, 0, () => cursor.OnStringOrComment())
+    normal! ^
   else
-    const cmd = edit ? 'edit' : 'view'
-    exec 'view +' .. line .. ' ' .. file
-    normal! zz
+    for f in results
+      const cmd = edit ? 'edit' : 'view'
+      const line = FindDef(readfile(file), vim_regex)
+
+      if line != 0
+        exec cmd '+' .. line file
+        normal! zz^
+
+        return
+      endif
+    endfor
   endif
 enddef
 
-def SearchDefinition(regex: string): void
-  if cursor.OnStringOrComment()
-    search(regex, 'W', 0, 0, () => cursor.OnStringOrComment())
-  endif
+def FindDef(lines: list<string>, regex: string): number
+  var line_num = 0
+  var in_docstring = v:false
+
+  for line in lines
+    line_num += 1
+
+    if line =~ "\\~\k\+\%(\"\"\"\|'''\)"
+      in_docstring = v:true
+      continue
+    endif
+
+    if line =~ "^\s*\%(\"\"\"\|'''\)"
+      in_docstring = v:false
+      continue
+    endif
+
+    if in_docstring
+      continue
+    endif
+
+    if line =~# regex
+      return line_num
+    endif
+  endfor
+
+  return 0
 enddef
