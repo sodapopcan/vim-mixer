@@ -13,16 +13,16 @@ export def Setup()
 
   g:mix_projects = get(g:, 'mix_projects', {})
 
-  var contents = ''
-  var project_name = ''
-  var project_namespace = ''
-  var deps_fun = ''
-  var apps_path = ''
+  var contents: string
+  var project_name: string
+  var project_namespace: string
+  var deps_fun: string
+  var apps_path: string
 
   try
     contents = join(readfile(mix_file), '\n')
     project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
-    project_namespace = matchstr(contents, 'defmodule \zs\K*/ze.*MixProject$')
+    project_namespace = matchstr(contents, 'defmodule \zs\k\+\ze\.MixProject')
     deps_fun = matchstr(contents, 'def project\%(()\)\=\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
     apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zsk\+\ze"')
   catch
@@ -73,4 +73,34 @@ export def Setup()
   else
     b:mix_project = g:mix_projects[project_root]
   endif
+enddef
+
+# TODO: To make this better we should check that either there is both
+# a lib/foo directory and either a lib/foo.ex or lib/foo/foo.ex file.
+export def GetRootModules(): list<string>
+  return glob('lib/*', 0, 1)
+    -> filter((_, f) => f !~# '\.' || f =~# '\.ex$')
+    -> map((_, f) => fnamemodify(f, ':t:r'))
+    -> filter((_, f) => f != 'mix')
+    -> uniq()
+    -> map((_, f) => util.ToElixirAlias(f))
+enddef
+
+export def IsProjectModule(module: string): bool
+  const ns = module->split('\.')[0]
+
+  return util.InList(GetRootModules(), ns)
+enddef
+
+export def GetElixirPath(): string
+  system("command -v asdf")
+
+  if v:shell_error == 0
+    var elixir_path = system('asdf where elixir')->trim()
+    elixir_path = elixir_path .. '/lib/elixir/lib/'
+
+    return elixir_path
+  endif
+
+  return ''
 enddef

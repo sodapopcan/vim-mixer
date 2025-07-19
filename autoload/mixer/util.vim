@@ -1,10 +1,18 @@
 vim9script
 
 export def Error(msg: string)
+  redraw
   echohl ErrorMsg
   echomsg msg
   echohl None
   v:errmsg = msg
+enddef
+
+export def Warn(msg: string)
+  redraw
+  echohl WarningMsg
+  echomsg 'Nothing found'
+  echohl None
 enddef
 
 export def BufFocus(bufnr: number)
@@ -14,17 +22,32 @@ export def BufFocus(bufnr: number)
   exec 'set switchbuf=' .. switchbuf_cached
 enddef
 
-export def GetPair(delim: string): string
-  const PAIRS = {
-    '(': ')',
-    ')': '(',
-    '{': '}',
-    '}': '{',
-    '[': ']',
-    ']': '[',
-  }
+const MAPLIST = maplist()
+  -> filter((_, v) => v.mode == 'n' && (v.rhs == 'K' || v.rhs == 'gd'))
+  -> reduce((acc, v) => {
+    acc[v.rhs] = v.lhs
+    return acc
+  }, {})
 
-  return get(PAIRS, delim, 0)
+export def SetLocalMap(map: string, plug: string)
+  if maparg(map, 'n') != '' && MAPLIST->has_key(map)
+    exec 'nmap <buffer> ' .. MAPLIST[map] .. ' <Plug>(' .. plug .. ')'
+  elseif maparg(map, 'n') == ''
+    exec 'nmap <buffer> ' .. map .. ' <Plug>(' .. plug .. ')'
+  endif
+enddef
+
+const PAIRS = {
+  '(': ')',
+  ')': '(',
+  '{': '}',
+  '}': '{',
+  '[': ']',
+  ']': '[',
+}
+
+export def GetPair(delim: string): string
+  return get(PAIRS, delim, '')
 enddef
 
 export def Sub(str: string, pat: string, rep: string): string

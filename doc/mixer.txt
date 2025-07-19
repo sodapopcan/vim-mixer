@@ -27,6 +27,9 @@ MIX COMMANDS                                |mixer-mix-commands|
   :IEx                                        |mixer-:IEx|
 NAVIGATION COMMANDS                         |mixer-navigation-commands|
   :R                                          |mixer-:R|
+CODE SEARCH                                 |mixer-code-search|
+  Jump to definition                          |mixer-jump-to-definition|
+  Find usages                                 |mixer-find-usages|
 TEXT OBJECTS                                |mixer-text-objects|
   Do/end block                                |mixer-text-object-do-end|
   Function                                    |mixer-function|
@@ -86,7 +89,56 @@ To turn off this behaviour, set:
 
 MAPPINGS                                    *mixer-mappings*
 
-                                            *mixer-CTRL-]*
+                                            *mixer_gd*
+                                            *mixer-jump-to-defintion*
+gd                  Jump to the definition of the word under the cursor.
+
+                    This works on functions calls, modules, variables, HEEx
+                    and Surface components, and event LiveView events like
+                    `phx-click="some-event"`.
+
+                    This is local to Elixir buffers.
+
+                    If you have a custom global mapping to `gd`, that will be
+                    used instead for Elixir files.  If you already have `gd`
+                    mapped, you will have to define a new one yourself:
+>
+                      nmap <leader>k <Plug>(mixer-hover)
+<
+                    See |mixer-code-search| for more information.
+
+                                            *mixer_K*
+                                            *mixer-hover*
+K                   Show the spec for the word under the cursor.  If there is
+                    no spec, it will try an generate one based on the function
+                    head.
+
+                    This is local to Elixir buffers.
+
+                    If you have a custom global mapping to `K`, that will be
+                    used instead for Elixir files.  If you already have `K`
+                    mapped, you will have to define a new one yourself:
+>
+                      nmap <leader>k <Plug>(mixer-hover)
+<
+                    See |mixer-code-search| for more information.
+
+                                            *mixer_gK*
+                                            *mixer-docs*
+                                            *mixer-documentation*
+gK                  Show the docstring for the word under the cursor, if available.
+
+                    This is local to Elixir buffers.
+
+                    If you have a custom global mapping to `K`, that will be
+                    used instead for Elixir files.  If you already have `K`
+                    mapped, you will have to define a new one yourself:
+>
+                      nmap <leader>k <Plug>(mixer-hover)
+<
+                    See |mixer-code-search| for more information.
+
+                                            *mixer_CTRL-]*
 CTRL-]              Remapped to be context aware in Phoenix files. Will
                     jump from `phx-click="some-event"` to
                     `handle_event("some-event"...`.  It will also attempt to
@@ -95,9 +147,27 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
                     a .js or .ts file that resembles the name of your hook.
                     It otherwise works as normal.
 
-                    This command's implementation requires your project to be
-                    tracked by `git`.  I would like to change this sooner or
-                    later.
+
+CODE SEARCH                                 *mixer-code-search*
+
+Mixer provides mappings for decently accurate "jump to definition" and "find
+usages" functionality without requiring an LSP server.  They are not, however,
+defined by default.  You must define your own as detailed below.
+
+NOTE: This requires `ripgrep` to be installed.  I'm happy to
+      add support for other tools if you have a preference.
+      Please open an issue on github.
+
+
+Jump to definition                          *mixer-jump-to-definition*
+>
+  nmap gd <Plug>(mixer-jump-to-definition)
+<
+Find usages                                 *mixer-find-usages*
+>
+  nmap gD <Plug>(mixer-find-usages)
+<
+NOTE: You must use `nmap`, `nnoremap` will not work.
 
 
 COMMANDS                                    *mixer-commands*
