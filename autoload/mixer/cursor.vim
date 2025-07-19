@@ -21,13 +21,9 @@ enddef
 export def SynName(): string
   const [line, col] = Pos()
 
-  const names = map(synstack(line, col), (_, v) => synIDattr(v, "name"))
-
-  if len(names) > 0
-    return util.Sub(names[-1], 'elixir', '')
-  else
-    return ''
-  endif
+  return synstack(line, col)
+    -> map((_, v) => synIDattr(v, 'name'))
+    -> join(' ')
 enddef
 
 export def InGutter(): bool
