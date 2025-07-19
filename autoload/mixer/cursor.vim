@@ -79,6 +79,10 @@ export def OnStringOrComment(): bool
   return SynName() =~ 'String\|Comment\|CharList'
 enddef
 
+export def OnHEEx(): bool
+  return OuterSynName() =~ 'Heex'
+enddef
+
 export def Pos(): list<number>
   return [line('.'), col('.')]
 enddef
