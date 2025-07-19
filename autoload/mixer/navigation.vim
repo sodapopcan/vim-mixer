@@ -1,17 +1,24 @@
 vim9script
 
 import autoload './util.vim'
+import autoload './cursor.vim'
 
 export def GotoDefinition(): void
   const fun = expand('<cword>')
-  const regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fun) .. "\\>'"
+  var regex: string
 
-  var results = system("rg -n " .. regex)-> ParseResults()
+  if cursor.OnHEEx()
+    regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fun) .. "\\>\(.*assigns.*\)'"
+  else
+    regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fun) .. "\\>'"
+  endif
+
+  var results = system("rg -n --type elixir " .. regex)-> ParseResults()
 
   if len(results) > 0
     HandleResults(results)
   else
-    results = system("rg -n --no-ignore " .. regex .. " ./deps/**/*")->ParseResults()
+    results = system("rg -n --type elixir --no-ignore " .. regex .. " ./deps/**/*")->ParseResults()
 
     if len(results) > 0
       HandleResults(results)
