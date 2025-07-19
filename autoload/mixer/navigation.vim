@@ -16,13 +16,12 @@ export def GotoDefinition(): void
     vim_regex = '^\s*def\%(macro\)\?p\? \<' .. fn .. '\>'
   endif
 
-  var results = system("rg -n --type elixir " .. rg_regex)->ParseResults()->filter((_, val) => val !~ '%\(ex\|exs\)$')
+  var results = Grep(rg_regex)
 
   if len(results) > 0
     HandleResults(results, v:true)
   else
-    results = system("rg -n --type elixir --no-ignore " .. rg_regex .. " ./deps")->ParseResults()
-    echom results
+    results = Grep(rg_regex .. " ./deps")
 
     if len(results) > 0
       HandleResults(results, v:false)
@@ -34,11 +33,12 @@ export def GotoDefinition(): void
   endif
 enddef
 
-def ParseResults(results: string): list<list<string>>
-  return results
+def Grep(cmd: string): list<list<string>>
+  return system("rg -n --type elixir " .. cmd)
     ->split("\n")
     ->map((_, val) => split(val, ':'))
     ->map((_, val) => [val[0], val[1]])
+    ->filter((_, val) => val[0] !~ '%\(ex\|exs\)$')
 enddef
 
 def HandleResults(results: list<list<string>>, edit: bool): void
@@ -55,6 +55,6 @@ enddef
 
 def SearchDefinition(regex: string): void
   if cursor.OnStringOrComment()
-    echom search(regex, 'W', 0, 0, () => cursor.OnStringOrComment())
+    search(regex, 'W', 0, 0, () => cursor.OnStringOrComment())
   endif
 enddef
