@@ -2,6 +2,7 @@ vim9script
 
 import autoload './util.vim'
 import autoload './cursor.vim' as cur
+
 const BUILTINS = [
   'Access', 'Agent', 'Application', 'Atom', 'Base', 'Bitwise', 'Calendar',
   'Code', 'Collectable', 'Config', 'Date', 'Date', 'DateTime', 'Duration',
@@ -25,9 +26,7 @@ export def GotoDefinition(): void
 
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so here we are.
-  const view = winsaveview()
-
-  var module: list<string> = []
+  final aliases: list<string> = []
 
   # Move back to the start of the word.
   normal! wb
@@ -100,6 +99,9 @@ def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
   endfor
 enddef
 
+const DOCSTRING_OPEN_REGEX = "\\~\k\+\%(\"\"\"\|'''\)"
+const DOCSTRING_CLOSE_REGEX = "^\s*\%(\"\"\"\|'''\)"
+
 def FindDef(lines: list<string>, regex: string): number
   var line_num = 0
   var in_docstring = v:false
@@ -107,22 +109,13 @@ def FindDef(lines: list<string>, regex: string): number
   for line in lines
     line_num += 1
 
-    # Skip comments
-    if line =~ '^\s*#'
-      continue
-    endif
-
-    if line =~ "\\~\k\+\%(\"\"\"\|'''\)"
+    if line =~ DOCSTRING_OPEN_REGEX
       in_docstring = v:true
-      continue
-    endif
-
-    if line =~ "^\s*\%(\"\"\"\|'''\)"
+    elseif line =~ DOCSTRING_CLOSE_REGEX
       in_docstring = v:false
-      continue
     endif
 
-    if in_docstring
+    if in_docstring || line =~ '^\s*#'
       continue
     endif
 
