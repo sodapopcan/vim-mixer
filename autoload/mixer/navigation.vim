@@ -77,7 +77,13 @@ export def GotoDefinition(): void
 enddef
 
 def Grep(cmd: string): list<string>
-  return systemlist("rg -l --type elixir " .. cmd)
+  const results = systemlist("rg -l --type elixir " .. cmd)
+
+  if v:shell_error > 0
+    return []
+  else
+    return results
+  endif
 enddef
 
 def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
