@@ -82,6 +82,11 @@ def FindDef(lines: list<string>, regex: string): number
   for line in lines
     line_num += 1
 
+    # Skip comments
+    if line =~ '^\s*#'
+      continue
+    endif
+
     if line =~ "\\~\k\+\%(\"\"\"\|'''\)"
       in_docstring = v:true
       continue
