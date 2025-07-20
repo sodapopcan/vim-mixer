@@ -1,7 +1,7 @@
 vim9script
 
 import autoload './util.vim'
-import autoload './cursor.vim'
+import autoload './cursor.vim' as cur
 const BUILTINS = [
   'Access', 'Agent', 'Application', 'Atom', 'Base', 'Bitwise', 'Calendar',
   'Code', 'Collectable', 'Config', 'Date', 'Date', 'DateTime', 'Duration',
@@ -47,15 +47,15 @@ export def GotoDefinition(): void
   var rg_regex: string
   var vim_regex: string
 
-  if cursor.OnHEEx()
+  if cur.OnHEEx()
     rg_regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fn) .. "\\>\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\)\?p\? \<' .. fn .. '\>(.*assigns.*)'
+    vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>(.*assigns.*)'
   else
     rg_regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fn) .. "\\>'"
-    vim_regex = '^\s*def\%(macro\)\?p\? \<' .. fn .. '\>'
+    vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>'
   endif
 
-  const line = search(vim_regex, 'Wn', 0, 0, () => cursor.OnStringOrComment())
+  const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
 
   if line != 0
     exec 'normal! ' .. line .. 'gg^'
