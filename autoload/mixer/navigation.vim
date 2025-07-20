@@ -2,6 +2,17 @@ vim9script
 
 import autoload './util.vim'
 import autoload './cursor.vim'
+const BUILTINS = [
+  'Access', 'Agent', 'Application', 'Atom', 'Base', 'Bitwise', 'Calendar',
+  'Code', 'Collectable', 'Config', 'Date', 'Date', 'DateTime', 'Duration',
+  'DynamicSupervisor', 'Enum', 'Enumerable', 'Exception', 'File', 'Float',
+  'Function', 'GenServer', 'IO', 'Inspect', 'Integer', 'JSON', 'Kernel',
+  'Keyword', 'List', 'Macro', 'Map', 'MapSet', 'Module', 'NaiveDateTime',
+  'Node', 'OptionParser', 'PartitionSupervisor', 'Path', 'Port', 'Process',
+  'Protocol', 'Protocols', 'Range', 'Record', 'Regex', 'Registry', 'Stream',
+  'String', 'StringIO', 'Supervisor', 'System', 'Task', 'Time', 'Tuple', 'URI',
+  'Version'
+]
 
 export def GotoDefinition(): void
   const token = expand('<cword>')
