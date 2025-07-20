@@ -23,16 +23,26 @@ export def GotoDefinition(): void
 
   var qualified: list<string>
 
-  if !cursor.OnHEEx()
-    qualified = expand('<cexpr>')->split('\.')
+  # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
+  # files, so here we are.
+  const view = winsaveview()
+
+  var module: list<string> = []
+
+  # Move back to the start of the word.
+  normal! wb
+
+  const fn = expand('<cword>')
+
+  if cur.Char(col('.') - 2) != '<'
+    const curr_line_num = line('.')
+    while cur.Char(col('.') - 1) == '.' && line('.') == curr_line_num
+      normal! bb
+      module->add(expand('<cword>'))
+    endwhile
   endif
 
-  var mod: string
-
-  const fn = qualified[-1]
-  if len(qualified) > 1
-    mod = qualified[0 : -2]->join('.')
-  endif
+  winrestview(view)
 
   var rg_regex: string
   var vim_regex: string
