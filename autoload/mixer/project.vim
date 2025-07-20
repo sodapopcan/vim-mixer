@@ -13,16 +13,16 @@ export def Setup()
 
   g:mix_projects = get(g:, 'mix_projects', {})
 
-  var contents = ''
-  var project_name = ''
-  var project_namespace = ''
-  var deps_fun = ''
-  var apps_path = ''
+  var contents: string
+  var project_name: string
+  var project_namespace: string
+  var deps_fun: string
+  var apps_path: string
 
   try
     contents = join(readfile(mix_file), '\n')
     project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
-    project_namespace = matchstr(contents, 'defmodule \zs\K*/ze.*MixProject$')
+    project_namespace = matchstr(contents, 'defmodule \zs\k\+\ze\.MixProject')
     deps_fun = matchstr(contents, 'def project\%(()\)\=\_.*deps:\s\+\zs\w\+\ze\%(()\)\?')
     apps_path = matchstr(contents, 'def project\_.*apps_path:\s\+"\zsk\+\ze"')
   catch
