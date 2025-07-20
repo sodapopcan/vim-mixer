@@ -87,9 +87,7 @@ def Grep(cmd: string): list<string>
 enddef
 
 def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
-  const file = results[0]
-
-  for f in results
+  for file in results
     const cmd = edit ? 'edit' : 'view'
     const line = FindDef(readfile(file), vim_regex)
 
