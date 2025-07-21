@@ -37,11 +37,9 @@ export def GotoDefinition(): void
     const curr_line_num = line('.')
     while cur.Char(col('.') - 1) == '.' && line('.') == curr_line_num
       normal! bb
-      module->add(expand('<cword>'))
+      aliases->add(expand('<cword>'))
     endwhile
   endif
-
-  winrestview(view)
 
   var rg_regex: string
   var vim_regex: string
@@ -54,10 +52,13 @@ export def GotoDefinition(): void
     vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>'
   endif
 
+  const view = winsaveview()
+  normal! gg
   const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
+  winrestview(view)
 
   if line != 0
-    exec 'normal! ' .. line .. 'gg^'
+    exec 'normal!' line .. 'gg^'
 
     return
   endif
