@@ -95,7 +95,7 @@ def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
       exec cmd '+' .. line file
       normal! zz^
 
-      return
+      break
     endif
   endfor
 enddef
