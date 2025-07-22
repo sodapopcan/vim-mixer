@@ -65,6 +65,8 @@ export def GotoDefinition(): void
 
   var results = Grep(rg_regex)
 
+  const deps = ResolveDeps(readfile(expand('%')))
+
   if len(results) > 0
     HandleResults(results, vim_regex, v:true)
   else
@@ -100,8 +102,7 @@ def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
   endfor
 enddef
 
-const DOCSTRING_OPEN_REGEX = "\\~\k\+\%(\"\"\"\|'''\)"
-const DOCSTRING_CLOSE_REGEX = "^\s*\%(\"\"\"\|'''\)"
+const DOCSTRING_REGEX = '"""\|'''''''
 
 def FindDef(lines: list<string>, regex: string): number
   var line_num = 0
@@ -110,9 +111,9 @@ def FindDef(lines: list<string>, regex: string): number
   for line in lines
     line_num += 1
 
-    if line =~ DOCSTRING_OPEN_REGEX
+    if line =~ DOCSTRING_REGEX && in_docstring == v:false
       in_docstring = v:true
-    elseif line =~ DOCSTRING_CLOSE_REGEX
+    elseif line =~ DOCSTRING_REGEX && in_docstring == v:true
       in_docstring = v:false
     endif
 
@@ -126,4 +127,51 @@ def FindDef(lines: list<string>, regex: string): number
   endfor
 
   return 0
+enddef
+
+# const QUALIFIED_REGEX = 's*\zs\(require\|alias\)\s*\([[:alnum:]\|\.]\+\){\=\%(,\s*as:\s\(\k\+\)\)\='
+# const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
+const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\([[:alnum:]\|\.]\+\)'
+const MAPPING = {'{': '}', '[': ']'}
+
+def ResolveDeps(lines: list<string>): dict<any>
+  const project_namespace = b:mix_project.namespace
+
+  var in_docstring = v:false
+  var multiend = '' # '}' or ']'
+
+  final deps = {}
+  final accumulator: list<string> = []
+
+  for line in lines
+    if line =~ DOCSTRING_REGEX && in_docstring == v:false
+      in_docstring = v:true
+    elseif line =~ DOCSTRING_REGEX && in_docstring == v:true
+      in_docstring = v:false
+    endif
+
+    if in_docstring || line =~# '^\s*#'
+      continue
+    endif
+
+    const type = matchstr(line, '^\s*\%(\<use\>\|\<import\>\|\<require\>\|\<alias\>\)')
+
+    if !empty(type)
+      const open = matchstr(line, '{\|\[')
+
+      if type != 'use' && !empty(open) && line !~# MAPPING[open]
+        multiend = MAPPING[open]
+      endif
+
+      accumulator->add(trim(line))
+    elseif !empty(multiend)
+      if line =~# multiend .. '$'
+        multiend = ''
+      endif
+
+      accumulator[-1] = accumulator[-1] .. trim(line)
+    endif
+  endfor
+
+  return {}
 enddef
