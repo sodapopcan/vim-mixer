@@ -41,6 +41,7 @@ export def GotoDefinition(): void
     endwhile
   endif
 
+  # First let's check if this function is local.
   var rg_regex: string
   var vim_regex: string
 
@@ -52,7 +53,7 @@ export def GotoDefinition(): void
     vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>'
   endif
 
-  const view = winsaveview()
+  var view = winsaveview()
   normal! gg
   const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
   winrestview(view)
@@ -63,9 +64,33 @@ export def GotoDefinition(): void
     return
   endif
 
-  var results = Grep(rg_regex)
+  # All right, so now we gotta grep.
+  # Let's start by getting the `use` directives.
 
-  const deps = ResolveDeps(readfile(expand('%')))
+  final deps = {}
+
+  view = winsaveview()
+  search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
+  while search('^\s*use', 'W', 0, 0, () => cur.OnStringOrComment()) != 0
+    const l = getline('.')
+    const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
+    # TODO: Check if it's actually a project module.
+    echom mod
+    if mod =~# b:mix_project.namespace
+      const res = Grep("'defmodule " .. mod .. "' ./lib")
+
+      deps->extend(ResolveDeps(readfile(res[0])))
+    else
+      # If the `use` is coming from a dependency, we're not going to read it
+      # and just treat it as an import.
+      deps[mod] = {directive: 'import', module: mod}
+    endif
+  endwhile
+  winrestview(view)
+
+  deps->extend(ResolveDeps(readfile(expand('%'))))
+
+  var results = Grep(rg_regex)
 
   if len(results) > 0
     HandleResults(results, vim_regex, v:true)
@@ -146,8 +171,6 @@ const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\
 const MAPPING = {'{': '}', '[': ']'}
 
 def ResolveDeps(lines: list<string>): dict<any>
-  const project_namespace = b:mix_project.namespace
-
   var docstring = DocString.new()
   var multiend = '' # '}' or ']'
 
