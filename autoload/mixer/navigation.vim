@@ -16,53 +16,32 @@ const BUILTINS = [
 ]
 
 export def GotoDefinition(): void
-  var fn = expand('<cword>')
+  const target = FindTarget()
 
-  if fn =~# '^\u'
-    return
-  endif
-
-  # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
-  # files, so here we are.
-  final aliases: list<string> = []
-  var view = winsaveview()
-  # Move back to the start of the word.
-  normal! wb
-
-  if cur.Char(col('.') - 2) != '<'
-    const curr_line_num = line('.')
-
-    while cur.Char(col('.') - 1) == '.' && line('.') == curr_line_num
-      normal! bb
-      aliases->add(expand('<cword>'))
-    endwhile
-  endif
-  winrestview(view)
-
-  # First let's check if this function is local.
   var rg_regex: string
   var vim_regex: string
 
   # If the function ends with a `?` or `!`, we need to account for that.
-  var fn_modifier = matchstr(fn, '[!?]$')
+  var flair = matchstr(target.fn, '[!?]$')
+  var bare = target.fn
 
-  if !empty(fn_modifier)
-    fn = fn[: -2]
+  if !empty(flair)
+    bare = target.fn[: -2]
 
-    if fn_modifier == '?'
-      fn_modifier = '\?'
+    if flair == '?'
+      flair = '\?'
     endif
   endif
 
   if cur.OnHEEx()
-    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. fn .. "\\>" .. (fn_modifier) .. "\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. fn_modifier .. '\>(.*assigns.*)'
+    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>(.*assigns.*)'
   else
-    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. fn .. "\\>" .. fn_modifier .. "'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. fn_modifier .. '\>'
+    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. flair .. "'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>'
   endif
 
-  view = winsaveview()
+  var view = winsaveview()
   normal! gg
   const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
   winrestview(view)
@@ -79,6 +58,7 @@ export def GotoDefinition(): void
   final deps = {}
 
   view = winsaveview()
+
   try
     search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
 
@@ -92,21 +72,18 @@ export def GotoDefinition(): void
         deps->extend(ResolveDeps(readfile(res[0])))
       else
         # If the `use` is coming from a dependency, we're not going to read it
-        # and just treat it as an import.
-        deps[mod] = {directive: 'import', module: mod}
+        deps[mod] = {directive: 'use', module: mod}
       endif
     endwhile
-  catch
   finally
     winrestview(view)
   endtry
 
   deps->extend(ResolveDeps(readfile(expand('%'))))
 
-  const alias = aliases->join('.')
   var module: string
-  if has_key(deps, alias)
-    module = deps[alias].module
+  if has_key(deps, target.alias)
+    module = deps[target.alias].module
   endif
 
   var results = Grep(rg_regex)
@@ -132,6 +109,39 @@ export def GotoDefinition(): void
       HandleResults(results, vim_regex, v:false)
     endif
   endif
+enddef
+
+# Target is the word under the cursor, which may be a function or an alias.
+# It returns a dictionary of the alias and optionally the function name.
+def FindTarget(): dict<string>
+  var fn = expand('<cword>')
+  final aliases: list<string> = []
+
+  # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
+  # files, so we have to do this manually.
+  const view = winsaveview()
+
+  try
+    # Move to the beginning of the word.
+    normal! wb
+
+    if cur.Char(col('.') - 2) != '<'
+      const curr_line_num = line('.')
+
+      while cur.Char(col('.') - 1) == '.' && line('.') == curr_line_num
+        normal! bb
+        aliases->add(expand('<cword>'))
+      endwhile
+    endif
+
+    return {
+      fn: fn,
+      alias: aliases->join('.')
+    }
+  catch
+    winrestview(view)
+    return {}
+  endtry
 enddef
 
 def Grep(cmd: string): list<string>
