@@ -16,7 +16,7 @@ const BUILTINS = [
 ]
 
 export def GotoDefinition(): void
-  const fn = expand('<cword>')
+  var fn = expand('<cword>')
 
   if fn =~# '^\u'
     return
@@ -43,12 +43,23 @@ export def GotoDefinition(): void
   var rg_regex: string
   var vim_regex: string
 
+  # If the function ends with a `?` or `!`, we need to account for that.
+  var fn_modifier = matchstr(fn, '[!?]$')
+
+  if !empty(fn_modifier)
+    fn = fn[: -2]
+
+    if fn_modifier == '?'
+      fn_modifier = '\?'
+    endif
+  endif
+
   if cur.OnHEEx()
-    rg_regex = "'\s*def(macro|delegate)*?p*? \\<" .. shellescape(fn) .. "\\>\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. '\>(.*assigns.*)'
+    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. fn .. "\\>" .. (fn_modifier) .. "\(.*assigns.*\)'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. fn_modifier .. '\>(.*assigns.*)'
   else
-    rg_regex = "'\s*def(macro|delegate)*?p*? \\<" .. shellescape(fn) .. "\\>'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. '\>'
+    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. fn .. "\\>" .. fn_modifier .. "'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. fn_modifier .. '\>'
   endif
 
   view = winsaveview()
@@ -70,6 +81,7 @@ export def GotoDefinition(): void
   view = winsaveview()
   try
     search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
+
     while search('^\s*use', 'W', 0, 0, () => cur.OnStringOrComment()) != 0
       const l = getline('.')
       const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
