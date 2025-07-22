@@ -16,6 +16,7 @@ const BUILTINS = [
 ]
 
 export def GotoDefinition(): void
+  # The target is either a function or an alias.
   const target = FindTarget()
   const [grep_regex, vim_regex] = BuildRegex(target)
 
