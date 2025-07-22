@@ -31,6 +31,7 @@ export def GotoDefinition(): void
 
   if cur.Char(col('.') - 2) != '<'
     const curr_line_num = line('.')
+
     while cur.Char(col('.') - 1) == '.' && line('.') == curr_line_num
       normal! bb
       aliases->add(expand('<cword>'))
