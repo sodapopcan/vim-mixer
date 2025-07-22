@@ -16,20 +16,17 @@ const BUILTINS = [
 ]
 
 export def GotoDefinition(): void
-  const token = expand('<cword>')
+  const fn = expand('<cword>')
 
-  if token =~# '^\u'
+  if fn =~# '^\u'
     return
   endif
 
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so here we are.
   final aliases: list<string> = []
-
   # Move back to the start of the word.
   normal! wb
-
-  const fn = expand('<cword>')
 
   if cur.Char(col('.') - 2) != '<'
     const curr_line_num = line('.')
@@ -224,8 +221,8 @@ def ResolveDeps(lines: list<string>): dict<any>
 
         deps[module][option] = {}
 
-        for [fn, arity] in fns
-          deps[module][option][fn] = str2nr(arity)
+        for [f, arity] in fns
+          deps[module][option][f] = str2nr(arity)
         endfor
       endif
     else
