@@ -22,8 +22,6 @@ export def GotoDefinition(): void
     return
   endif
 
-  var qualified: list<string>
-
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so here we are.
   final aliases: list<string> = []
