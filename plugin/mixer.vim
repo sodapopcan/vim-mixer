@@ -82,9 +82,7 @@ def SetupBuf()
   if exists('b:mix_project')
     command! -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
 
-    if get(g:, 'mixer_enable_goto_definition', v:false) && executable('rg')
-      nnoremap <silent> <buffer> gd :call <sid>navigation.GotoDefinition()<cr>
-    endif
+    nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition) :call <sid>navigation.GotoDefinition()<cr>
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()
