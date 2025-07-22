@@ -42,7 +42,7 @@ export def GotoDefinition(): void
   endif
 
   var view = winsaveview()
-  normal! gg
+  search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
   const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
   winrestview(view)
 
