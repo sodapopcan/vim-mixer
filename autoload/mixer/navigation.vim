@@ -161,7 +161,7 @@ def ResolveDeps(lines: list<string>): dict<any>
       continue
     endif
 
-    const type = matchstr(line, '^\s*\%(\<use\>\|\<import\>\|\<require\>\|\<alias\>\)')
+    const type = matchstr(line, '^\s*\%(\<import\>\|\<require\>\|\<alias\>\)')
 
     if !empty(type)
       const open = matchstr(line, '{\|\[')
