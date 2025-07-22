@@ -67,22 +67,26 @@ export def GotoDefinition(): void
   final deps = {}
 
   view = winsaveview()
-  search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
-  while search('^\s*use', 'W', 0, 0, () => cur.OnStringOrComment()) != 0
-    const l = getline('.')
-    const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
-    # TODO: Check if it's actually a project module.
-    if mod =~# b:mix_project.namespace
-      const res = Grep("'defmodule " .. mod .. " do' ./lib")
+  try
+    search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
+    while search('^\s*use', 'W', 0, 0, () => cur.OnStringOrComment()) != 0
+      const l = getline('.')
+      const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
+      # TODO: Check if it's actually a project module.
+      if mod =~# b:mix_project.namespace
+        const res = Grep("'defmodule " .. mod .. " do' ./lib ./test")
 
-      deps->extend(ResolveDeps(readfile(res[0])))
-    else
-      # If the `use` is coming from a dependency, we're not going to read it
-      # and just treat it as an import.
-      deps[mod] = {directive: 'import', module: mod}
-    endif
-  endwhile
-  winrestview(view)
+        deps->extend(ResolveDeps(readfile(res[0])))
+      else
+        # If the `use` is coming from a dependency, we're not going to read it
+        # and just treat it as an import.
+        deps[mod] = {directive: 'import', module: mod}
+      endif
+    endwhile
+  catch
+  finally
+    winrestview(view)
+  endtry
 
   deps->extend(ResolveDeps(readfile(expand('%'))))
 
