@@ -207,11 +207,13 @@ def ResolveDeps(lines: list<string>): dict<any>
           deps[module][option][fn] = str2nr(arity)
         endfor
       endif
+    else
+      deps[module] = {
+        directive: directive,
+        module: module
+      }
     endif
   endfor
-
-  # echom deps
-  # echom accumulator
 
   return deps
 enddef
