@@ -76,7 +76,7 @@ export def OnStringOrComment(): bool
 enddef
 
 export def OnHEEx(): bool
-  return OuterSynName() =~ 'Heex'
+  return OuterSynName() =~ 'Heex' && SynstackStr() !~ 'heexExpression'
 enddef
 
 export def Pos(): list<number>
