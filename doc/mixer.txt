@@ -19,6 +19,9 @@ INTRODUCTION                                |mixer-introduction|
     matchit.vim in embedded templates           |mixer-matchit|
     Compiler                                    |mixer-compiler|
     Syntax Hilighting                           |mixer-syntax-highlighting|
+CODE SEARCH                                 |mixer-code-search|
+  Jump to definition                          |mixer-jump-to-definition|
+  Find usages                                 |mixer-find-usages|
 COMMANDS                                    |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
@@ -82,6 +85,27 @@ To turn off this behaviour, set:
 >
   let g:mixer_syntax_highlighting = 0
 <
+
+CODE SEARCH                                 *mixer-code-search*
+
+Mixer provides mappings for decently accurate "jump to definition" and "find
+usages" functionality without requiring an LSP server.  They are not, however,
+defined by default.  You must define your own as detailed below.
+
+NOTE: This requires `ripgrep` to be installed.  I'm happy to
+      add support for other tools if you have a preference.
+      Please open an issue on github.
+
+
+Jump to definition                          *mixer-jump-to-definition*
+>
+  nmap gd <Plug>(mixer-jump-to-definition)
+<
+Find usages                                 *mixer-find-usages*
+>
+  nmap gD <Plug>(mixer-find-usages)
+<
+NOTE: You must use `nmap`, `nnoremap` will not work.
 
 
 COMMANDS                                    *mixer-commands*
