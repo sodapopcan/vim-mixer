@@ -19,14 +19,9 @@ export def GotoDefinition(): void
   const target = FindTarget()
   const [grep_regex, vim_regex] = BuildRegex(target)
 
-  var view = winsaveview()
-  search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
-  const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
-  winrestview(view)
-
-  if line != 0
-    exec 'normal!' line .. 'gg^'
-
+  # If the function is defined in the current file, then we can just jump to it
+  # and we're done.
+  if JumpToLocal(target, vim_regex)
     return
   endif
 
@@ -35,7 +30,7 @@ export def GotoDefinition(): void
 
   final deps = {}
 
-  view = winsaveview()
+  var view = winsaveview()
 
   try
     search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
@@ -120,6 +115,22 @@ def FindTarget(): dict<string>
     winrestview(view)
     return {}
   endtry
+enddef
+
+def JumpToLocal(target: dict<string>, vim_regex: string): bool
+  const view = winsaveview()
+
+  search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
+  const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
+  winrestview(view)
+
+  if line != 0
+    exec 'normal!' line .. 'gg^'
+
+    return v:true
+  endif
+
+  return v:false
 enddef
 
 def BuildRegex(target: dict<string>): list<string>
