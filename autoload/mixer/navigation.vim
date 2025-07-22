@@ -34,11 +34,11 @@ export def GotoDefinition(): void
   var view = winsaveview()
 
   try
-    search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
+    search('defmodule', 'bW', 0, 0, cur.OnStringOrComment)
 
-    while search('^\s*use', 'W', 0, 0, () => cur.OnStringOrComment()) != 0
+    while search('^\s*\<use\>', 'W', 0, 0, cur.OnStringOrComment) != 0
       const l = getline('.')
-      const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
+      const mod = matchstr(l, '^\s*\<use\>\s\+\zs\%(\k\|\.\)\+')
       # TODO: Check if it's actually a project module.
       if mod =~# b:mix_project.namespace
         const res = Grep("'defmodule " .. mod .. " do' ./lib ./test")
@@ -121,8 +121,8 @@ enddef
 def JumpToLocal(target: dict<string>, vim_regex: string): bool
   const view = winsaveview()
 
-  search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
-  const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
+  search('defmodule', 'bW', 0, 0, cur.OnStringOrComment)
+  const line = search(vim_regex, 'Wn', 0, 0, cur.OnStringOrComment)
   winrestview(view)
 
   if line != 0
