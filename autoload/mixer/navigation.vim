@@ -17,29 +17,7 @@ const BUILTINS = [
 
 export def GotoDefinition(): void
   const target = FindTarget()
-
-  var rg_regex: string
-  var vim_regex: string
-
-  # If the function ends with a `?` or `!`, we need to account for that.
-  var flair = matchstr(target.fn, '[!?]$')
-  var bare = target.fn
-
-  if !empty(flair)
-    bare = target.fn[: -2]
-
-    if flair == '?'
-      flair = '\?'
-    endif
-  endif
-
-  if cur.OnHEEx()
-    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>(.*assigns.*)'
-  else
-    rg_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. flair .. "'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>'
-  endif
+  const [grep_regex, vim_regex] = BuildRegex(target)
 
   var view = winsaveview()
   search('defmodule', 'bW', 0, 0, () => cur.OnStringOrComment())
@@ -86,7 +64,7 @@ export def GotoDefinition(): void
     module = deps[target.alias].module
   endif
 
-  var results = Grep(rg_regex)
+  var results = Grep(grep_regex)
 
   if len(results) > 0
     if len(results) > 1
@@ -103,7 +81,7 @@ export def GotoDefinition(): void
       HandleResults(results, vim_regex, v:true)
     endif
   else
-    results = Grep(rg_regex .. " ./deps")
+    results = Grep(grep_regex .. " ./deps")
 
     if len(results) > 0
       HandleResults(results, vim_regex, v:false)
@@ -142,6 +120,33 @@ def FindTarget(): dict<string>
     winrestview(view)
     return {}
   endtry
+enddef
+
+def BuildRegex(target: dict<string>): list<string>
+  var grep_regex: string
+  var vim_regex: string
+
+  # If the function ends with a `?` or `!`, we need to account for that.
+  var flair = matchstr(target.fn, '[!?]$')
+  var bare = target.fn
+
+  if !empty(flair)
+    bare = target.fn[: -2]
+
+    if flair == '?'
+      flair = '\?'
+    endif
+  endif
+
+  if cur.OnHEEx()
+    grep_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>(.*assigns.*)'
+  else
+    grep_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. flair .. "'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>'
+  endif
+
+  return [grep_regex, vim_regex]
 enddef
 
 def Grep(cmd: string): list<string>
