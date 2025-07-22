@@ -102,22 +102,33 @@ def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
   endfor
 enddef
 
-const DOCSTRING_REGEX = '"""\|'''''''
+class DocString
+  var in: bool
+  var DOCSTRING_REGEX = '"""\|'''''''
+
+  def new()
+    this.in = v:false
+  enddef
+
+  def Update(line: string)
+    if line =~ this.DOCSTRING_REGEX && this.in == v:false
+      this.in = v:true
+    elseif line =~ this.DOCSTRING_REGEX && this.in == v:true
+      this.in = v:false
+    endif
+  enddef
+endclass
 
 def FindDef(lines: list<string>, regex: string): number
   var line_num = 0
-  var in_docstring = v:false
+  var docstring = DocString.new()
 
   for line in lines
     line_num += 1
 
-    if line =~ DOCSTRING_REGEX && in_docstring == v:false
-      in_docstring = v:true
-    elseif line =~ DOCSTRING_REGEX && in_docstring == v:true
-      in_docstring = v:false
-    endif
+    docstring.Update(line)
 
-    if in_docstring || line =~ '^\s*#'
+    if docstring.in || line =~ '^\s*#'
       continue
     endif
 
@@ -137,20 +148,16 @@ const MAPPING = {'{': '}', '[': ']'}
 def ResolveDeps(lines: list<string>): dict<any>
   const project_namespace = b:mix_project.namespace
 
-  var in_docstring = v:false
+  var docstring = DocString.new()
   var multiend = '' # '}' or ']'
 
   final deps = {}
   final accumulator: list<string> = []
 
   for line in lines
-    if line =~ DOCSTRING_REGEX && in_docstring == v:false
-      in_docstring = v:true
-    elseif line =~ DOCSTRING_REGEX && in_docstring == v:true
-      in_docstring = v:false
-    endif
+    docstring.Update(line)
 
-    if in_docstring || line =~# '^\s*#'
+    if docstring.in || line =~# '^\s*#'
       continue
     endif
 
