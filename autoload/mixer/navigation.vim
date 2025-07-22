@@ -180,5 +180,38 @@ def ResolveDeps(lines: list<string>): dict<any>
     endif
   endfor
 
-  return {}
+  for line in accumulator
+    const [full, directive, module, _, _, _, _, _, _, _] = matchlist(line, DIRECTIVE_REGEX)
+
+    const expandables = matchstr(line, '{\zs.*\ze}')
+
+    if !empty(expandables)
+      for alias in expandables->split(',')->map((_, v) => trim(v))
+        deps[alias] = {directive: directive, module: module .. alias} 
+      endfor
+    elseif directive == 'import' && line =~# 'only:\|except:'
+      deps[module] = {
+        directive: directive,
+        module: module
+      }
+
+      const matches = matchlist(line, '\(only:\|except:\) \[\zs.*\ze\]')
+
+      if len(matches) > 0
+        const fns = matches[0]->split(',')->map((_, v) => v->split(': '))
+        const option = matches[1]
+
+        deps[module][option] = {}
+
+        for [fn, arity] in fns
+          deps[module][option][fn] = str2nr(arity)
+        endfor
+      endif
+    endif
+  endfor
+
+  # echom deps
+  # echom accumulator
+
+  return deps
 enddef
