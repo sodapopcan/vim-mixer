@@ -70,7 +70,6 @@ export def GotoDefinition(): void
     const l = getline('.')
     const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
     # TODO: Check if it's actually a project module.
-    echom mod
     if mod =~# b:mix_project.namespace
       const res = Grep("'defmodule " .. mod .. "' ./lib")
 
