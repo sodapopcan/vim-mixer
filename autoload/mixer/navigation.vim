@@ -43,11 +43,11 @@ export def GotoDefinition(): void
   var vim_regex: string
 
   if cur.OnHEEx()
-    rg_regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fn) .. "\\>\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>(.*assigns.*)'
+    rg_regex = "'\s*def(macro|delegate)*?p*? \\<" .. shellescape(fn) .. "\\>\(.*assigns.*\)'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. '\>(.*assigns.*)'
   else
-    rg_regex = "'\s*def(macro)*?p*? \\<" .. shellescape(fn) .. "\\>'"
-    vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>'
+    rg_regex = "'\s*def(macro|delegate)*?p*? \\<" .. shellescape(fn) .. "\\>'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. fn .. '\>'
   endif
 
   view = winsaveview()
