@@ -25,6 +25,7 @@ export def GotoDefinition(): void
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so here we are.
   final aliases: list<string> = []
+  var view = winsaveview()
   # Move back to the start of the word.
   normal! wb
 
@@ -35,6 +36,7 @@ export def GotoDefinition(): void
       aliases->add(expand('<cword>'))
     endwhile
   endif
+  winrestview(view)
 
   # First let's check if this function is local.
   var rg_regex: string
@@ -48,7 +50,7 @@ export def GotoDefinition(): void
     vim_regex = '^\s*def\%(macro\)\=p\= \<' .. fn .. '\>'
   endif
 
-  var view = winsaveview()
+  view = winsaveview()
   normal! gg
   const line = search(vim_regex, 'Wn', 0, 0, () => cur.OnStringOrComment())
   winrestview(view)
@@ -71,7 +73,7 @@ export def GotoDefinition(): void
     const mod = matchstr(l, '^\s*use\s\+\zs\%(\k\|\.\)\+')
     # TODO: Check if it's actually a project module.
     if mod =~# b:mix_project.namespace
-      const res = Grep("'defmodule " .. mod .. "' ./lib")
+      const res = Grep("'defmodule " .. mod .. " do' ./lib")
 
       deps->extend(ResolveDeps(readfile(res[0])))
     else
@@ -84,10 +86,28 @@ export def GotoDefinition(): void
 
   deps->extend(ResolveDeps(readfile(expand('%'))))
 
+  const alias = aliases->join('.')
+  var module: string
+  if has_key(deps, alias)
+    module = deps[alias].module
+  endif
+
   var results = Grep(rg_regex)
 
   if len(results) > 0
-    HandleResults(results, vim_regex, v:true)
+    if len(results) > 1
+      var res =
+        results
+        ->copy()
+        ->filter((_, f) => !matchstrlist(readfile(f), 'defmodule ' .. module .. ' do')->empty())
+
+      const file = res[0]
+      const l = FindDef(readfile(file), vim_regex)
+      exec 'edit +' .. l file
+      normal! zz^
+    else
+      HandleResults(results, vim_regex, v:true)
+    endif
   else
     results = Grep(rg_regex .. " ./deps")
 
@@ -206,6 +226,16 @@ def ResolveDeps(lines: list<string>): dict<any>
       for alias in expandables->split(',')->map((_, v) => trim(v))
         deps[alias] = {directive: directive, module: module .. alias} 
       endfor
+    elseif directive == 'alias'
+      if line =~# 'as:\s\+\k\+'
+        const alias = matchstr(line, 'as:\s\+\zs\k\+')
+
+        deps[alias] = {directive: directive, module: module}
+      else
+        const alias = module->split('\.')[-1]
+
+        deps[alias] = {directive: directive, module: module}
+      endif
     elseif directive == 'import' && line =~# 'only:\|except:'
       deps[module] = {
         directive: directive,
