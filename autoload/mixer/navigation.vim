@@ -204,33 +204,34 @@ def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
   endfor
 enddef
 
-class DocString
-  var in: bool
-  var DOCSTRING_REGEX = '"""\|'''''''
+class Context
+  var in_docstring: bool
+  var DOCSTRING_START_REGEX = '^\s*\%(\%(@\k\+\s\)\|\~\k\+\)"""\|'''''''
+  var DOCSTRING_END_REGEX = '^\s*"""\|'''''''
 
   def new()
-    this.in = v:false
+    this.in_docstring = v:false
   enddef
 
-  def Update(line: string)
-    if line =~ this.DOCSTRING_REGEX && this.in == v:false
-      this.in = v:true
-    elseif line =~ this.DOCSTRING_REGEX && this.in == v:true
-      this.in = v:false
+  def Track(line: string)
+    if line =~ this.DOCSTRING_START_REGEX
+      this.in_docstring = v:true
+    elseif line =~ this.DOCSTRING_END_REGEX
+      this.in_docstring = v:false
     endif
   enddef
 endclass
 
 def FindDef(lines: list<string>, regex: string): number
   var line_num = 0
-  var docstring = DocString.new()
+  var context = Context.new()
 
   for line in lines
     line_num += 1
 
-    docstring.Update(line)
+    context.Track(line)
 
-    if docstring.in || line =~ '^\s*#'
+    if context.in_docstring || line =~ '^\s*#'
       continue
     endif
 
@@ -320,15 +321,15 @@ def ResolveDeps(lines: list<string>): dict<any>
 enddef
 
 def FindDirectives(lines: list<string>): list<string>
-  const docstring = DocString.new()
+  const context = Context.new()
   const MAPPING = {'{': '}', '[': ']'}
   final directives: list<string> = []
   var multiend = '' # '}' or ']'
 
   for line in lines
-    docstring.Update(line)
+    context.Track(line)
 
-    if docstring.in || line =~# '^\s*#'
+    if context.in_docstring || line =~# '^\s*#'
       continue
     endif
 
