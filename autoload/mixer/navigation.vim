@@ -245,7 +245,6 @@ enddef
 # const QUALIFIED_REGEX = 's*\zs\(require\|alias\)\s*\([[:alnum:]\|\.]\+\){\=\%(,\s*as:\s\(\k\+\)\)\='
 # const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
 const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\([[:alnum:]\|\.]\+\)'
-const MAPPING = {'{': '}', '[': ']'}
 
 def ResolveDeps(lines: list<string>): dict<any>
   # This function parses all of the `import`, `require`, `alias` directives.
@@ -270,39 +269,9 @@ def ResolveDeps(lines: list<string>): dict<any>
   #     }
   #   }
   #
-  var docstring = DocString.new()
-  var multiend = '' # '}' or ']'
-
   final deps = {}
-  final accumulator: list<string> = []
 
-  for line in lines
-    docstring.Update(line)
-
-    if docstring.in || line =~# '^\s*#'
-      continue
-    endif
-
-    const type = matchstr(line, '^\s*\%(\<import\>\|\<require\>\|\<alias\>\)')
-
-    if !empty(type)
-      const open = matchstr(line, '{\|\[')
-
-      if type != 'use' && !empty(open) && line !~# MAPPING[open]
-        multiend = MAPPING[open]
-      endif
-
-      accumulator->add(trim(line))
-    elseif !empty(multiend)
-      if line =~# multiend .. '$'
-        multiend = ''
-      endif
-
-      accumulator[-1] = accumulator[-1] .. trim(line)
-    endif
-  endfor
-
-  for line in accumulator
+  for line in FindDirectives(lines)
     const [full, directive, module, _, _, _, _, _, _, _] = matchlist(line, DIRECTIVE_REGEX)
 
     const expandables = matchstr(line, '{\zs.*\ze}')
@@ -348,4 +317,39 @@ def ResolveDeps(lines: list<string>): dict<any>
   endfor
 
   return deps
+enddef
+
+def FindDirectives(lines: list<string>): list<string>
+  const docstring = DocString.new()
+  const MAPPING = {'{': '}', '[': ']'}
+  final directives: list<string> = []
+  var multiend = '' # '}' or ']'
+
+  for line in lines
+    docstring.Update(line)
+
+    if docstring.in || line =~# '^\s*#'
+      continue
+    endif
+
+    const type = matchstr(line, '^\s*\%(\<import\>\|\<require\>\|\<alias\>\)')
+
+    if !empty(type)
+      const open = matchstr(line, '{\|\[')
+
+      if type != 'use' && !empty(open) && line !~# MAPPING[open]
+        multiend = MAPPING[open]
+      endif
+
+      directives->add(trim(line))
+    elseif !empty(multiend)
+      if line =~# multiend .. '$'
+        multiend = ''
+      endif
+
+      directives[-1] = directives[-1] .. trim(line)
+    endif
+  endfor
+
+  return directives
 enddef
