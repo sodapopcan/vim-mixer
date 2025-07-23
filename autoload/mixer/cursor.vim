@@ -27,14 +27,15 @@ export def Target(): dict<string>
         aliases->add(expand('<cword>'))
       endwhile
     endif
+  catch
+    return {}
+  finally
+    winrestview(view)
 
     return {
       fn: fn,
       alias: aliases->join('.')
     }
-  catch
-    winrestview(view)
-    return {}
   endtry
 enddef
 
