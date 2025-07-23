@@ -59,11 +59,10 @@ export def GotoDefinition(): void
   var results: list<string> = []
   var search_paths: list<string> = []
   var type: string # 'local', 'dep', 'builtin'
-  const project_roots = project.GetRootModules()
 
   if has_key(directives, target.alias)
     modules = [directives[target.alias].module]
-    if IsProjectModule(project_roots, directives[target.alias].module)
+    if project.IsProjectModule(directives[target.alias].module)
       results = Grep(grep_regex, ["./lib", "./test"])
     else
       results = Grep(grep_regex, ["./deps"])
@@ -344,10 +343,4 @@ def FindDirectives(filename: string, recursion_count: number): list<string>
   endfor
 
   return directives
-enddef
-
-def IsProjectModule(project_roots: list<string>, module: string): bool
-  const ns = module->split('.')[0]
-
-  return util.InList(project_roots, ns)
 enddef
