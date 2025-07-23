@@ -83,12 +83,12 @@ export def GotoDefinition(): void
 
   const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s\+do'
 
-  if len(results) > 0
     const filtered_results =
       results
       ->copy()
       ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
 
+  if len(filtered_results) > 0
     const file = filtered_results[0]
     const line = FindDef(readfile(file), vim_regex)
     exec 'edit +' .. line file
