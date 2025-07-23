@@ -354,3 +354,14 @@ def FindDirectives(lines: list<string>): list<string>
 
   return directives
 enddef
+
+# TODO: To make this better we should check that either there is both
+# a lib/foo directory and either a lib/foo.ex or lib/foo/foo.ex file.
+def GetProjectRoots(): list<string>
+  return glob('lib/*', 0, 1)
+    -> filter((_, f) => f !~# '\.' || f =~# '\.ex\|\.exs$')
+    -> map((_, f) => fnamemodify(f, ':t:r'))
+    -> filter((_, f) => f != 'mix')
+    -> uniq()
+    -> map((_, f) => util.ToElixirAlias(f))
+enddef
