@@ -64,7 +64,7 @@ export def GotoDefinition(): void
   if has_key(directives, target.alias)
     modules = [directives[target.alias].module]
     if IsProjectModule(project_roots, directives[target.alias].module)
-      results = Grep(grep_regex, ["./lib"])
+      results = Grep(grep_regex, ["./lib", "./test"])
     else
       results = Grep(grep_regex, ["./deps"])
     endif
@@ -79,7 +79,7 @@ export def GotoDefinition(): void
       -> map((_, v) => v.module)
       -> values()
 
-    results = Grep(grep_regex, ["./lib", "./deps"])
+    results = Grep(grep_regex, ["./lib", "./test", "./deps"])
   endif
 
   const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s*do'
@@ -318,7 +318,7 @@ def FindDirectives(filename: string, recursion_count: number): list<string>
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
-        const files = Grep("'defmodule " .. module .. " do'",  ["./lib", "./deps"])
+        const files = Grep("'defmodule " .. module .. " do'",  ["./lib", "./test", "./deps"])
         const results = FindDirectives(files[0], recursion_count + 1)
 
         for result in results
