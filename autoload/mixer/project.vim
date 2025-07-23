@@ -87,7 +87,7 @@ export def GetRootModules(): list<string>
 enddef
 
 export def IsProjectModule(module: string): bool
-  const ns = module->split('.')[0]
+  const ns = module->split('\.')[0]
 
   return util.InList(GetRootModules(), ns)
 enddef
