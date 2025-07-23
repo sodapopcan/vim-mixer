@@ -5,6 +5,39 @@ vim9script
 
 import autoload './util.vim'
 
+# Target is the word under the cursor, which may be a function or an alias.
+# It returns a dictionary of the alias and optionally the function name.
+export def Target(): dict<string>
+  var fn = expand('<cword>')
+  final aliases: list<string> = []
+
+  # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
+  # files, so we have to do this manually.
+  const view = winsaveview()
+
+  try
+    # Move to the beginning of the word.
+    normal! wb
+
+    if Char(col('.') - 2) != '<'
+      const curr_line_num = line('.')
+
+      while Char(col('.') - 1) == '.' && line('.') == curr_line_num
+        normal! bb
+        aliases->add(expand('<cword>'))
+      endwhile
+    endif
+
+    return {
+      fn: fn,
+      alias: aliases->join('.')
+    }
+  catch
+    winrestview(view)
+    return {}
+  endtry
+enddef
+
 # Just a wrapper around `cursor()` so that we don't have to alias this file's import.
 export def Set(pos: list<number>)
   cursor(pos)
