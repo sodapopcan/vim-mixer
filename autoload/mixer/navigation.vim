@@ -15,6 +15,8 @@ const BUILTINS = [
   'Version'
 ]
 
+const MAX_USE_RECURSION = 2
+
 export def GotoDefinition(): void
   # The target is either a function or an alias.
   # It returns {fn: string, alias: string} which may look like:
@@ -48,31 +50,7 @@ export def GotoDefinition(): void
   # easier to reason about.  Unlike the others, `use` is able to inject
   # functions that aren't necessarily defined in the `use`d module itself.
 
-  final directives = {}
-
-  var view = winsaveview()
-
-  try
-    search('defmodule', 'bW', 0, 0, cur.OnStringOrComment)
-
-    while search('^\s*\<use\>', 'W', 0, 0, cur.OnStringOrComment) != 0
-      const l = getline('.')
-      const mod = matchstr(l, '^\s*\<use\>\s\+\zs\%(\k\|\.\)\+')
-      # TODO: Check if it's actually a project module.
-      if mod =~# b:mix_project.namespace
-        const res = Grep("'defmodule " .. mod .. " do' ./lib ./test")
-
-        directives->extend(ResolveDirectives(readfile(res[0])))
-      else
-        # If the `use` is coming from a dependency, we're not going to read it
-        directives[mod] = {directive: 'use', module: mod}
-      endif
-    endwhile
-  finally
-    winrestview(view)
-  endtry
-
-  directives->extend(ResolveDirectives(readfile(expand('%'))))
+  const directives = ResolveDirectives(expand('%'))
 
   var module: string
   if has_key(directives, target.alias)
@@ -85,7 +63,7 @@ export def GotoDefinition(): void
     else
       const elixir_path = GetElixirPath()
 
-      const res = Grep(target.fn .. ' ' .. elixir_path)
+      const res = Grep("'def " .. target.fn .. "' " .. elixir_path)
 
       if len(res) > 0
         HandleResults(res, vim_regex, v:false)
@@ -222,7 +200,7 @@ enddef
 
 class Context
   var in_docstring: bool
-  var DOCSTRING_START_REGEX = '^\s*\%(\%(@\k\+\s\)\|\~\k\+\)"""\|'''''''
+  var DOCSTRING_START_REGEX = '"""\|'''''''
   var DOCSTRING_END_REGEX = '^\s*"""\|'''''''
 
   def new()
@@ -230,9 +208,9 @@ class Context
   enddef
 
   def Track(line: string)
-    if line =~ this.DOCSTRING_START_REGEX
+    if line =~ this.DOCSTRING_START_REGEX && !this.in_docstring
       this.in_docstring = v:true
-    elseif line =~ this.DOCSTRING_END_REGEX
+    elseif line =~ this.DOCSTRING_END_REGEX && this.in_docstring
       this.in_docstring = v:false
     endif
   enddef
@@ -263,7 +241,7 @@ enddef
 # const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
 const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\([[:alnum:]\|\.]\+\)'
 
-def ResolveDirectives(lines: list<string>): dict<any>
+def ResolveDirectives(filename: string): dict<any>
   # This function parses all of the `import`, `require`, `alias` directives.
   # It does it in two passes, mainly to deal with multi-liners.
   # First it accumulates any matching line into a list.  In the case of
@@ -288,7 +266,7 @@ def ResolveDirectives(lines: list<string>): dict<any>
   #
   final directives = {}
 
-  for line in FindDirectives(lines)
+  for line in FindDirectives(filename, 1)
     const [full, directive, module, _, _, _, _, _, _, _] = matchlist(line, DIRECTIVE_REGEX)
 
     const expandables = matchstr(line, '{\zs.*\ze}')
@@ -336,11 +314,12 @@ def ResolveDirectives(lines: list<string>): dict<any>
   return directives
 enddef
 
-def FindDirectives(lines: list<string>): list<string>
+def FindDirectives(filename: string, recursion_count: number): list<string>
   const context = Context.new()
   const MAPPING = {'{': '}', '[': ']'}
   final directives: list<string> = []
   var multiend = '' # '}' or ']'
+  const lines = readfile(filename)
 
   for line in lines
     context.Track(line)
@@ -349,16 +328,27 @@ def FindDirectives(lines: list<string>): list<string>
       continue
     endif
 
-    const type = matchstr(line, '^\s*\%(\<import\>\|\<require\>\|\<alias\>\)')
+    const type = matchstr(line, '^\s*\zs\%(\<use\>\|\<import\>\|\<require\>\|\<alias\>\)\ze')
 
     if !empty(type)
-      const open = matchstr(line, '{\|\[')
+      if type == 'use' && recursion_count != MAX_USE_RECURSION
+        const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
+        const files = Grep("'defmodule " .. module .. " do' ./lib ./deps")
+        const results = FindDirectives(files[0], recursion_count + 1)
 
-      if type != 'use' && !empty(open) && line !~# MAPPING[open]
-        multiend = MAPPING[open]
+        for result in results
+          directives->add(result)
+        endfor
+      else
+
+        const open = matchstr(line, '{\|\[')
+
+        if type !=# 'use' && !empty(open) && line !~# MAPPING[open]
+          multiend = MAPPING[open]
+        endif
+
+        directives->add(trim(line))
       endif
-
-      directives->add(trim(line))
     elseif !empty(multiend)
       if line =~# multiend .. '$'
         multiend = ''
