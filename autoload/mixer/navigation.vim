@@ -48,7 +48,7 @@ export def GotoDefinition(): void
   # easier to reason about.  Unlike the others, `use` is able to inject
   # functions that aren't necessarily defined in the `use`d module itself.
 
-  final deps = {}
+  final directives = {}
 
   var view = winsaveview()
 
@@ -62,21 +62,21 @@ export def GotoDefinition(): void
       if mod =~# b:mix_project.namespace
         const res = Grep("'defmodule " .. mod .. " do' ./lib ./test")
 
-        deps->extend(ResolveDeps(readfile(res[0])))
+        directives->extend(ResolveDirectives(readfile(res[0])))
       else
         # If the `use` is coming from a dependency, we're not going to read it
-        deps[mod] = {directive: 'use', module: mod}
+        directives[mod] = {directive: 'use', module: mod}
       endif
     endwhile
   finally
     winrestview(view)
   endtry
 
-  deps->extend(ResolveDeps(readfile(expand('%'))))
+  directives->extend(ResolveDirectives(readfile(expand('%'))))
 
   var module: string
-  if has_key(deps, target.alias)
-    module = deps[target.alias].module
+  if has_key(directives, target.alias)
+    module = directives[target.alias].module
   endif
 
   var results = Grep(grep_regex)
@@ -247,7 +247,7 @@ enddef
 # const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
 const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\([[:alnum:]\|\.]\+\)'
 
-def ResolveDeps(lines: list<string>): dict<any>
+def ResolveDirectives(lines: list<string>): dict<any>
   # This function parses all of the `import`, `require`, `alias` directives.
   # It does it in two passes, mainly to deal with multi-liners.
   # First it accumulates any matching line into a list.  In the case of
@@ -270,7 +270,7 @@ def ResolveDeps(lines: list<string>): dict<any>
   #     }
   #   }
   #
-  final deps = {}
+  final directives = {}
 
   for line in FindDirectives(lines)
     const [full, directive, module, _, _, _, _, _, _, _] = matchlist(line, DIRECTIVE_REGEX)
@@ -279,20 +279,20 @@ def ResolveDeps(lines: list<string>): dict<any>
 
     if !empty(expandables)
       for alias in expandables->split(',')->map((_, v) => trim(v))
-        deps[alias] = {directive: directive, module: module .. alias} 
+        directives[alias] = {directive: directive, module: module .. alias} 
       endfor
     elseif directive == 'alias'
       if line =~# 'as:\s\+\k\+'
         const alias = matchstr(line, 'as:\s\+\zs\k\+')
 
-        deps[alias] = {directive: directive, module: module}
+        directives[alias] = {directive: directive, module: module}
       else
         const alias = module->split('\.')[-1]
 
-        deps[alias] = {directive: directive, module: module}
+        directives[alias] = {directive: directive, module: module}
       endif
     elseif directive == 'import' && line =~# 'only:\|except:'
-      deps[module] = {
+      directives[module] = {
         directive: directive,
         module: module
       }
@@ -303,21 +303,21 @@ def ResolveDeps(lines: list<string>): dict<any>
         const fns = matches[0]->split(',')->map((_, v) => v->split(': '))
         const option = matches[1]
 
-        deps[module][option] = {}
+        directives[module][option] = {}
 
         for [f, arity] in fns
-          deps[module][option][f] = str2nr(arity)
+          directives[module][option][f] = str2nr(arity)
         endfor
       endif
     else
-      deps[module] = {
+      directives[module] = {
         directive: directive,
         module: module
       }
     endif
   endfor
 
-  return deps
+  return directives
 enddef
 
 def FindDirectives(lines: list<string>): list<string>
