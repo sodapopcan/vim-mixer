@@ -26,7 +26,10 @@ export def GotoDefinition(): void
     return
   endif
 
-  # All right, so now we gotta grep.
+  # All right, so now we gotta start grepping to figure out where our function
+  # or alias is defined.  To do this, we're going to need to parse all of the
+  # `require`, `import`, and `alias` directives in the current file.  If there
+  # is a `use` then we're going to have jump into that and parse that as well.
   # Let's start by getting the `use` directives.
 
   final deps = {}
@@ -229,6 +232,28 @@ const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\
 const MAPPING = {'{': '}', '[': ']'}
 
 def ResolveDeps(lines: list<string>): dict<any>
+  # This function parses all of the `import`, `require`, `alias` directives.
+  # It does it in two passes, mainly to deal with multi-liners.
+  # First it accumulates any matching line into a list.  In the case of
+  # a multi-line, it will append to the last element of the list until it finds
+  # a terminating character, which is either a `}` or a `]`.  It deals with
+  # shorthands like `import Foo.{bar, baz}` and `alias Foo.{bar, baz}` whether
+  # they be multi-line or single-line.
+  #
+  # Afterwards, it maps the accumulator into a dictionary in the form of:
+  #
+  #   {
+  #     'Alias': {
+  #       module: 'Full.Module.Alias',
+  #       directive: 'import',
+  #       only: {
+  #         foo: 3,
+  #         bar: 1,
+  #         bar: 2
+  #       }
+  #     }
+  #   }
+  #
   var docstring = DocString.new()
   var multiend = '' # '}' or ']'
 
