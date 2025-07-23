@@ -77,6 +77,22 @@ export def GotoDefinition(): void
   var module: string
   if has_key(directives, target.alias)
     module = directives[target.alias].module
+  elseif util.InList(BUILTINS, target.alias)
+    if exists('g:mixer_elixir_path_command')->empty()
+      echomsg 'Module is an Elixir builtin.  See :h mixer-elixir-path-command'
+
+      return
+    else
+      const elixir_path = GetElixirPath()
+
+      const res = Grep(target.fn .. ' ' .. elixir_path)
+
+      if len(res) > 0
+        HandleResults(res, vim_regex, v:false)
+
+      endif
+      return
+    endif
   endif
 
   var results = Grep(grep_regex)
@@ -364,4 +380,17 @@ def GetProjectRoots(): list<string>
     -> filter((_, f) => f != 'mix')
     -> uniq()
     -> map((_, f) => util.ToElixirAlias(f))
+enddef
+
+def GetElixirPath(): string
+  system("command -v asdf")
+
+  if v:shell_error == 0
+    var elixir_path = system('asdf where elixir')->trim()
+    elixir_path = elixir_path .. '/lib/elixir/lib/'
+
+    return elixir_path
+  endif
+
+  return ''
 enddef
