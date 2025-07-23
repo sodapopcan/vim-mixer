@@ -81,17 +81,17 @@ export def GotoDefinition(): void
     results = Grep(grep_regex, ["./lib", "./test", "./deps"])
   endif
 
-  const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s*do'
+  const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s\+do'
 
   if len(results) > 0
-    var res =
+    const filtered_results =
       results
       ->copy()
       ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
 
-    const file = res[0]
-    const l = FindDef(readfile(file), vim_regex)
-    exec 'edit +' .. l file
+    const file = filtered_results[0]
+    const line = FindDef(readfile(file), vim_regex)
+    exec 'edit +' .. line file
     normal! zz^
   endif
 enddef
