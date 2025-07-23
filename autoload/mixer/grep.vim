@@ -24,7 +24,7 @@ export def GotoDefinition(): void
   # The target is either a function or an alias.
   # It returns {fn: string, alias: string} which may look like:
   #   {fn: 'some_function', alias: 'My.Module'}
-  const target = FindTarget()
+  const target = cur.Target()
 
   const [grep_regex, vim_regex] = BuildRegex(target)
 
@@ -94,39 +94,6 @@ export def GotoDefinition(): void
     exec 'edit +' .. l file
     normal! zz^
   endif
-enddef
-
-# Target is the word under the cursor, which may be a function or an alias.
-# It returns a dictionary of the alias and optionally the function name.
-def FindTarget(): dict<string>
-  var fn = expand('<cword>')
-  final aliases: list<string> = []
-
-  # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
-  # files, so we have to do this manually.
-  const view = winsaveview()
-
-  try
-    # Move to the beginning of the word.
-    normal! wb
-
-    if cur.Char(col('.') - 2) != '<'
-      const curr_line_num = line('.')
-
-      while cur.Char(col('.') - 1) == '.' && line('.') == curr_line_num
-        normal! bb
-        aliases->add(expand('<cword>'))
-      endwhile
-    endif
-
-    return {
-      fn: fn,
-      alias: aliases->join('.')
-    }
-  catch
-    winrestview(view)
-    return {}
-  endtry
 enddef
 
 def JumpToLocal(target: dict<string>, vim_regex: string): bool
