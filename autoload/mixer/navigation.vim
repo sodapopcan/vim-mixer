@@ -2,6 +2,7 @@ vim9script
 
 import autoload './util.vim'
 import autoload './cursor.vim' as cur
+import autoload './project.vim'
 
 const BUILTINS = [
   'Access', 'Agent', 'Application', 'Atom', 'Base', 'Bitwise', 'Calendar',
@@ -16,6 +17,8 @@ const BUILTINS = [
 ]
 
 const MAX_USE_RECURSION = 2
+
+const ELIXIR_PATH = project.GetElixirPath()
 
 export def GotoDefinition(): void
   # The target is either a function or an alias.
@@ -52,49 +55,45 @@ export def GotoDefinition(): void
 
   const directives = ResolveDirectives(expand('%'))
 
-  var module: string
+  var modules: list<string> = []
+  var results: list<string> = []
+  var search_paths: list<string> = []
+  var type: string # 'local', 'dep', 'builtin'
+  const project_roots = project.GetRootModules()
+
   if has_key(directives, target.alias)
-    module = directives[target.alias].module
-  elseif util.InList(BUILTINS, target.alias)
-    if exists('g:mixer_elixir_path_command')->empty()
-      echomsg 'Module is an Elixir builtin.  See :h mixer-elixir-path-command'
-
-      return
+    modules = [directives[target.alias].module]
+    if IsProjectModule(project_roots, directives[target.alias].module)
+      results = Grep(grep_regex, ["./lib"])
     else
-      const elixir_path = GetElixirPath()
-
-      const res = Grep("'def " .. target.fn .. "' " .. elixir_path)
-
-      if len(res) > 0
-        HandleResults(res, vim_regex, v:false)
-
-      endif
-      return
+      results = Grep(grep_regex, ["./deps"])
     endif
+  elseif util.InList(BUILTINS, target.alias)
+    modules = [target.alias]
+    results = Grep(grep_regex, [ELIXIR_PATH])
+  else
+    # Function is unqualified so we need to search the use and imports
+    modules = directives
+      -> copy()
+      -> filter((_, v) => v.directive ==# 'import' || v.directive ==# 'alias')
+      -> map((_, v) => v.module)
+      -> values()
+
+    results = Grep(grep_regex, ["./lib", "./deps"])
   endif
 
-  var results = Grep(grep_regex)
+  const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s*do'
 
   if len(results) > 0
-    if len(results) > 1
-      var res =
-        results
-        ->copy()
-        ->filter((_, f) => !matchstrlist(readfile(f), 'defmodule ' .. module .. ' do')->empty())
+    var res =
+      results
+      ->copy()
+      ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
 
-      const file = res[0]
-      const l = FindDef(readfile(file), vim_regex)
-      exec 'edit +' .. l file
-      normal! zz^
-    else
-      HandleResults(results, vim_regex, v:true)
-    endif
-  else
-    results = Grep(grep_regex .. " ./deps")
-
-    if len(results) > 0
-      HandleResults(results, vim_regex, v:false)
-    endif
+    const file = res[0]
+    const l = FindDef(readfile(file), vim_regex)
+    exec 'edit +' .. l file
+    normal! zz^
   endif
 enddef
 
@@ -174,28 +173,14 @@ def BuildRegex(target: dict<string>): list<string>
   return [grep_regex, vim_regex]
 enddef
 
-def Grep(cmd: string): list<string>
-  const results = systemlist("rg -l --type elixir " .. cmd)
+def Grep(cmd: string, paths: list<string> = []): list<string>
+  const results = systemlist("rg -l --type elixir " .. cmd .. ' ' .. paths->join(' '))
 
   if v:shell_error > 0
     return []
   else
     return results
   endif
-enddef
-
-def HandleResults(results: list<string>, vim_regex: string, edit: bool): void
-  for file in results
-    const cmd = edit ? 'edit' : 'view'
-    const line = FindDef(readfile(file), vim_regex)
-
-    if line != 0
-      exec cmd '+' .. line file
-      normal! zz^
-
-      break
-    endif
-  endfor
 enddef
 
 class Context
@@ -333,7 +318,7 @@ def FindDirectives(filename: string, recursion_count: number): list<string>
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
-        const files = Grep("'defmodule " .. module .. " do' ./lib ./deps")
+        const files = Grep("'defmodule " .. module .. " do'",  ["./lib", "./deps"])
         const results = FindDirectives(files[0], recursion_count + 1)
 
         for result in results
@@ -361,26 +346,8 @@ def FindDirectives(filename: string, recursion_count: number): list<string>
   return directives
 enddef
 
-# TODO: To make this better we should check that either there is both
-# a lib/foo directory and either a lib/foo.ex or lib/foo/foo.ex file.
-def GetProjectRoots(): list<string>
-  return glob('lib/*', 0, 1)
-    -> filter((_, f) => f !~# '\.' || f =~# '\.ex\|\.exs$')
-    -> map((_, f) => fnamemodify(f, ':t:r'))
-    -> filter((_, f) => f != 'mix')
-    -> uniq()
-    -> map((_, f) => util.ToElixirAlias(f))
-enddef
+def IsProjectModule(project_roots: list<string>, module: string): bool
+  const ns = module->split('.')[0]
 
-def GetElixirPath(): string
-  system("command -v asdf")
-
-  if v:shell_error == 0
-    var elixir_path = system('asdf where elixir')->trim()
-    elixir_path = elixir_path .. '/lib/elixir/lib/'
-
-    return elixir_path
-  endif
-
-  return ''
+  return util.InList(project_roots, ns)
 enddef

@@ -74,3 +74,27 @@ export def Setup()
     b:mix_project = g:mix_projects[project_root]
   endif
 enddef
+
+# TODO: To make this better we should check that either there is both
+# a lib/foo directory and either a lib/foo.ex or lib/foo/foo.ex file.
+export def GetRootModules(): list<string>
+  return glob('lib/*', 0, 1)
+    -> filter((_, f) => f !~# '\.' || f =~# '\.ex\|\.exs$')
+    -> map((_, f) => fnamemodify(f, ':t:r'))
+    -> filter((_, f) => f != 'mix')
+    -> uniq()
+    -> map((_, f) => util.ToElixirAlias(f))
+enddef
+
+export def GetElixirPath(): string
+  system("command -v asdf")
+
+  if v:shell_error == 0
+    var elixir_path = system('asdf where elixir')->trim()
+    elixir_path = elixir_path .. '/lib/elixir/lib/'
+
+    return elixir_path
+  endif
+
+  return ''
+enddef
