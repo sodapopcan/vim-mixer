@@ -86,12 +86,10 @@ export def GetRootModules(): list<string>
     -> map((_, f) => util.ToElixirAlias(f))
 enddef
 
-const PROJECT_ROOTS = GetRootModules()
-
 export def IsProjectModule(module: string): bool
   const ns = module->split('.')[0]
 
-  return util.InList(PROJECT_ROOTS, ns)
+  return util.InList(GetRootModules(), ns)
 enddef
 
 export def GetElixirPath(): string
