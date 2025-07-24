@@ -269,9 +269,10 @@ def ResolveDirectives(filename: string): dict<any>
   return directives
 enddef
 
+const MAPPING = {'{': '}', '[': ']'}
+
 def FindDirectives(filename: string, recursion_count: number): list<string>
   const context = Context.new()
-  const MAPPING = {'{': '}', '[': ']'}
   final directives: list<string> = []
   var multiend = '' # '}' or ']'
   const lines = readfile(filename)
