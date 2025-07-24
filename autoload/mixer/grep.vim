@@ -148,18 +148,27 @@ enddef
 
 class Context
   var in_docstring: bool
-  var DOCSTRING_START_REGEX = '"""\|'''''''
-  var DOCSTRING_END_REGEX = '^\s*"""\|'''''''
+  var indent: number
+  var delim: string
 
   def new()
     this.in_docstring = v:false
   enddef
 
   def Track(line: string)
-    if line =~ this.DOCSTRING_START_REGEX && !this.in_docstring
+    const match = matchlist(line, '\(\s*\).*\("""\)\|\(''''''\)')
+
+    if len(match) > 0
+      this.indent = match[1]->len()
+      this.delim = match[2]
+    endif
+
+    if !this.in_docstring && len(match) > 0
       this.in_docstring = v:true
-    elseif line =~ this.DOCSTRING_END_REGEX && this.in_docstring
+    elseif this.in_docstring && (line =~ '^\s\{' .. this.indent .. '\}' .. this.delim)
       this.in_docstring = v:false
+      this.indent = 0
+      this.delim = ''
     endif
   enddef
 endclass
@@ -172,6 +181,7 @@ def FindDef(lines: list<string>, regex: string): number
     line_num += 1
 
     context.Track(line)
+    # echom context.in_docstring .. ' ' .. line_num .. ': ' .. line
 
     if context.in_docstring || line =~ '^\s*#'
       continue
