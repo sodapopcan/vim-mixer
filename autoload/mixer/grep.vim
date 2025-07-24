@@ -20,6 +20,11 @@ const MAX_USE_RECURSION = 2
 
 const ELIXIR_PATH = project.GetElixirPath()
 
+const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
+  -> matchstrlist('^\s*def\%(macro\|delegate\)\= \zs\k\+\ze')
+  -> map((_, match) => match.text)
+  -> uniq()
+
 export def GotoDefinition(): void
   # The target is either a function or an alias.
   # It returns {fn: string, alias: string} which may look like:
@@ -72,22 +77,32 @@ export def GotoDefinition(): void
       results = Grep(grep_regex, ["./deps/*"])
     endif
   else
-    # Function is unqualified so we need to search the use and imports
-    modules = directives
-      -> copy()
-      -> filter((_, v) => v.directive !=# 'alias')
-      -> map((_, v) => v.module)
-      -> values()
+    # Function is unqualified
+    if util.InList(KERNEL_FNS, target.fn)
+      results = Grep(grep_regex, [ELIXIR_PATH .. '/kernel.ex'])
+    else
+      modules = directives
+        -> copy()
+        -> filter((_, v) => v.directive !=# 'alias')
+        -> map((_, v) => v.module)
+        -> values()
 
-    results = Grep(grep_regex, ["./lib", "./test", "./deps/*"])
+      results = Grep(grep_regex, ["./lib", "./test", "./deps/*"])
+    endif
   endif
 
   const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s\+do'
 
-  const filtered_results =
-    results
-    ->copy()
-    ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
+  var filtered_results: list<string> = []
+
+  if len(results) > 1
+    filtered_results =
+      results
+      ->copy()
+      ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
+  else
+    filtered_results = results
+  endif
 
   if len(filtered_results) > 0
     const file = filtered_results[0]
