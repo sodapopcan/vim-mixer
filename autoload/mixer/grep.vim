@@ -73,7 +73,7 @@ export def GotoDefinition(): void
     # Function is unqualified so we need to search the use and imports
     modules = directives
       -> copy()
-      -> filter((_, v) => v.directive ==# 'import' || v.directive ==# 'alias')
+      -> filter((_, v) => v.directive !=# 'alias')
       -> map((_, v) => v.module)
       -> values()
 
