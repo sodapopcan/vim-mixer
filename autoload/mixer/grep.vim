@@ -57,8 +57,6 @@ export def GotoDefinition(): void
 
   var modules: list<string> = []
   var results: list<string> = []
-  var search_paths: list<string> = []
-  var type: string # 'local', 'dep', 'builtin'
 
   if has_key(directives, target.alias)
     modules = [directives[target.alias].module]
