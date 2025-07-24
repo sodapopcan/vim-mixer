@@ -48,10 +48,6 @@ export def GotoDefinition(): void
   # defined.  To do this, we're going to need to parse all of the `require`,
   # `import`, and `alias` directives in the current file.  If there is a `use`
   # then we're going to have jump into that and parse that as well.
-  #
-  # We're going to deal with the `use` directives upfront since it's a little
-  # easier to reason about.  Unlike the others, `use` is able to inject
-  # functions that aren't necessarily defined in the `use`d module itself.
 
   const directives = ResolveDirectives(expand('%'))
 
