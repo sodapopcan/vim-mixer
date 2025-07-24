@@ -58,10 +58,17 @@ export def GotoDefinition(): void
   var modules: list<string> = []
   var results: list<string> = []
 
-  if has_key(directives, target.alias)
-    modules = [directives[target.alias].module]
+  if !empty(target.alias)
+    var module: string = target.alias
 
-    if project.IsProjectModule(directives[target.alias].module)
+    if has_key(directives, target.alias)
+      module = directives[target.alias].module
+      modules = [module]
+    else
+      modules = [target.alias]
+    endif
+
+    if project.IsProjectModule(module)
       results = Grep(grep_regex, ["./lib", "./test"])
     else
       results = Grep(grep_regex, ["./deps"])
