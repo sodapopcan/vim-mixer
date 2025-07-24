@@ -179,7 +179,6 @@ def FindDef(lines: list<string>, regex: string): number
     line_num += 1
 
     context.Track(line)
-    # echom context.in_docstring .. ' ' .. line_num .. ': ' .. line
 
     if context.in_docstring || line =~ '^\s*#'
       continue
