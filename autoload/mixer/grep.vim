@@ -122,10 +122,6 @@ def BuildRegex(target: dict<string>): list<string>
 
   if !empty(flair)
     bare = target.fn[: -2]
-
-    if flair == '?'
-      flair = '\?'
-    endif
   endif
 
   if cur.OnHEEx()
@@ -291,7 +287,6 @@ def FindDirectives(filename: string, recursion_count: number): list<string>
           directives->add(result)
         endfor
       else
-
         const open = matchstr(line, '{\|\[')
 
         if type !=# 'use' && !empty(open) && line !~# MAPPING[open]
