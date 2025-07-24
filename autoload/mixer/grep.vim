@@ -62,6 +62,7 @@ export def GotoDefinition(): void
 
   if has_key(directives, target.alias)
     modules = [directives[target.alias].module]
+
     if project.IsProjectModule(directives[target.alias].module)
       results = Grep(grep_regex, ["./lib", "./test"])
     else
@@ -83,10 +84,10 @@ export def GotoDefinition(): void
 
   const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s\+do'
 
-    const filtered_results =
-      results
-      ->copy()
-      ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
+  const filtered_results =
+    results
+    ->copy()
+    ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
 
   if len(filtered_results) > 0
     const file = filtered_results[0]
