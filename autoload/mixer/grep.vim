@@ -70,12 +70,11 @@ export def GotoDefinition(): void
 
     if project.IsProjectModule(module)
       results = Grep(grep_regex, ["./lib", "./test"])
+    elseif util.InList(BUILTINS, target.alias)
+      results = Grep(grep_regex, [ELIXIR_PATH])
     else
       results = Grep(grep_regex, ["./deps"])
     endif
-  elseif util.InList(BUILTINS, target.alias)
-    modules = [target.alias]
-    results = Grep(grep_regex, [ELIXIR_PATH])
   else
     # Function is unqualified so we need to search the use and imports
     modules = directives
