@@ -34,7 +34,7 @@ export def Target(): dict<string>
 
     return {
       fn: fn,
-      alias: aliases->join('.')
+      alias: aliases->reverse()->join('.')
     }
   endtry
 enddef
