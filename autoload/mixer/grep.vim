@@ -54,7 +54,7 @@ export def GotoDefinition(): void
   # `import`, and `alias` directives in the current file.  If there is a `use`
   # then we're going to have jump into that and parse that as well.
 
-  const directives = ResolveDirectives(expand('%'))
+  const directives = ResolveDirectives(target, expand('%'))
 
   var modules: list<string> = []
   var results: list<string> = []
@@ -176,27 +176,48 @@ enddef
 
 class Context
   var skip: bool
-  var indent: number
-  var delim: string
+  var in_module: bool
+  var module_end: string
+  var in_heredoc: bool
+  var heredoc_end: string
+  var heredoc_delim: string
 
   def new()
-    this.skip = v:false
+    this.skip = v:true
+    this.in_module = v:false
+    this.in_heredoc = v:false
   enddef
 
-  def Track(line: string)
-    const match = matchlist(line, '\(\s*\).*\("""\)\|\(''''''\)')
+  def Track(line: string, module: string = '')
+    const heredoc = matchlist(line, '\(\s*\).*\("""\)\|\(''''''\)')
 
-    if len(match) > 0
-      this.indent = match[1]->len()
-      this.delim = match[2]
+    if module !=# '' && !this.in_heredoc
+      const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
+
+      if !this.in_module && module_match != []
+        this.skip = v:false
+        this.in_module = v:true
+        this.module_end = '^' .. module_match[1] .. 'end$'
+      elseif this.in_module && line =~# this.module_end
+        this.in_module = v:false
+        this.skip = v:true
+      endif
     endif
 
-    if !this.skip && len(match) > 0
+    if len(heredoc) > 0
+      this.heredoc_delim = heredoc[2]
+      this.heredoc_end = '^' .. heredoc[1] .. this.heredoc_delim .. '$'
+      this.in_heredoc = v:true
+    endif
+
+    if !this.skip && len(heredoc) > 0
       this.skip = v:true
-    elseif this.skip && (line =~ '^\s\{' .. this.indent .. '\}' .. this.delim)
+      this.in_heredoc = v:true
+    elseif this.skip && (line =~ this.heredoc_end)
       this.skip = v:false
-      this.indent = 0
-      this.delim = ''
+      this.in_heredoc = v:false
+      this.heredoc_end = ''
+      this.heredoc_delim = ''
     endif
   enddef
 endclass
@@ -226,7 +247,7 @@ enddef
 # const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
 const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\([[:alnum:]\|\.]\+\)'
 
-def ResolveDirectives(filename: string): dict<any>
+def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   # This function parses all of the `import`, `require`, `alias` directives.
   # It does it in two passes, mainly to deal with multi-liners.
   # First it accumulates any matching line into a list.  In the case of
@@ -251,7 +272,7 @@ def ResolveDirectives(filename: string): dict<any>
   #
   final directives = {}
 
-  for line in FindDirectives(filename, 1)
+  for line in FindDirectives(target, filename, 1)
     const [full, directive, module, _, _, _, _, _, _, _] = matchlist(line, DIRECTIVE_REGEX)
 
     const expandables = matchstr(line, '{\zs.*\ze}')
@@ -301,26 +322,28 @@ enddef
 
 const MAPPING = {'{': '}', '[': ']'}
 
-def FindDirectives(filename: string, recursion_count: number): list<string>
+def FindDirectives(target: dict<any>, filename: string, recursion_count: number): list<string>
   const context = Context.new()
   final directives: list<string> = []
   var multiend = '' # '}' or ']'
   const lines = readfile(filename)
 
   for line in lines
-    context.Track(line)
+    context.Track(line, target.context_alias)
 
     if context.skip || line =~# '^\s*#'
       continue
     endif
 
+    # TODO: We need to be smarter about looking in `__using__` if we're in
+    # a `use` as well as looking in the whole module if it imports itself.
     const type = matchstr(line, '^\s*\zs\%(\<use\>\|\<import\>\|\<require\>\|\<alias\>\)\ze')
 
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
-        const files = Grep("'defmodule " .. module .. " do'",  ["./lib", "./test", "./deps/*"])
-        const results = FindDirectives(files[0], recursion_count + 1)
+        const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/*"])
+        const results = FindDirectives(target, files[0], recursion_count + 1)
 
         for result in results
           directives->add(result)
