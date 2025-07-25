@@ -93,7 +93,7 @@ export def GotoDefinition(): void
 
   const submodules_regex = modules[1 : ]
     -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
-    -> join('')
+    -> join()
 
   const module_regex = '^\s*defmodule\s\+' .. modules[0] .. submodules_regex .. '\s\+do'
   echom "module_regex=" .. module_regex
