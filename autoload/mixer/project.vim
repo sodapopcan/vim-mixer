@@ -79,7 +79,7 @@ enddef
 # a lib/foo directory and either a lib/foo.ex or lib/foo/foo.ex file.
 export def GetRootModules(): list<string>
   return glob('lib/*', 0, 1)
-    -> filter((_, f) => f !~# '\.' || f =~# '\.ex\|\.exs$')
+    -> filter((_, f) => f !~# '\.' || f =~# '\.ex$')
     -> map((_, f) => fnamemodify(f, ':t:r'))
     -> filter((_, f) => f != 'mix')
     -> uniq()
