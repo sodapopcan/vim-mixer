@@ -96,7 +96,6 @@ export def GotoDefinition(): void
     -> join()
 
   const module_regex = '^\s*defmodule\s\+' .. modules[0] .. submodules_regex .. '\s\+do'
-  echom "module_regex=" .. module_regex
 
   var filtered_results: list<string> = []
 
