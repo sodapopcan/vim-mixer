@@ -10,6 +10,7 @@ import autoload './util.vim'
 export def Target(): dict<string>
   var fn = expand('<cword>')
   final aliases: list<string> = []
+  var calling_context: list<string> = []
 
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so we have to do this manually.
@@ -26,6 +27,10 @@ export def Target(): dict<string>
         normal! bb
         aliases->add(expand('<cword>'))
       endwhile
+
+      while search('^\s*defmodule\s\+\zs[[:keyword:].]\+\ze\s\+d', 'bWe', 0, 0, OnStringOrComment) > 0
+        calling_context->add(expand('<cexpr>'))
+      endwhile
     endif
   catch
     return {}
@@ -34,7 +39,8 @@ export def Target(): dict<string>
 
     return {
       fn: fn,
-      alias: aliases->reverse()->join('.')
+      alias: aliases->reverse()->join('.'),
+      calling_context: calling_context->reverse()->join('.')
     }
   endtry
 enddef
