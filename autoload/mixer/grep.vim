@@ -329,7 +329,7 @@ const MAPPING = {'{': '}', '[': ']'}
 def FindDirectives(target: dict<any>, filename: string, recursion_count: number): list<string>
   const context = Context.new()
   final directives: list<string> = []
-  var multiend = '' # '}' or ']'
+  var multi_close = '' # '}' or ']'
   const lines = readfile(filename)
 
   for line in lines
@@ -356,14 +356,14 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
         const open = matchstr(line, '{\|\[')
 
         if type !=# 'use' && !empty(open) && line !~# MAPPING[open]
-          multiend = MAPPING[open]
+          multi_close = MAPPING[open]
         endif
 
         directives->add(trim(line))
       endif
-    elseif !empty(multiend)
-      if line =~# multiend .. '$'
-        multiend = ''
+    elseif !empty(multi_close)
+      if line =~# multi_close .. '$'
+        multi_close = ''
       endif
 
       directives[-1] = directives[-1] .. trim(line)
