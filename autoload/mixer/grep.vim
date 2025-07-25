@@ -62,8 +62,8 @@ export def GotoDefinition(): void
   if !empty(target.alias)
     var module: string = target.alias
 
-    if has_key(directives, target.alias)
-      module = directives[target.alias].module
+    if has_key(directives, target.alias_prefix)
+      module = directives[target.alias_prefix].module
       modules = [module]
     else
       modules = [target.alias]
@@ -91,7 +91,12 @@ export def GotoDefinition(): void
     endif
   endif
 
-  const module_regex = '^\s*defmodule\s\+\%(' .. join(modules, '\|') .. '\)\s\+do'
+  const submodules_regex = modules[1 : ]
+    -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
+    -> join('')
+
+  const module_regex = '^\s*defmodule\s\+' .. modules[0] .. submodules_regex .. '\s\+do'
+  echom "module_regex=" .. module_regex
 
   var filtered_results: list<string> = []
 

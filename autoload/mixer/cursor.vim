@@ -40,7 +40,8 @@ export def Target(): dict<string>
 
     return {
       fn: fn,
-      alias: aliases->reverse()->join('.'),
+      alias: aliases->copy()->reverse()->join('.'),
+      alias_prefix: aliases[-1],
       context_alias: context_alias
     }
   endtry
