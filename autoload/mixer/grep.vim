@@ -112,7 +112,7 @@ export def GotoDefinition(): void
         file =~# '^' .. b:mix_project.root .. '/test'
       cmd = 'edit +' .. line
     else
-      cmd = 'silent keepjumps view +' .. line .. '|set\ bufhidden=delete'
+      cmd = 'silent view +' .. line .. '|set\ bufhidden=delete'
     endif
 
     exec cmd file
