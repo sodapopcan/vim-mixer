@@ -175,12 +175,12 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
 enddef
 
 class Context
-  var in_docstring: bool
+  var skip: bool
   var indent: number
   var delim: string
 
   def new()
-    this.in_docstring = v:false
+    this.skip = v:false
   enddef
 
   def Track(line: string)
@@ -191,10 +191,10 @@ class Context
       this.delim = match[2]
     endif
 
-    if !this.in_docstring && len(match) > 0
-      this.in_docstring = v:true
-    elseif this.in_docstring && (line =~ '^\s\{' .. this.indent .. '\}' .. this.delim)
-      this.in_docstring = v:false
+    if !this.skip && len(match) > 0
+      this.skip = v:true
+    elseif this.skip && (line =~ '^\s\{' .. this.indent .. '\}' .. this.delim)
+      this.skip = v:false
       this.indent = 0
       this.delim = ''
     endif
@@ -210,7 +210,7 @@ def FindDef(lines: list<string>, regex: string): number
 
     context.Track(line)
 
-    if context.in_docstring || line =~ '^\s*#'
+    if context.skip || line =~ '^\s*#'
       continue
     endif
 
@@ -310,7 +310,7 @@ def FindDirectives(filename: string, recursion_count: number): list<string>
   for line in lines
     context.Track(line)
 
-    if context.in_docstring || line =~# '^\s*#'
+    if context.skip || line =~# '^\s*#'
       continue
     endif
 
