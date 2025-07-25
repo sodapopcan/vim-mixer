@@ -70,11 +70,11 @@ export def GotoDefinition(): void
     endif
 
     if project.IsProjectModule(module)
-      results = Grep(grep_regex, ["./lib", "./test"])
+      results = Grep(grep_regex, ["lib", "test"])
     elseif util.InList(BUILTINS, target.alias)
       results = Grep(grep_regex, [ELIXIR_PATH])
     else
-      results = Grep(grep_regex, ["./deps/*"])
+      results = Grep(grep_regex, ["deps/*"])
     endif
   else
     # Function is unqualified
@@ -87,7 +87,7 @@ export def GotoDefinition(): void
         -> map((_, v) => v.module)
         -> values()
 
-      results = Grep(grep_regex, ["./lib", "./test", "./deps/*"])
+      results = Grep(grep_regex, ["lib", "test", "deps/*"])
     endif
   endif
 
@@ -152,7 +152,12 @@ def BuildRegex(target: dict<string>): list<string>
 enddef
 
 def Grep(cmd: string, paths: list<string> = []): list<string>
-  const results = systemlist("rg -l --type elixir " .. cmd .. ' ' .. paths->join(' '))
+  const search_paths = paths
+    -> copy()
+    -> map((_, path) => path =~# '^\/' ? path : b:mix_project.root .. '/' .. path)
+    -> join(' ')
+
+  const results = systemlist("rg -l --type elixir " .. cmd .. ' ' .. search_paths)
 
   if v:shell_error > 0
     return []
