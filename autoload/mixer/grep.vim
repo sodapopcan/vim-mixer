@@ -107,7 +107,15 @@ export def GotoDefinition(): void
   if len(filtered_results) > 0
     const file = filtered_results[0]
     const line = FindDef(readfile(file), vim_regex)
-    exec 'edit +' .. line file
+    var cmd: string
+    if file =~# '^' .. b:mix_project.root .. '/lib' ||
+        file =~# '^' .. b:mix_project.root .. '/test'
+      cmd = 'edit +' .. line
+    else
+      cmd = 'silent keepjumps view +' .. line .. '|set\ bufhidden=delete'
+    endif
+
+    exec cmd file
     normal! zz^
   endif
 enddef
