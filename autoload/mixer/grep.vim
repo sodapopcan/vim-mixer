@@ -113,8 +113,8 @@ export def GotoDefinition(): void
 
     exec cmd file
     normal! zz^
-  elseif len(results) == 0
-    echomsg 'No results found for ' .. target.fn
+  elseif len(filtered_results) == 0
+    echomsg 'Nothing found'
   else
     filtered_results
       -> copy()

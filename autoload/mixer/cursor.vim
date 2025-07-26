@@ -35,7 +35,7 @@ export def Target(): dict<any>
       fn = defdelegate['fn']
       alias = defdelegate['alias']
     else
-      if Char(col('.') - 2) != '<'
+      if Char(col('.') - 2) !~# '<\|\/'
         const curr_line_num = line('.')
         final aliases: list<string> = []
 
