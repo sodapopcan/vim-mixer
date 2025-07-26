@@ -181,6 +181,7 @@ def FindDoBlockHead(do_pos: list<number>, flags: string): list<number>
   )
 
   var func_pos = searchpos('\%(>\|=\|\%(\s\+\)\)\s\+\zs\<\k\+\>\s\+\<do\>:\?', 'Wb', line('.'))
+
   if line('.') == func_pos[0]
     # We're going to do the bone-headed thing here and walk up until we find
     # a non-blank line then see if it ends in a comma.
