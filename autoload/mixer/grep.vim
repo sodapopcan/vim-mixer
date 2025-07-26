@@ -30,7 +30,7 @@ export def GotoDefinition(): void
 
   const [grep_regex, vim_regex] = BuildRegex(target)
 
-  if JumpToLocal(target, vim_regex)
+  if !target.is_delegate && JumpToLocal(target, vim_regex)
     return
   endif
 
@@ -54,7 +54,7 @@ export def GotoDefinition(): void
     elseif util.InList(BUILTINS, target.alias)
       results = Grep(grep_regex, [ELIXIR_PATH])
     else
-      results = Grep(grep_regex, ["deps/*"])
+      results = Grep(grep_regex, ["deps/**/lib/*"])
     endif
   else
     # Function is unqualified
@@ -67,7 +67,7 @@ export def GotoDefinition(): void
         -> map((_, v) => v.module)
         -> values()
 
-      results = Grep(grep_regex, ["lib", "test", "deps/*"])
+      results = Grep(grep_regex, ["lib", "test", "deps/**/lib/*"])
     endif
   endif
 
@@ -85,20 +85,24 @@ export def GotoDefinition(): void
 
   const module_regex = module_regex_list-> join('\|')
 
-  var filtered_results: list<string> = []
+  var filtered_results: list<any> = []
 
   if len(results) > 1
     filtered_results =
       results
-      ->copy()
-      ->filter((_, f) => !matchstrlist(readfile(f), module_regex)->empty())
+      -> copy()
+      -> map((_, f) => [readfile(f), f])
+      -> map((_, f) => [matchstrlist(f[0], module_regex), FindDef(f[0], vim_regex), f[1]])
+      -> filter((_, f) => !f[0]->empty() && f[1] != 0)
+      -> sort((a, b) => a[2] > b[2] ? 1 : -1)
+      -> map((_, f) => [f[2], f[1]])
   else
-    filtered_results = results
+    filtered_results = results->copy()->map((_, f) => [f, FindDef(readfile(f), vim_regex)])
   endif
 
-  if len(filtered_results) > 0
-    const file = filtered_results[0]
-    const line = FindDef(readfile(file), vim_regex)
+  if len(filtered_results) == 1
+    const [file, line] = filtered_results[0]
+
     var cmd: string
     if file =~# '^' .. b:mix_project.root .. '/lib' ||
         file =~# '^' .. b:mix_project.root .. '/test'
@@ -109,10 +113,25 @@ export def GotoDefinition(): void
 
     exec cmd file
     normal! zz^
+  elseif len(results) == 0
+    echomsg 'No results found for ' .. target.fn
+  else
+    filtered_results
+      -> copy()
+      -> map((_, f) => {
+        return {
+          filename: f[0],
+          line: f[1],
+          text: readfile(f[0])[f[1] - 1]}
+        }
+      )
+      -> setqflist()
+
+    exec get(g:, 'mixer_jump_to_definition_multiresult_cmd', 'copen')
   endif
 enddef
 
-def JumpToLocal(target: dict<string>, vim_regex: string): bool
+def JumpToLocal(target: dict<any>, vim_regex: string): bool
   const view = winsaveview()
 
   search('defmodule', 'bW', 0, 0, cur.OnStringOrComment)
@@ -128,7 +147,7 @@ def JumpToLocal(target: dict<string>, vim_regex: string): bool
   return v:false
 enddef
 
-def BuildRegex(target: dict<string>): list<string>
+def BuildRegex(target: dict<any>): list<string>
   var grep_regex: string
   var vim_regex: string
 
@@ -173,28 +192,17 @@ class Context
   var in_heredoc: bool
   var heredoc_end: string
   var heredoc_delim: string
+  var _keep: bool
 
   def new()
     this.skip = v:true
     this.in_module = v:false
     this.in_heredoc = v:false
+    this._keep = v:false
   enddef
 
   def Track(line: string, module: string = '')
-    const heredoc = matchlist(line, '\(\s*\).*\("""\)\|\(''''''\)')
-
-    if module !=# '' && !this.in_heredoc
-      const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
-
-      if !this.in_module && module_match != []
-        this.skip = v:false
-        this.in_module = v:true
-        this.module_end = '^' .. module_match[1] .. 'end$'
-      elseif this.in_module && line =~# this.module_end
-        this.in_module = v:false
-        this.skip = v:true
-      endif
-    endif
+    const heredoc = matchlist(line, '\(\s*\).*\("""\|''''''\)$')
 
     if len(heredoc) > 0
       this.heredoc_delim = heredoc[2]
@@ -210,6 +218,19 @@ class Context
       this.in_heredoc = v:false
       this.heredoc_end = ''
       this.heredoc_delim = ''
+    endif
+
+    if module !=# '' && !this.in_heredoc
+      const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
+
+      if !this.in_module && module_match != []
+        this.skip = v:false
+        this.in_module = v:true
+        this.module_end = '^' .. module_match[1] .. 'end$'
+      elseif this.in_module && line =~# this.module_end
+        this.in_module = v:false
+        this.skip = v:true
+      endif
     endif
   enddef
 endclass
@@ -245,14 +266,14 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   # First it accumulates any matching line into a list.  In the case of
   # a multi-line, it will append to the last element of the list until it finds
   # a terminating character, which is either a `}` or a `]`.  It deals with
-  # shorthands like `import Foo.{bar, baz}` and `alias Foo.{bar, baz}` whether
-  # they be multi-line or single-line.
+  # shorthands like `import Foo.{bar, baz}` and `alias Foo.{bar, baz}` even
+  # if they are multi-line.
   #
   # Afterwards, it maps the accumulator into a dictionary in the form of:
   #
   #   {
-  #     'Alias': {
-  #       module: 'Full.Module.Alias',
+  #     'MyAlias': {
+  #       module: 'Full.Module.MyAlias',
   #       directive: 'import',
   #       only: {
   #         foo: 3,
@@ -334,7 +355,7 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
-        const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/*"])
+        const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/**/lib/*"])
         const results = FindDirectives(target, files[0], recursion_count + 1)
 
         for result in results
