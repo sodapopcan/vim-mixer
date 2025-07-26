@@ -26,33 +26,13 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> uniq()
 
 export def GotoDefinition(): void
-  # The target is either a function or an alias.
-  # It returns {fn: string, alias: string} which may look like:
-  #   {fn: 'some_function', alias: 'My.Module'}
   const target = cur.Target()
 
   const [grep_regex, vim_regex] = BuildRegex(target)
 
-  # If the function is defined in the current file, then we can just jump to it
-  # and we're done.
   if JumpToLocal(target, vim_regex)
     return
   endif
-
-  # All right, so we're dealing with a remote function.  In order to resolve
-  # where it is defined, we're going to have parse the `alias`, `require`,
-  # `import` and, unforunately (although I love it), `use` directives.  However,
-  # we dont' have to alway worry about all of them.  If our target is qualified,
-  # this means we only have to concern ourselves with `alias` and `require`, and
-  # it'll actually be pretty easy to find!  If our function is happens to be
-  # included in the `:only` option of an import, then that's really best case
-  # scenario!  If we're dealing with a naked `import`, that's where it gets
-  # trickier, but it's not so bad.  We can grep for our function definition and
-  # use the imported module names to narrow down the search. 
-  # now we gotta start grepping to figure out where our function or alias is
-  # defined.  To do this, we're going to need to parse all of the `require`,
-  # `import`, and `alias` directives in the current file.  If there is a `use`
-  # then we're going to have jump into that and parse that as well.
 
   const directives = ResolveDirectives(target, expand('%'))
 
