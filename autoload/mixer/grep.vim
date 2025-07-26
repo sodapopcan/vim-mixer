@@ -116,18 +116,26 @@ export def GotoDefinition(): void
   elseif len(filtered_results) == 0
     echomsg 'Nothing found'
   else
-    filtered_results
-      -> copy()
-      -> map((_, f) => {
-        return {
-          filename: f[0],
-          lnum: f[1],
-          text: readfile(f[0])[f[1] - 1]}
-        }
-      )
-      -> setqflist()
+    const list_contents =
+      filtered_results
+        -> copy()
+        -> map((_, f) => {
+          return {
+            filename: f[0],
+            lnum: f[1],
+            text: readfile(f[0])[f[1] - 1]}
+          }
+        )
 
-    exec get(g:, 'mixer_jump_to_definition_multiresult_cmd', 'copen')
+    const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'quickfix')
+
+    if list_type == 'quickfix'
+      setqflist(list_contents)
+      botright copen
+    else
+      setloclist(0, list_contents)
+      lopen
+    endif
   endif
 enddef
 
