@@ -83,6 +83,7 @@ def SetupBuf()
     command! -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
 
     nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition) :call <sid>grep.GotoDefinition()<cr>
+    nmap <buffer> gd <Plug>(mixer-jump-to-definition)
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()
