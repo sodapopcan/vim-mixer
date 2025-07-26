@@ -121,7 +121,7 @@ export def GotoDefinition(): void
       -> map((_, f) => {
         return {
           filename: f[0],
-          line: f[1],
+          lnum: f[1],
           text: readfile(f[0])[f[1] - 1]}
         }
       )
