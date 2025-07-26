@@ -91,11 +91,19 @@ export def GotoDefinition(): void
     endif
   endif
 
-  const submodules_regex = modules[1 : ]
-    -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
-    -> join()
+  var module_regex_list: list<string> = []
 
-  const module_regex = '^\s*defmodule\s\+' .. modules[0] .. submodules_regex .. '\s\+do'
+  for module in modules
+    const m = module->split('\.')
+
+    const submodules_regex = m[1 : ]
+      -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
+      -> join()
+
+    module_regex_list->add('\%(^\s*defmodule\s\+' .. m[0] .. submodules_regex .. '\s\+do\)')
+  endfor
+
+  const module_regex = module_regex_list-> join('\|')
 
   var filtered_results: list<string> = []
 
