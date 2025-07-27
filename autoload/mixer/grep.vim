@@ -25,7 +25,22 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> map((_, match) => match.text)
   -> uniq()
 
-export def GotoDefinition(): void
+export def GotoDefinition()
+  FindDefinition((file: string, lnum: number) => {
+    var cmd: string
+    if file =~# '^' .. b:mix_project.root .. '/lib' ||
+        file =~# '^' .. b:mix_project.root .. '/test'
+      cmd = 'edit +' .. lnum
+    else
+      cmd = 'view +' .. lnum .. '|set\ bufhidden=delete'
+    endif
+
+    exec cmd file
+    normal! zz^
+  })
+enddef
+
+def FindDefinition(Callback: func): void
   const target = cur.Target()
 
   const [grep_regex, vim_regex] = BuildRegex(target)
@@ -81,16 +96,7 @@ export def GotoDefinition(): void
   if len(filtered_results) == 1
     const [file, lnum] = filtered_results[0]
 
-    var cmd: string
-    if file =~# '^' .. b:mix_project.root .. '/lib' ||
-        file =~# '^' .. b:mix_project.root .. '/test'
-      cmd = 'edit +' .. lnum
-    else
-      cmd = 'view +' .. lnum .. '|set\ bufhidden=delete'
-    endif
-
-    exec cmd file
-    normal! zz^
+    Callback(file, lnum)
   elseif len(filtered_results) == 0
     util.Warn("No results")
   else
