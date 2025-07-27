@@ -108,7 +108,7 @@ export def GotoDefinition(): void
 
     if list_type == 'qflist'
       setqflist(list_contents)
-      botright copen
+      copen
     elseif list_type == 'loclist'
       setloclist(0, list_contents)
       lopen
