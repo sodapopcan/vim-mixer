@@ -284,7 +284,7 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   # First it accumulates any matching line into a list.  In the case of
   # a multi-line, it will append to the last element of the list until it finds
   # a terminating character, which is either a `}` or a `]`.  It deals with
-  # shorthands like `import Foo.{bar, baz}` and `alias Foo.{bar, baz}` even
+  # shorthands like `import Foo.{Bar, Baz}` and `alias Foo.{Bar, Baz}` even
   # if they are multi-line.
   #
   # Afterwards, it maps the accumulator into a dictionary in the form of:
