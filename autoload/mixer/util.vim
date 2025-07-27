@@ -1,10 +1,18 @@
 vim9script
 
 export def Error(msg: string)
+  redraw
   echohl ErrorMsg
   echomsg msg
   echohl None
   v:errmsg = msg
+enddef
+
+export def Warn(msg: string)
+  redraw
+  echohl WarningMsg
+  echomsg 'Nothing found'
+  echohl None
 enddef
 
 export def BufFocus(bufnr: number)
