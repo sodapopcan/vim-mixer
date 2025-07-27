@@ -127,12 +127,12 @@ export def GotoDefinition(): void
           }
         )
 
-    const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'quickfix')
+    const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
 
-    if list_type == 'quickfix'
+    if list_type == 'qflist'
       setqflist(list_contents)
       botright copen
-    else
+    elseif list_type == 'loclist'
       setloclist(0, list_contents)
       lopen
     endif
