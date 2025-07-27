@@ -26,7 +26,7 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> uniq()
 
 export def GotoDefinition()
-  FindDefinition((file: string, lnum: number) => {
+  FindDefinition((_: dict<any>, file: string, lnum: number) => {
     var cmd: string
     if file =~# '^' .. b:mix_project.root .. '/lib' ||
         file =~# '^' .. b:mix_project.root .. '/test'
@@ -37,6 +37,16 @@ export def GotoDefinition()
 
     exec cmd file
     normal! zz^
+  })
+enddef
+
+export def Hover()
+  FindDefinition((target: dict<any>, file: string, lnum: number) => {
+    const contents = readfile(file)->join("\n")
+
+    const SPEC_REGEX = '@spec\s\+' .. target.fn .. '\_.\{-}\ze\s*def\%(\k\+\)\=\s\+' .. target.fn
+    const spec = matchstr(contents, SPEC_REGEX)
+    echom spec->trim()->split("\n")
   })
 enddef
 
@@ -96,7 +106,7 @@ def FindDefinition(Callback: func): void
   if len(filtered_results) == 1
     const [file, lnum] = filtered_results[0]
 
-    Callback(file, lnum)
+    Callback(target, file, lnum)
   elseif len(filtered_results) == 0
     util.Warn("No results")
   else
