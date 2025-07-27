@@ -36,14 +36,14 @@ export def GotoDefinition(): void
 
   const directives = ResolveDirectives(target, expand('%'))
 
-  var [modules, locations] = GetModulesAndLocations(target, directives)
+  var [module_candidates, locations] = GetModulesAndLocations(target, directives)
 
   var results: list<string> = []
 
-  if len(modules) == 1
+  if len(module_candidates) == 1
     var grep_regex_list: list<string> = []
 
-    for module in modules
+    for module in module_candidates
       const m = module->split('\.')
 
       const grep_submodule_regex = m[1 : ]
@@ -60,7 +60,7 @@ export def GotoDefinition(): void
     results = Grep(grep_regex, locations)
   endif
 
-  const vim_module_regex = BuildModuleRegex(modules)
+  const vim_module_regex = BuildModuleRegex(module_candidates)
 
   var filtered_results: list<any> = []
 
@@ -79,14 +79,14 @@ export def GotoDefinition(): void
   endif
 
   if len(filtered_results) == 1
-    const [file, line] = filtered_results[0]
+    const [file, lnum] = filtered_results[0]
 
     var cmd: string
     if file =~# '^' .. b:mix_project.root .. '/lib' ||
         file =~# '^' .. b:mix_project.root .. '/test'
-      cmd = 'edit +' .. line
+      cmd = 'edit +' .. lnum
     else
-      cmd = 'view +' .. line .. '|set\ bufhidden=delete'
+      cmd = 'view +' .. lnum .. '|set\ bufhidden=delete'
     endif
 
     exec cmd file
