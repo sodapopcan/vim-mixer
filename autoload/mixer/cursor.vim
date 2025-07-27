@@ -197,4 +197,6 @@ def GetContainingModule(): string
       normal! k0
     endif
   endwhile
-end
+
+  return ''
+enddef
