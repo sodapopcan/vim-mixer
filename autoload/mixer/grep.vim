@@ -92,7 +92,7 @@ export def GotoDefinition(): void
     exec cmd file
     normal! zz^
   elseif len(filtered_results) == 0
-    echomsg 'Nothing found'
+    util.Warn("No results")
   else
     const list_contents = filtered_results
       -> copy()
