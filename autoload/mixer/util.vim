@@ -22,17 +22,17 @@ export def BufFocus(bufnr: number)
   exec 'set switchbuf=' .. switchbuf_cached
 enddef
 
-export def GetPair(delim: string): string
-  const PAIRS = {
-    '(': ')',
-    ')': '(',
-    '{': '}',
-    '}': '{',
-    '[': ']',
-    ']': '[',
-  }
+const PAIRS = {
+  '(': ')',
+  ')': '(',
+  '{': '}',
+  '}': '{',
+  '[': ']',
+  ']': '[',
+}
 
-  return get(PAIRS, delim, 0)
+export def GetPair(delim: string): string
+  return get(PAIRS, delim, '')
 enddef
 
 export def Sub(str: string, pat: string, rep: string): string

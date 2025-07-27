@@ -377,8 +377,6 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   return directives
 enddef
 
-const MAPPING = {'{': '}', '[': ']'}
-
 def FindDirectives(target: dict<any>, filename: string, recursion_count: number): list<string>
   const context = Context.new()
   final directives: list<string> = []
@@ -410,8 +408,8 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
       else
         const open = matchstr(line, '{\|\[')
 
-        if type !=# 'use' && !empty(open) && line !~# MAPPING[open]
-          multi_close = MAPPING[open]
+        if type !=# 'use' && !empty(open) && line !~# util.GetPair(open)
+          multi_close = util.GetPair(open)
         endif
 
         directives->add(trim(line))
