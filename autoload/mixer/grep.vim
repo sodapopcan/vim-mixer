@@ -38,19 +38,7 @@ export def GotoDefinition(): void
 
   var [modules, results] = GetModulesAndResults(target, directives, grep_regex)
 
-  var module_regex_list: list<string> = []
-
-  for module in modules
-    const m = module->split('\.')
-
-    const submodules_regex = m[1 : ]
-      -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
-      -> join('')
-
-    module_regex_list->add('\%(^\s*defmodule\s\+' .. m[0] .. submodules_regex .. '\s\+do\)')
-  endfor
-
-  const module_regex = module_regex_list-> join('\|')
+  const module_regex = BuildModuleRegex(modules)
 
   var filtered_results: list<any> = []
 
@@ -91,7 +79,7 @@ export def GotoDefinition(): void
           filename: f[0],
           lnum: f[1],
           text: readfile(f[0])[f[1] - 1]}
-      }
+        }
       )
 
     const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
@@ -197,6 +185,22 @@ def GetModulesAndResults(target: dict<any>, directives: dict<any>, grep_regex: s
   endif
 
   return [modules, results]
+enddef
+
+def BuildModuleRegex(modules: list<string>): string
+  var module_regex_list: list<string> = []
+
+  for module in modules
+    const m = module->split('\.')
+
+    const submodules_regex = m[1 : ]
+      -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
+      -> join('')
+
+    module_regex_list->add('\%(^\s*defmodule\s\+' .. m[0] .. submodules_regex .. '\s\+do\)')
+  endfor
+
+  return module_regex_list->join('\|')
 enddef
 
 class Context
