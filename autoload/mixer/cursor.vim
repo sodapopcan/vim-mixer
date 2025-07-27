@@ -12,7 +12,8 @@ const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:
 # Target is the word under the cursor, which may be a function or an alias.
 # It returns a dictionary of the alias and optionally the function name.
 export def Target(): dict<any>
-  var fn = expand('<cword>')
+  var fn: string = ''
+  var token = expand('<cword>')
   var alias: string
   # This is the module name the target is defined in which is necessary to
   # account for nested defmodules.
@@ -37,8 +38,16 @@ export def Target(): dict<any>
       alias = defdelegate['alias']
     else
       if Char(col('.') - 2) !~# '<\|\/'
-        const curr_line_num = line('.')
         final aliases: list<string> = []
+
+        if token =~# '^\u'
+          fn = ''
+          aliases->add(token)
+        else
+          fn = token
+        endif
+
+        const curr_line_num = line('.')
 
         while Char(col('.') - 1) == '.' && line('.') == curr_line_num
           normal! bb
@@ -46,6 +55,8 @@ export def Target(): dict<any>
         endwhile
 
         alias = aliases->reverse()->join('.')
+      else
+        fn = token
       endif
     endif
 
