@@ -30,7 +30,7 @@ export def GotoDefinition(): void
 
   const [grep_regex, vim_regex] = BuildRegex(target)
 
-  if !target.is_delegate && JumpToLocal(target, vim_regex)
+  if JumpToLocal(target, vim_regex)
     return
   endif
 
@@ -79,7 +79,7 @@ export def GotoDefinition(): void
           filename: f[0],
           lnum: f[1],
           text: readfile(f[0])[f[1] - 1]}
-      }
+        }
       )
 
     const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
@@ -95,6 +95,10 @@ export def GotoDefinition(): void
 enddef
 
 def JumpToLocal(target: dict<any>, vim_regex: string): bool
+  if !target.is_delegate
+    return v:false
+  endif
+
   const view = winsaveview()
 
   search('defmodule', 'bW', 0, 0, cur.OnStringOrComment)
