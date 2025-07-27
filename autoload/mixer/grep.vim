@@ -36,9 +36,31 @@ export def GotoDefinition(): void
 
   const directives = ResolveDirectives(target, expand('%'))
 
-  var [modules, results] = GetModulesAndResults(target, directives, grep_regex)
+  var [modules, locations] = GetModulesAndLocations(target, directives)
 
-  const module_regex = BuildModuleRegex(modules)
+  var results: list<string> = []
+
+  if len(modules) == 1
+    var grep_regex_list: list<string> = []
+
+    for module in modules
+      const m = module->split('\.')
+
+      const grep_submodule_regex = m[1 : ]
+        -> map((_, a) => '(\.|.*defmodule\s)' .. a)
+        -> join('')
+
+      grep_regex_list->add('(^\s*defmodule\s' .. m[0] .. grep_submodule_regex .. '\sdo)')
+    endfor
+
+    const grep_module_regex = grep_regex_list->join('|')
+
+    results = Grep(" --multiline --multiline-dotall '" .. grep_module_regex .. "'", locations)
+  else
+    results = Grep(grep_regex, locations)
+  endif
+
+  const vim_module_regex = BuildModuleRegex(modules)
 
   var filtered_results: list<any> = []
 
@@ -46,7 +68,7 @@ export def GotoDefinition(): void
     filtered_results = results
       -> copy()
       -> map((_, f) => [readfile(f), f])
-      -> map((_, f) => [matchstrlist(f[0], module_regex), FindDef(f[0], vim_regex), f[1]])
+      -> map((_, f) => [matchstrlist(f[0], vim_module_regex), FindDef(f[0], vim_regex), f[1]])
       -> filter((_, f) => !f[0]->empty() && f[1] != 0)
       -> sort((a, b) => a[2] > b[2] ? 1 : -1)
       -> map((_, f) => [f[2], f[1]])
@@ -143,7 +165,7 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
     -> map((_, path) => path =~# '^\/' ? path : b:mix_project.root .. '/' .. path)
     -> join(' ')
 
-  const results = systemlist("rg -l --type elixir " .. cmd .. ' ' .. search_paths)
+  const results = systemlist("rg -l --type elixir " .. cmd ..  " " .. search_paths)
 
   if v:shell_error > 0
     return []
@@ -152,9 +174,9 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
   endif
 enddef
 
-def GetModulesAndResults(target: dict<any>, directives: dict<any>, grep_regex: string): list<list<string>>
+def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
   var modules: list<string> = []
-  var results: list<string> = []
+  var locations: list<string> = []
 
   if !empty(target.alias)
     var module: string = target.alias
@@ -167,16 +189,16 @@ def GetModulesAndResults(target: dict<any>, directives: dict<any>, grep_regex: s
     endif
 
     if project.IsProjectModule(module)
-      results = Grep(grep_regex, ["lib", "test"])
+      locations = ["lib", "test"]
     elseif util.InList(BUILTINS, target.alias)
-      results = Grep(grep_regex, [ELIXIR_PATH])
+      locations = [ELIXIR_PATH]
     else
-      results = Grep(grep_regex, ["deps/**/lib/*"])
+      locations = ["deps/**/lib/*"]
     endif
   else
     # Function is unqualified
     if util.InList(KERNEL_FNS, target.fn)
-      results = Grep(grep_regex, [ELIXIR_PATH .. '/kernel.ex'])
+      locations = [ELIXIR_PATH .. '/kernel.ex']
     else
       modules = directives
         -> copy()
@@ -184,11 +206,11 @@ def GetModulesAndResults(target: dict<any>, directives: dict<any>, grep_regex: s
         -> map((_, v) => v.module)
         -> values()
 
-      results = Grep(grep_regex, ["lib", "test", "deps/**/lib/*"])
+      locations = ["lib", "test", "deps/**/lib/*"]
     endif
   endif
 
-  return [modules, results]
+  return [modules, locations]
 enddef
 
 def BuildModuleRegex(modules: list<string>): string
@@ -378,11 +400,13 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
         const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/**/lib/*"])
-        const results = FindDirectives(target, files[0], recursion_count + 1)
+        if len(files) > 0
+          const results = FindDirectives(target, files[0], recursion_count + 1)
 
-        for result in results
-          directives->add(result)
-        endfor
+          for result in results
+            directives->add(result)
+          endfor
+        endif
       else
         const open = matchstr(line, '{\|\[')
 
