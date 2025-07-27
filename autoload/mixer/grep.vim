@@ -43,8 +43,7 @@ export def GotoDefinition(): void
   var filtered_results: list<any> = []
 
   if len(results) > 1
-    filtered_results =
-      results
+    filtered_results = results
       -> copy()
       -> map((_, f) => [readfile(f), f])
       -> map((_, f) => [matchstrlist(f[0], module_regex), FindDef(f[0], vim_regex), f[1]])
@@ -52,7 +51,9 @@ export def GotoDefinition(): void
       -> sort((a, b) => a[2] > b[2] ? 1 : -1)
       -> map((_, f) => [f[2], f[1]])
   else
-    filtered_results = results->copy()->map((_, f) => [f, FindDef(readfile(f), vim_regex)])
+    filtered_results = results
+      ->copy()
+      ->map((_, f) => [f, FindDef(readfile(f), vim_regex)])
   endif
 
   if len(filtered_results) == 1
@@ -71,15 +72,14 @@ export def GotoDefinition(): void
   elseif len(filtered_results) == 0
     echomsg 'Nothing found'
   else
-    const list_contents =
-      filtered_results
+    const list_contents = filtered_results
       -> copy()
       -> map((_, f) => {
         return {
           filename: f[0],
           lnum: f[1],
           text: readfile(f[0])[f[1] - 1]}
-        }
+      }
       )
 
     const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
