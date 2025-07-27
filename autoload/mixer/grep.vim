@@ -36,40 +36,7 @@ export def GotoDefinition(): void
 
   const directives = ResolveDirectives(target, expand('%'))
 
-  var modules: list<string> = []
-  var results: list<string> = []
-
-  if !empty(target.alias)
-    var module: string = target.alias
-
-    if has_key(directives, target.alias_prefix)
-      module = directives[target.alias_prefix].module
-      modules = [module]
-    else
-      modules = [target.alias]
-    endif
-
-    if project.IsProjectModule(module)
-      results = Grep(grep_regex, ["lib", "test"])
-    elseif util.InList(BUILTINS, target.alias)
-      results = Grep(grep_regex, [ELIXIR_PATH])
-    else
-      results = Grep(grep_regex, ["deps/**/lib/*"])
-    endif
-  else
-    # Function is unqualified
-    if util.InList(KERNEL_FNS, target.fn)
-      results = Grep(grep_regex, [ELIXIR_PATH .. '/kernel.ex'])
-    else
-      modules = directives
-        -> copy()
-        -> filter((_, v) => v.directive !=# 'alias')
-        -> map((_, v) => v.module)
-        -> values()
-
-      results = Grep(grep_regex, ["lib", "test", "deps/**/lib/*"])
-    endif
-  endif
+  var [modules, results] = GetModulesAndResults(target, directives, grep_regex)
 
   var module_regex_list: list<string> = []
 
@@ -118,14 +85,14 @@ export def GotoDefinition(): void
   else
     const list_contents =
       filtered_results
-        -> copy()
-        -> map((_, f) => {
-          return {
-            filename: f[0],
-            lnum: f[1],
-            text: readfile(f[0])[f[1] - 1]}
-          }
-        )
+      -> copy()
+      -> map((_, f) => {
+        return {
+          filename: f[0],
+          lnum: f[1],
+          text: readfile(f[0])[f[1] - 1]}
+      }
+      )
 
     const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
 
@@ -191,6 +158,45 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
   else
     return results
   endif
+enddef
+
+def GetModulesAndResults(target: dict<any>, directives: dict<any>, grep_regex: string): list<list<string>>
+  var modules: list<string> = []
+  var results: list<string> = []
+
+  if !empty(target.alias)
+    var module: string = target.alias
+
+    if has_key(directives, target.alias_prefix)
+      module = directives[target.alias_prefix].module
+      modules = [module]
+    else
+      modules = [target.alias]
+    endif
+
+    if project.IsProjectModule(module)
+      results = Grep(grep_regex, ["lib", "test"])
+    elseif util.InList(BUILTINS, target.alias)
+      results = Grep(grep_regex, [ELIXIR_PATH])
+    else
+      results = Grep(grep_regex, ["deps/**/lib/*"])
+    endif
+  else
+    # Function is unqualified
+    if util.InList(KERNEL_FNS, target.fn)
+      results = Grep(grep_regex, [ELIXIR_PATH .. '/kernel.ex'])
+    else
+      modules = directives
+        -> copy()
+        -> filter((_, v) => v.directive !=# 'alias')
+        -> map((_, v) => v.module)
+        -> values()
+
+      results = Grep(grep_regex, ["lib", "test", "deps/**/lib/*"])
+    endif
+  endif
+
+  return [modules, results]
 enddef
 
 class Context
