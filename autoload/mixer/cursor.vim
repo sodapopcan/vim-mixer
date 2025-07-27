@@ -4,6 +4,7 @@ vim9script
 # position of the cursor.
 
 import autoload './util.vim'
+import autoload './code.vim'
 
 # const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(,\_.\{-}\(to:\|as:\)\s\+\([[:alnum:]:.]\+\)\%(,\_.\{-}\(to:\|as:\)\s\+\([[:alnum:]:.]\+\)\=\)\=\)'
 const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:\|as:\)\s\+\([[:alnum:]:.]\+\)\)\)\{1,2}\)'
@@ -48,8 +49,7 @@ export def Target(): dict<any>
       endif
     endif
 
-    search('^\s*defmodule\s\+\zs[[:keyword:].]\+\ze\s\+d', 'bWe', 0, 0, OnStringOrComment)
-    context_alias = expand('<cexpr>')
+    context_alias = GetContainingModule()
   catch
     return {}
   finally
@@ -183,3 +183,18 @@ export def GetDefdelegate(): dict<string>
     return {}
   endif
 enddef
+
+def GetContainingModule(): string
+  const pos = Pos()
+
+  while true && line('.') != 1
+    search('^\s*defmodule\s\+\zs[[:keyword:].]\+\ze\s\+d', 'bW', 0, 0, OnStringOrComment)
+    const candidate = expand('<cexpr>')
+    const [start_pos, end_pos] = code.GetDef('defmodule', true)
+    if util.InRange(pos, start_pos, end_pos)
+      return candidate
+    else
+      normal! k0
+    endif
+  endwhile
+end
