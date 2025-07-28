@@ -51,8 +51,8 @@ export def Hover()
       const padding = specmatch[1]
       const spec = specmatch[0]->split("\n")->map((_,  line) => substitute(line, '^' .. padding, '', ''))
       const winid = popup_atcursor(spec, {line: 'cursor-1', moved: 'any'})
-      call win_execute(winid, 'set ft=elixir')
-      call win_execute(winid, 'syntax enable')
+      win_execute(winid, 'set ft=elixir')
+      win_execute(winid, 'syntax enable')
     else
       util.Warn("No @spec found for " .. target.fn)
     endif
