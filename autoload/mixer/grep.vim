@@ -425,11 +425,8 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
         const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/**/lib/*"])
 
         if len(files) > 0
-          const results = FindDirectives(target, files[0], recursion_count + 1)
-
-          for result in results
-            directives->add(result)
-          endfor
+          final results = FindDirectives(target, files[0], recursion_count + 1)
+          directives->extend(results)
         endif
       else
         const open = matchstr(line, '{\|\[')
