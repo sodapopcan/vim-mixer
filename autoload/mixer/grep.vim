@@ -44,7 +44,7 @@ export def Hover()
   FindDefinition((target: dict<any>, file: string, lnum: number) => {
     const contents = readfile(file)->join("\n")
 
-    const SPEC_REGEX = '\(\s*\)@spec\s\+' .. target.fn .. '\_.\{-}\ze\s*def\%(\k\+\)\=\s\+' .. target.fn
+    const SPEC_REGEX = '\(\s*\)@spec\s\+\<' .. target.fn .. '\>\_.\{-}\ze\s*def\%(\k\+\)\=\s\+\<' .. target.fn .. '\>'
     const specmatch = matchlist(contents, SPEC_REGEX)
 
     if len(specmatch) > 1
