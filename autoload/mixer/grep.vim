@@ -423,6 +423,7 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
         const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/**/lib/*"])
+
         if len(files) > 0
           const results = FindDirectives(target, files[0], recursion_count + 1)
 
