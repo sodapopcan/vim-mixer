@@ -32,7 +32,7 @@ export def Target(): dict<any>
     const defdelegate = GetDefdelegate()
 
     if !empty(defdelegate)
-      is_delegate = v:true
+      is_delegate = true
       fn = defdelegate['fn']
       alias = defdelegate['alias']
     else
