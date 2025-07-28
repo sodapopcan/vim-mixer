@@ -143,7 +143,7 @@ enddef
 
 def JumpToLocal(target: dict<any>, vim_regex: string): bool
   if !target.is_delegate
-    return v:false
+    return false
   endif
 
   const view = winsaveview()
@@ -155,10 +155,10 @@ def JumpToLocal(target: dict<any>, vim_regex: string): bool
   if line != 0
     exec 'normal!' line .. 'gg^'
 
-    return v:true
+    return true
   endif
 
-  return v:false
+  return false
 enddef
 
 def BuildRegex(target: dict<any>): list<string>
@@ -264,10 +264,10 @@ class Context
   var _keep: bool
 
   def new()
-    this.skip = v:true
-    this.in_module = v:false
-    this.in_heredoc = v:false
-    this._keep = v:false
+    this.skip = true
+    this.in_module = false
+    this.in_heredoc = false
+    this._keep = false
   enddef
 
   def Track(line: string, module: string = '')
@@ -276,15 +276,15 @@ class Context
     if len(heredoc) > 0
       this.heredoc_delim = heredoc[2]
       this.heredoc_end = '^' .. heredoc[1] .. this.heredoc_delim .. '$'
-      this.in_heredoc = v:true
+      this.in_heredoc = true
     endif
 
     if !this.skip && len(heredoc) > 0
-      this.skip = v:true
-      this.in_heredoc = v:true
+      this.skip = true
+      this.in_heredoc = true
     elseif this.skip && (line =~ this.heredoc_end)
-      this.skip = v:false
-      this.in_heredoc = v:false
+      this.skip = false
+      this.in_heredoc = false
       this.heredoc_end = ''
       this.heredoc_delim = ''
     endif
@@ -293,12 +293,12 @@ class Context
       const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
 
       if !this.in_module && module_match != []
-        this.skip = v:false
-        this.in_module = v:true
+        this.skip = false
+        this.in_module = true
         this.module_end = '^' .. module_match[1] .. 'end$'
       elseif this.in_module && line =~# this.module_end
-        this.in_module = v:false
-        this.skip = v:true
+        this.in_module = false
+        this.skip = true
       endif
     endif
   enddef
