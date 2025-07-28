@@ -26,7 +26,6 @@ export def Target(): dict<any>
   const view = winsaveview()
 
   try
-
     # Move to the beginning of the word.
     normal! wb
 
