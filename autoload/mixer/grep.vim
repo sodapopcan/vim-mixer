@@ -44,9 +44,18 @@ export def Hover()
   FindDefinition((target: dict<any>, file: string, lnum: number) => {
     const contents = readfile(file)->join("\n")
 
-    const SPEC_REGEX = '@spec\s\+' .. target.fn .. '\_.\{-}\ze\s*def\%(\k\+\)\=\s\+' .. target.fn
-    const spec = matchstr(contents, SPEC_REGEX)
-    echom spec->trim()->split("\n")
+    const SPEC_REGEX = '\(\s*\)@spec\s\+' .. target.fn .. '\_.\{-}\ze\s*def\%(\k\+\)\=\s\+' .. target.fn
+    const specmatch = matchlist(contents, SPEC_REGEX)
+
+    if len(specmatch) > 1
+      const padding = specmatch[1]
+      const spec = specmatch[0]->split("\n")->map((_,  line) => substitute(line, '^' .. padding, '', ''))
+      const winid = popup_atcursor(spec, {line: 'cursor-1', moved: 'any'})
+      call win_execute(winid, 'set ft=elixir')
+      call win_execute(winid, 'syntax enable')
+    else
+      util.Warn("No @spec found for " .. target.fn)
+    endif
   })
 enddef
 
