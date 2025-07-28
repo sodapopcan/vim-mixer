@@ -1,6 +1,6 @@
 vim9script
 
-import autoload './cursor.vim' as cur
+import autoload './cursor.vim'
 import autoload './code.vim'
 
 # Map Definitions {{{1
@@ -117,20 +117,20 @@ enddef
 # Text Object: map {{{1
 
 def TextObj_map(inner: bool)
-  const Skip = () => cur.OnStringOrComment()
+  const Skip = () => cursor.OnStringOrComment()
 
   var view = winsaveview()
-  var cursor_origin = cur.Pos()
+  var cursor_origin = cursor.Pos()
   var open_regex = '%\%([a-zA-Z.]\+\)\?{'
 
   var start_lnr: number
   var start_col: number
 
-  if cur.InGutter()
+  if cursor.InGutter()
     normal! ^
   endif
 
-  if cur.SynstackStr() =~ 'Map\|Struct'
+  if cursor.SynstackStr() =~ 'Map\|Struct'
     [start_lnr, start_col] = searchpos(open_regex, 'Wcb', 0, 0, Skip)
   else
     [start_lnr, start_col] = searchpos(open_regex, 'Wc', 0, 0, Skip)
@@ -144,19 +144,19 @@ def TextObj_map(inner: bool)
   normal! f{
   var [end_lnr, end_col] = searchpairpos('{', '', '}', 'W', Skip)
 
-  if cur.Char() ==# '}'
+  if cursor.Char() ==# '}'
     searchpair(open_regex, '', '}', 'Wb', Skip)
   endif
 
-  while cur.SynstackStr() =~ 'Map\|Struct' && cursor_origin[0] > end_lnr
-    if cur.Char() ==# '}'
+  while cursor.SynstackStr() =~ 'Map\|Struct' && cursor_origin[0] > end_lnr
+    if cursor.Char() ==# '}'
       searchpair(open_regex, '', '}', 'Wb', Skip)
     endif
 
     [start_lnr, start_col] = searchpos(open_regex, 'Wb', 0, 0, Skip)
     normal! f{
 
-    if cur.Char() ==# '{'
+    if cursor.Char() ==# '{'
       [end_lnr, end_col] = searchpairpos('{', '', '}', 'W', Skip)
     else
       winrestview(view)
@@ -172,7 +172,7 @@ def TextObj_map(inner: bool)
   var handle_empty_map = false
 
   if inner
-    cur.Set([start_lnr, start_col])
+    cursor.Set([start_lnr, start_col])
     normal f{
 
     var is_multiline = getline(".") =~ '{$'
@@ -221,7 +221,7 @@ def TextObj_map(inner: bool)
 enddef
 
 nnoremap <silent> <Plug>(ElixirExHandleEmptyMap)
-      \ :call cur.Set([line('.'), b:mixer_start_col + 1])<bar>
+      \ :call cursor.Set([line('.'), b:mixer_start_col + 1])<bar>
       \ :unlet b:mixer_operator<bar>
       \ :unlet b:mixer_start_col<cr>
 
@@ -232,17 +232,17 @@ def TextObj_sigil(inner: bool)
   # Manually skip ' and " because elixir.vim doesn't account for this.
   # I need to figure that out.
   const Skip = () =>  (
-    cur.SynName() =~ 'DelimEscape\|RegexEscapePunctuation' ||
+    cursor.SynName() =~ 'DelimEscape\|RegexEscapePunctuation' ||
     (
-      cur.Char() =~ '"\|''' && cur.Char(line('.') - 1) ==# '\'
+      cursor.Char() =~ '"\|''' && cursor.Char(line('.') - 1) ==# '\'
     )
   )
 
   var view = winsaveview()
   const open_delimiters = '{\|<\|\[\|(\|)\|\/\||\|"\|'''
 
-  if cur.SynName() !~ 'Sigil' && cur.Char() =~ '\k'
-    while cur.Char() =~ '\k'
+  if cursor.SynName() !~ 'Sigil' && cursor.Char() =~ '\k'
+    while cursor.Char() =~ '\k'
       normal! h
 
       if col('.') == 1
@@ -251,7 +251,7 @@ def TextObj_sigil(inner: bool)
       endif
     endwhile
 
-    if cur.SynName() !~ 'Sigil'
+    if cursor.SynName() !~ 'Sigil'
       winrestview(view)
       return
     endif
@@ -260,7 +260,7 @@ def TextObj_sigil(inner: bool)
   var [start_lnr: number, start_col: number] = EMPTY
   var [end_lnr: number, end_col: number] = EMPTY
 
-  if cur.SynName() =~ 'Sigil'
+  if cursor.SynName() =~ 'Sigil'
     [start_lnr, start_col] = searchpos('\~', 'Wcb', 0, 0, Skip)
   else
     [start_lnr, start_col] = searchpos('\~', 'Wc', 0, 0, Skip)
@@ -283,7 +283,7 @@ def TextObj_sigil(inner: bool)
   if inner
     search(open, 'W', 0, 0, Skip)
     exec "normal! " .. len(open) .. "\<space>"
-    [start_lnr, start_col] = cur.Pos()
+    [start_lnr, start_col] = cursor.Pos()
     search(escape(close, '"'), 'W', 0, 0, Skip)
     exec "normal! 1\<left>"
   else
@@ -295,7 +295,7 @@ def TextObj_sigil(inner: bool)
     endwhile
   endif
 
-  [end_lnr, end_col] = cur.Pos()
+  [end_lnr, end_col] = cursor.Pos()
 
   setpos("'<", [0, start_lnr, start_col, 0])
   setpos("'>", [0, end_lnr, end_col, 0])
