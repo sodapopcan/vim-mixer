@@ -68,6 +68,8 @@ def FindDefinition(Callback: func): void
   endif
 
   const directives = ResolveDirectives(target, expand('%'))
+# echom "[directives]" | echom directives->keys()
+# echom "\n\n"
 
   var [module_candidates, locations] = GetModulesAndLocations(target, directives)
 
@@ -141,7 +143,7 @@ def FindDefinition(Callback: func): void
 enddef
 
 def JumpToLocal(target: dict<any>, vim_regex: string): bool
-  if !target.is_delegate
+  if target.is_delegate
     return false
   endif
 
@@ -189,7 +191,7 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
     -> map((_, path) => path =~# '^\/' ? path : b:mix_project.root .. '/' .. path)
     -> join(' ')
 
-  const results = systemlist("rg -l --type elixir " .. cmd ..  " " .. search_paths)
+  const results = systemlist("rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths)
 
   if v:shell_error > 0
     return []
@@ -290,6 +292,9 @@ class Context
 
     if module !=# '' && !this.in_heredoc
       const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
+      # if module_match != []
+      # echom "[module_match]" | echom module_match
+      # endif
 
       if !this.in_module && module_match != []
         this.skip = false
