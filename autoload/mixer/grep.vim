@@ -1,7 +1,7 @@
 vim9script
 
 import autoload './util.vim'
-import autoload './cursor.vim' as cur
+import autoload './cursor.vim'
 import autoload './project.vim'
 
 const BUILTINS = [
@@ -60,7 +60,7 @@ export def Hover()
 enddef
 
 def FindDefinition(Callback: func): void
-  const target = cur.Target()
+  const target = cursor.Target()
 
   const [grep_regex, vim_regex] = BuildRegex(target)
 
@@ -148,8 +148,8 @@ def JumpToLocal(target: dict<any>, vim_regex: string): bool
 
   const view = winsaveview()
 
-  search('defmodule', 'bW', 0, 0, cur.OnStringOrComment)
-  const line = search(vim_regex, 'Wn', 0, 0, cur.OnStringOrComment)
+  search('defmodule', 'bW', 0, 0, cursor.OnStringOrComment)
+  const line = search(vim_regex, 'Wn', 0, 0, cursor.OnStringOrComment)
   winrestview(view)
 
   if line != 0
@@ -173,7 +173,7 @@ def BuildRegex(target: dict<any>): list<string>
     bare = target.fn[: -2]
   endif
 
-  if cur.OnHEEx()
+  if cursor.OnHEEx()
     grep_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
     vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>(.*assigns.*)'
   else
