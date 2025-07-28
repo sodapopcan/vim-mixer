@@ -103,14 +103,14 @@ def FindDefinition(Callback: func): void
     filtered_results = results
       -> copy()
       -> map((_, f) => [readfile(f), f])
-      -> map((_, f) => [matchstrlist(f[0], vim_module_regex), FindDef(f[0], vim_regex), f[1]])
+      -> map((_, f) => [matchstrlist(f[0], vim_module_regex), FindDefLnum(f[0], vim_regex), f[1]])
       -> filter((_, f) => !f[0]->empty() && f[1] != 0)
       -> sort((a, b) => a[2] > b[2] ? 1 : -1)
       -> map((_, f) => [f[2], f[1]])
   else
     filtered_results = results
       ->copy()
-      ->map((_, f) => [f, FindDef(readfile(f), vim_regex)])
+      ->map((_, f) => [f, FindDefLnum(readfile(f), vim_regex)])
   endif
 
   if len(filtered_results) == 1
@@ -308,7 +308,7 @@ class Context
   enddef
 endclass
 
-def FindDef(lines: list<string>, regex: string): number
+def FindDefLnum(lines: list<string>, regex: string): number
   var line_num = 0
   var context = Context.new()
 
