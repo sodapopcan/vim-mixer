@@ -311,7 +311,39 @@ COMMANDS                                    *mixer-commands*
 
 MAPPINGS                                    *mixer-mappings*
 
-                                            *mixer-CTRL-]*
+                                            *mixer_gd*
+                                            *mixer-jump-to-defintion*
+gd                  Jump to the definition of the word under the cursor.
+
+                    This works on functions calls, modules, variables, HEEx
+                    and Surface components, and event LiveView events like
+                    `phx-click="some-event"`.
+
+                    This is local to Elixir buffers.
+
+                    If you have a custom global mapping to `gd`, that will be
+                    used instead for Elixir files.  If you already have `gd`
+                    mapped, you will have to define a new one yourself:
+>
+                      nmap <leader>k <Plug>(mixer-hover)
+<
+                    See |mixer-code-search| for more information.
+
+                                            *mixer_K*
+                                            *mixer-hover*
+K                   Show the spec for the word under the cursor.
+
+                    This is local to Elixir buffers.
+
+                    If you have a custom global mapping to `K`, that will be
+                    used instead for Elixir files.  If you already have `K`
+                    mapped, you will have to define a new one yourself:
+>
+                      nmap <leader>k <Plug>(mixer-hover)
+<
+                    See |mixer-code-search| for more information.
+
+                                            *mixer_CTRL-]*
 CTRL-]              Remapped to be context aware in Phoenix files. Will
                     jump from `phx-click="some-event"` to
                     `handle_event("some-event"...`.  It will also attempt to
