@@ -61,7 +61,7 @@ enddef
 def FindDefinition(Callback: func): void
   const target = cursor.Target()
 
-  const [grep_regex, vim_regex] = BuildRegex(target)
+  const [grep_regex, vim_regex] = BuildRegex(target, {include_private: true})
 
   if JumpToLocal(target, vim_regex .. 'p\=')
     return
@@ -160,9 +160,10 @@ def JumpToLocal(target: dict<any>, vim_regex: string): bool
   return false
 enddef
 
-def BuildRegex(target: dict<any>): list<string>
+def BuildRegex(target: dict<any>, options: dict<any> = {}): list<string>
   var grep_regex: string
   var vim_regex: string
+  const [gp, vp] = get(options, 'include_private') ? ['p*?', 'p\='] : ['', '']
 
   # If the function ends with a `?` or `!`, we need to account for that.
   var flair = matchstr(target.fn, '[!?]$')
@@ -173,11 +174,11 @@ def BuildRegex(target: dict<any>): list<string>
   endif
 
   if cursor.OnHEEx()
-    grep_regex = "'\\s*def(macro|delegate)*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\= \<' .. bare .. flair .. '\>(.*assigns.*)'
+    grep_regex = "'\\s*def(macro|delegate)*?" .. gp .. " \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=' .. vp .. ' \<' .. bare .. flair .. '\>(.*assigns.*)'
   else
-    grep_regex = "'\\s*def(macro|delegate)*? \\<" .. bare .. "\\>" .. flair .. "'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\= \<' .. bare .. flair .. '\>'
+    grep_regex = "'\\s*def(macro|delegate)*?" .. gp .. " \\<" .. bare .. "\\>" .. flair .. "'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\=' .. vp .. ' \<' .. bare .. flair .. '\>'
   endif
 
   return [grep_regex, vim_regex]
