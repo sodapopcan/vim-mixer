@@ -206,11 +206,11 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
   if !empty(target.alias)
     var module: string = target.alias
 
-    if has_key(directives, target.alias_prefix)
-      module = directives[target.alias_prefix].module
+    if has_key(directives, target.alias)
+      module = directives[target.alias].module
       modules = [module]
     else
-      modules = [target.alias]
+      modules = [target.alias_prefix, target.alias]
     endif
 
     if project.IsProjectModule(module)
