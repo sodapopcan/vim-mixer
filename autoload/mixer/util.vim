@@ -97,6 +97,7 @@ export def Camelcase(w: string): string
   endif
 enddef
 
+# Taken from @tpope's rails.vim <http//github.com/tpope/vim-rails>
 export def Underscore(str: string): string
   var s = Gsub(str, '\(\u+\)\(\u\l\)', '\1_\2')
   s = Gsub(str, '\(\l\|\d\)\(\u\)', '\1_\2')
