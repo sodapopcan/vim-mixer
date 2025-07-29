@@ -345,7 +345,7 @@ enddef
 
 # const QUALIFIED_REGEX = 's*\zs\(require\|alias\)\s*\([[:alnum:]\|\.]\+\){\=\%(,\s*as:\s\(\k\+\)\)\='
 # const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
-const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\([[:alnum:]\|\.]\+\)'
+const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\(\u[[:alnum:]\|\.]\+\)'
 
 def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   # This function parses all of the `import`, `require`, `alias` directives.
@@ -435,7 +435,7 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
 
     # TODO: We need to be smarter about looking in `__using__` if we're in
     # a `use` as well as looking in the whole module if it imports itself.
-    const type = matchstr(line, '^\s*\zs\%(\<use\>\|\<import\>\|\<require\>\|\<alias\>\)\ze')
+    const type = matchstr(line, '^\s*\zs\%(\<use\>\|\<import\>\|\<require\>\|\<alias\>\)\ze\s\+\u\k\+')
 
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
