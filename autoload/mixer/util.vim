@@ -97,6 +97,13 @@ export def Camelcase(w: string): string
   endif
 enddef
 
+export def Underscore(str: string): string
+  var s = Gsub(str, '\(\u+\)\(\u\l\)', '\1_\2')
+  s = Gsub(str, '\(\l\|\d\)\(\u\)', '\1_\2')
+
+  return tolower(s)
+enddef
+
 export def InRange(pos: list<number>, start: list<number>, end: list<number>): bool
   const [lnr, col] = pos
   const [start_lnr, start_col] = start
