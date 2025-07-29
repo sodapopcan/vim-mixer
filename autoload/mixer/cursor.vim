@@ -13,7 +13,7 @@ const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:
 # It returns a dictionary of the alias and optionally the function name.
 export def Target(): dict<any>
   var fn: string = ''
-  var token = expand('<cword>')
+  var token = expand('<cword>')->substitute('^[!?]\+', '', '')
   var alias: string
   # This is the module name the target is defined in which is necessary to
   # account for nested defmodules.
