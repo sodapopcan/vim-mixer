@@ -190,8 +190,9 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
     -> map((_, path) => path =~# '^\/' ? path : b:mix_project.root .. '/' .. path)
     -> join(' ')
 
-  # echom "rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths
-  const results = systemlist("rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths)
+  const command = "rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths
+
+  const results = systemlist(command)
 
   if v:shell_error > 0
     return []
