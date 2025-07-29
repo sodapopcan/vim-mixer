@@ -246,13 +246,12 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
 enddef
 
 def DepsRegex(directives: dict<any>): string
-  const deps_regex =
-    directives
-      -> values()
-      -> map((_, d) => util.Underscore(matchstr(d.module, '^\k\+')))
-      -> sort()
-      -> uniq()
-      -> join('*|')
+  const deps_regex = directives
+    -> values()
+    -> map((_, d) => util.Underscore(matchstr(d.module, '^\k\+')))
+    -> sort()
+    -> uniq()
+    -> join('*|')
 
   return "deps/(" .. deps_regex .. "*)/lib/*"
 enddef
