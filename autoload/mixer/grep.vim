@@ -228,6 +228,7 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
     endif
   else
     # Function is unqualified
+    # TODO: Handle any `Kernel, except:`s
     if util.InList(KERNEL_FNS, target.fn)
       locations = [ELIXIR_PATH .. '/kernel.ex']
     else
