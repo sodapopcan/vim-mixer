@@ -166,6 +166,8 @@ def BuildRegex(target: dict<any>, options: dict<any> = {}): list<string>
   const [gp, vp] = get(options, 'include_private') ? ['p*?', 'p\='] : ['', '']
 
   # If the function ends with a `?` or `!`, we need to account for that.
+  # Because `!` and `?` are `word` characters, Vim's word boundaries can
+  # handle this while ripgrep's cannot.
   var flair = matchstr(target.fn, '[!?]$')
   var bare = target.fn
 
