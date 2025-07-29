@@ -68,8 +68,6 @@ def FindDefinition(Callback: func): void
   endif
 
   const directives = ResolveDirectives(target, expand('%'))
-# echom "[directives]" | echom directives->keys()
-# echom "\n\n"
 
   var [module_candidates, locations] = GetModulesAndLocations(target, directives)
 
@@ -191,6 +189,7 @@ def Grep(cmd: string, paths: list<string> = []): list<string>
     -> map((_, path) => path =~# '^\/' ? path : b:mix_project.root .. '/' .. path)
     -> join(' ')
 
+  # echom "rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths
   const results = systemlist("rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths)
 
   if v:shell_error > 0
@@ -219,7 +218,7 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
     elseif util.InList(BUILTINS, target.alias)
       locations = [ELIXIR_PATH]
     else
-      locations = ["deps/**/lib/*"]
+      locations = [DepsRegex(directives)]
     endif
   else
     # Function is unqualified
@@ -232,11 +231,23 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
         -> map((_, v) => v.module)
         -> values()
 
-      locations = ["lib", "test", "deps/**/lib/*"]
+      locations = ["lib", "test", DepsRegex(directives)]
     endif
   endif
 
   return [modules, locations]
+enddef
+
+def DepsRegex(directives: dict<any>): string
+  const deps_regex =
+    directives
+      -> values()
+      -> map((_, d) => util.Underscore(matchstr(d.module, '^\k\+')))
+      -> sort()
+      -> uniq()
+      -> join('*|')
+
+  return "deps/(" .. deps_regex .. "*)/lib/*"
 enddef
 
 def BuildModuleRegex(modules: list<string>): string
@@ -292,9 +303,6 @@ class Context
 
     if module !=# '' && !this.in_heredoc
       const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
-      # if module_match != []
-      # echom "[module_match]" | echom module_match
-      # endif
 
       if !this.in_module && module_match != []
         this.skip = false
