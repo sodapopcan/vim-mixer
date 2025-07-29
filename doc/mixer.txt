@@ -335,7 +335,9 @@ gd                  Jump to the definition of the word under the cursor.
 
                                             *mixer_K*
                                             *mixer-hover*
-K                   Show the spec for the word under the cursor.
+K                   Show the spec for the word under the cursor.  If there is
+                    no spec, it will try an generate one based on the function
+                    head.
 
                     This is local to Elixir buffers.
 
@@ -347,6 +349,20 @@ K                   Show the spec for the word under the cursor.
 <
                     See |mixer-code-search| for more information.
 
+                                            *mixer_gK*
+                                            *mixer-docs*
+                                            *mixer-documentation*
+gK                  Show the docstring for the word under the cursor, if available.
+
+                    This is local to Elixir buffers.
+
+                    If you have a custom global mapping to `K`, that will be
+                    used instead for Elixir files.  If you already have `K`
+                    mapped, you will have to define a new one yourself:
+>
+                      nmap <leader>k <Plug>(mixer-hover)
+<
+                    See |mixer-code-search| for more information.
                                             *mixer_CTRL-]*
 CTRL-]              Remapped to be context aware in Phoenix files. Will
                     jump from `phx-click="some-event"` to
