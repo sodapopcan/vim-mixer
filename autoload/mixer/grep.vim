@@ -63,7 +63,7 @@ def FindDefinition(Callback: func): void
 
   const [grep_regex, vim_regex] = BuildRegex(target)
 
-  if JumpToLocal(target, vim_regex)
+  if JumpToLocal(target, vim_regex .. 'p\=')
     return
   endif
 
@@ -173,11 +173,11 @@ def BuildRegex(target: dict<any>): list<string>
   endif
 
   if cursor.OnHEEx()
-    grep_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>(.*assigns.*)'
+    grep_regex = "'\\s*def(macro|delegate)*? \\<" .. bare .. "\\>" .. (flair) .. "\(.*assigns.*\)'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\= \<' .. bare .. flair .. '\>(.*assigns.*)'
   else
-    grep_regex = "'\\s*def(macro|delegate)*?p*? \\<" .. bare .. "\\>" .. flair .. "'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=p\= \<' .. bare .. flair .. '\>'
+    grep_regex = "'\\s*def(macro|delegate)*? \\<" .. bare .. "\\>" .. flair .. "'"
+    vim_regex = '^\s*def\%(macro\|delegate\)\= \<' .. bare .. flair .. '\>'
   endif
 
   return [grep_regex, vim_regex]
