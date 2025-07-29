@@ -175,13 +175,8 @@ def BuildRegex(target: dict<any>, options: dict<any> = {}): list<string>
     bare = target.fn[: -2]
   endif
 
-  if cursor.OnHEEx()
-    grep_regex = "'\\s*def(macro|delegate)*?" .. gp .. " \\<" .. bare .. "\\>" .. flair .. "\(.*assigns.*\)'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=' .. vp .. ' \<' .. bare .. flair .. '\>(.*assigns.*)'
-  else
-    grep_regex = "'\\s*def(macro|delegate)*?" .. gp .. " \\<" .. bare .. "\\>" .. flair .. "'"
-    vim_regex = '^\s*def\%(macro\|delegate\)\=' .. vp .. ' \<' .. bare .. flair .. '\>'
-  endif
+  grep_regex = "'\\s*def(macro|delegate)*?" .. gp .. " \\<" .. bare .. "\\>" .. flair .. "'"
+  vim_regex = '^\s*def\%(macro\|delegate\)\=' .. vp .. ' \<' .. bare .. flair .. '\>'
 
   return [grep_regex, vim_regex]
 enddef
