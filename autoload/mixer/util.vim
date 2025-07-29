@@ -22,12 +22,12 @@ export def BufFocus(bufnr: number)
   exec 'set switchbuf=' .. switchbuf_cached
 enddef
 
-    const MAPLIST = maplist()
-      -> filter((_, v) => v.mode == 'n' && (v.rhs == 'K' || v.rhs == 'gd'))
-      -> reduce((acc, v) => {
-        acc[v.rhs] = v.lhs
-        return acc
-      }, {})
+const MAPLIST = maplist()
+  -> filter((_, v) => v.mode == 'n' && (v.rhs == 'K' || v.rhs == 'gd'))
+  -> reduce((acc, v) => {
+    acc[v.rhs] = v.lhs
+    return acc
+  }, {})
 
 export def SetLocalMap(map: string, plug: string)
   if maparg(map, 'n') != '' && MAPLIST->has_key(map)
