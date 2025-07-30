@@ -56,7 +56,7 @@ export def Hover()
           ->map((_,  line) => line .. padding)
       )->extend([''])
 
-      const winid = popup_atcursor(spec, {line: 'cursor-1', moved: 'any'})
+      const winid = popup_atcursor(spec, {line: 'cursor-2', col: 'cursor-2', moved: 'any'})
 
       win_execute(winid, 'syntax enable|set ft=elixir')
     else
@@ -125,7 +125,15 @@ def FindDefinition(Callback: func): void
   elseif len(filtered_results) == 0
     util.Warn("No results")
   else
-    const list_contents = filtered_results
+    final final_results: list<any> = []
+
+    if len(filtered_results) > 1
+      final_results->extend(filtered_results)
+    else
+      final_results->add(results)
+    endif
+
+    const list_contents = final_results
       -> copy()
       -> map((_, f) => {
         return {
