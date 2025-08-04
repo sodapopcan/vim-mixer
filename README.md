@@ -22,6 +22,7 @@ Some functionality, like text objects, depend on [elixir.vim](https://github.com
 
 ### Conveniences
 - `'commentstring'` is dynamically set in embedded HEEx/Surface.
+- `-` is added to `'iskeyword'` when in embedded HEEx/Surface.
 - [matchit](https://www.vim.org/scripts/script.php?script_id=39) works in
   embedded HEEx/Surface templates.
 - Automatically sets `:compiler` if the appropriate plugin is found.

@@ -61,6 +61,10 @@ Caveats:
   * When commenting out both Elixir and HEEx/Surface in visual mode,
     'commentstring' will be whatever it was when you entered visual mode.
 
+                                            *mixer-iskeyword*
+Similar to |mixer-commenting|, `-` is added to 'iskeyword' when inside HEEx or
+Surface.
+
                                             *mixer-matchit*
 Similar to above, if you have |matchit| enabled, `b:match_words` will be
 automatically set based where your cursor position in the file, allowing you

@@ -47,3 +47,13 @@ export def SetCommentString()
     call setpos('.', cursor_pos)
   endif
 enddef
+
+export def SetIsKeyword()
+  const syn = cursor.OuterSynNameFull()
+
+  if syn =~# 'Heex\|Surface' && syn !~# 'SigilDelimiter'
+    set iskeyword+=-
+  else
+    set iskeyword-=-
+  endif
+enddef
