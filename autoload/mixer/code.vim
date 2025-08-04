@@ -292,14 +292,11 @@ def AdjustBlockRegion(inner: bool, do: string, start_pos: list<number>, end_pos:
     if v:operator ==# 'c'
       exec ':' .. (start_lnr + 1)
 
-      if do !=# '->'
-        start_col = indent(start_lnr) + 1
-        end_col = len(getline(end_lnr))
-      endif
+      start_col = indent(start_lnr) + 1
+      end_col = len(getline(end_lnr))
     else
-      if do !=# '->'
-        end_col = len(getline(end_lnr)) + 1 # Include \n
-      endif
+      end_col = len(getline(end_lnr)) + 1 # Include \n
+      start_col = 1
       exec ':' .. start_lnr
     endif
   else
@@ -353,9 +350,9 @@ def HandleFn(origin: list<number>, inner: bool): list<list<number>>
   if fn_pos == EMPTY
     return EMPTY3
   else
-    do_pos = searchpos('->', 'Wn', 0, 0, () => cursor.OnStringOrComment())
+    do_pos = searchpos('->', 'W', 0, 0, () => cursor.OnStringOrComment())
     do = '->'
-    end_pos = searchpairpos('\<fn\>', '', '\<end\>', 'W', () => cursor.OnStringOrComment())
+    end_pos = searchpairpos('->\|do', '', '\<end\>', 'W', () => cursor.OnStringOrComment())
     end_pos[1] += 2
 
     if util.InRange(origin, fn_pos, end_pos)
@@ -367,7 +364,7 @@ def HandleFn(origin: list<number>, inner: bool): list<list<number>>
 enddef
 
 def FindDo(flags: string): list<number>
-  return searchpos('\<do\>:\?', flags, 0, 0, () => cursor.OnStringOrComment())
+  return searchpos('\<do\>:\=', flags, 0, 0, () => cursor.OnStringOrComment())
 enddef
 
 def FindDoBlockHead(do_pos: list<number>, flags: string): list<number>
