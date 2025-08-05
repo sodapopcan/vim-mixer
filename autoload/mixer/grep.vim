@@ -426,7 +426,7 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
     }
   endif
 
-  return directives
+  return directives->filter((k, _) => !empty(k))
 enddef
 
 def FindDirectives(target: dict<any>, filename: string, recursion_count: number): list<string>
