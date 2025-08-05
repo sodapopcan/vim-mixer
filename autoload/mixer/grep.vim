@@ -220,13 +220,6 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
   if !empty(target.alias)
     var module: string = target.alias
 
-    if has_key(directives, target.alias)
-      module = directives[target.alias].module
-      modules = [module]
-    else
-      modules = [target.alias_prefix, target.alias]
-    endif
-
     if project.IsProjectModule(module)
       locations = ["lib", "test"]
     elseif util.InList(BUILTINS, target.alias)
@@ -424,6 +417,14 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
       }
     endif
   endfor
+
+  if !has_key(directives, target.alias)
+    # The function was called fully qualified
+    directives[target.alias] = {
+      directive: '',
+      module: target.alias
+    }
+  endif
 
   return directives
 enddef
