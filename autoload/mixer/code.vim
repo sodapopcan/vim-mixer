@@ -15,7 +15,7 @@ const reserved = [
 
 const RESERVED_REGEX = '\<' .. join(reserved, '\>\|\<') .. '\>'
 
-const FUNC_CALL_REGEX = '\%(\<\%(\u\|:\)[A-Za-z_\.]\+\>\|\<\k\+\>\)\%(\s\|(\)'
+const FUNC_CALL_REGEX = '\%(\%(\<\%(\k\|:\)[[:keyword:].]\+\>\|\<\k\+\>\)\%(\s\|(\)\)\%(\s*=\)\@!'
 
 export def GetBlock(inner: bool, include_meta: bool = v:true): list<list<number>>
   var view = winsaveview()
