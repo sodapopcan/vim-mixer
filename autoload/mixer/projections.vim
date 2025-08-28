@@ -19,7 +19,7 @@ def EditMigrationFile(command: string, count: number): void
   endif
 
   const migrations_path = 'priv/repo/migrations'
-  const migrations = util.Glob(migrations_path .. '/*')
+  const migrations = util.Glob(migrations_path .. '/*.exs')
 
   if expand('%:h') ==# migrations_path
     const index = index(migrations, expand('%'))
