@@ -7,8 +7,18 @@ hi link elixirPackageDefs Define
 
 if get(g:, 'mixer_syntax_highlighting', 1)
   if search('^\s*defmodule\s\+.\{-}Router\s\+do')
-    syn match elixirPhoenixRouter '^\s*\<\(scope\|live\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\)\>'
+    syn match elixirPhoenixRouter '^\s*\<\%(scope\|live\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\)\>:\@!'
     hi link elixirPhoenixRouter Keyword
+  endif
+
+  if search('^\s*use\s.*Schema')
+    syn match elixirEctoSchema '^\s*\<\%(\%[embedded_]schema\|field\|belongs_to\|has_many\|has_one\|many_to_many\)\>:\@!'
+    hi link elixirEctoSchema Keyword
+  endif
+
+  if search('^\s*use\s.*Migration')
+    syn match elixirMigration '^\s*\<\%(create\%[_if_not_exists]\=\|alter\|add\%[_if_not_exists]\|drop\%[_if_exists]\|remove\%[_if_exists]\|modify\|execute\%[_file]\)\>:\@!'
+    hi link elixirMigration Keyword
   endif
 
   if expand('%:p:h') =~ '\/config$'
