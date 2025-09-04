@@ -6,6 +6,11 @@ syn match elixirPackageDefs "\%(deflua\|defprop\)"
 hi link elixirPackageDefs Define
 
 if get(g:, 'mixer_syntax_highlighting', 1)
+  if search('^\s*use ExUnit.CaseTemplate')
+    syn match elixirCaseTemplate '\<using\>'
+    hi link elixirCaseTemplate Keyword
+  endif
+
   if search('^\s*defmodule\s\+.\{-}Router\s\+do')
     syn match elixirPhoenixRouter '^\s*\<\%(scope\|live\|included\|pipe_through\|live_session\|plug\|pipeline\|post\|get\|put\|delete\|forward\|\options\|head\|match\)\>:\@!'
     hi link elixirPhoenixRouter Keyword
