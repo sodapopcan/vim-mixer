@@ -24,25 +24,6 @@ import autoload 'mixer/projections.vim'
 import autoload 'mixer/r.vim'
 import autoload 'mixer/grep.vim'
 
-var mix_project_root: string
-
-augroup mixer
-  autocmd!
-  autocmd BufNewFile,BufReadPost * SetupBuf()
-  autocmd FileType elixir,eelixir call textobj.Define()
-  autocmd FileType elixir,eelixir call integrations.Define()
-  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetMatchWords()
-  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetCommentString()
-  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetIsKeyword()
-  autocmd FileType eelixir b:match_words = elixir.HTML_MATCH_WORDS
-    | exec "set commentstring=" .. elixir.HEEX_COMMENTSTRING
-    | exec "set iskeyword+=-"
-  autocmd DirChanged * [mix_project_root, _, _] = g:MixerDetect()
-    | if !empty(mix_project_root)
-    |   call project.Setup()
-    | endif
-augroup END
-
 def g:MixerDetect(): list<any>
   var mix_file = findfile('mix.exs', '.;', 2)
   var lib_dir = finddir('lib', ',;', 2)
