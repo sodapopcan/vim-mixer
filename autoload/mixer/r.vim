@@ -19,8 +19,6 @@ enddef
 def R(command: string, mods: string, arg: string = '')
   if IsController()
     const action = cursor.FunctionName()
-    Inspect "[action]"
-    echom action
     const path = expand('%')
     const html_dir = util.Sub(path, '_controller.ex', '_html')
     const html_file = $'{html_dir}.ex'
