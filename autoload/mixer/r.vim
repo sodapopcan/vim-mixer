@@ -5,7 +5,7 @@ import autoload './util.vim'
 import autoload './cursor.vim'
 
 const CONTROLLER_REGEX = '\s*use\s\+.*:controller\>'
-const LIVEVIEW_REGEX = '\s*use\s\+\%(:live_view\>\)'
+const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.*Live.*do$\|^\s*use Phoenix.\%(LiveView\|LiveComponent\|Component\)'
 const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$'
 
 export def DefineCommand()
@@ -32,7 +32,14 @@ def R(command: string, mods: string, arg: string = '')
     else
       util.Error("No file or component exists")
     endif
-  elseif IsLiveView()
+  elseif IsLive()
+    const heex_file = $'{expand('%:r')}.html.heex'
+
+    if util.FileExists(heex_file)
+      exec mods command heex_file
+    else
+
+    endif
   elseif IsHTML()
     const action = GetFunctionName()
     const path = expand('%')
@@ -46,12 +53,14 @@ def R(command: string, mods: string, arg: string = '')
     endif
   elseif IsHEEX()
     const action = expand('%:t:r:r')
-    const path = expand('%:h')
-    const controller = util.Sub(path, '_html', '_controller') .. '.ex'
+    const controller = util.Sub(expand('%:h'), '_html', '_controller') .. '.ex'
+    const live = $'{expand('%:r:r')}.ex'
 
     if util.FileExists(controller)
       exec mods command controller
       JumpToAction(action)
+    elseif util.FileExists(live)
+      exec mods command live
     else
       util.Error("No file or component exists")
     endif
@@ -66,7 +75,7 @@ def EditView()
   const path = expand('%')
 enddef
 
-def IsLiveView(): bool
+def IsLive(): bool
   return Is(LIVEVIEW_REGEX)
 enddef
 
@@ -79,7 +88,12 @@ def IsHEEX(): bool
 enddef
 
 def Is(regex: string): bool
-  return search(regex, 'Wbn') > 0
+  const view = winsaveview()
+  normal! $
+  const is = search(regex, 'Wbn') > 0
+  winrestview(view)
+
+  return is
 enddef
 
 def JumpToAction(action: string)
