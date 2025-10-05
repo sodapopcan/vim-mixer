@@ -19,7 +19,7 @@ INTRODUCTION                                |mixer-introduction|
     matchit.vim in embedded templates           |mixer-matchit|
     Compiler                                    |mixer-compiler|
     Syntax Hilighting                           |mixer-syntax-highlighting|
-COMMANDS                                    |mixer-mix-commands|
+MIX COMMANDS                                |mixer-mix-commands|
   :Mix                                        |mixer-:Mix|
   :Deps                                       |mixer-:Deps|
   :Gen                                        |mixer-:Gen|
@@ -31,7 +31,7 @@ TEXT OBJECTS                                |mixer-text-objects|
   Map or struct                               |mixer-map|
   Sigil                                       |mixer-sigil|
   Comment                                     |mixer-comment|
-
+NAVIGATION COMMANDS                         |mixer-navigation-commands|
 
 INTRODUCTION                                *mixer-introduction*
 
@@ -438,6 +438,24 @@ aa                  A function argument.
                     These are only available if the plugin sideways.vim is
                     installed.  You can find this on www.vim.org or on github
                     at <https://github.com/AndrewRadev/sideways.vim>.
+
+NAVIGATION COMMANDS                         *mixer-navigation-commands*
+
+:R                  Edit the "related" file.
+
+                    If you are familiar with |rails|.vim then it works much in
+                    the same way, although it works a bit differently with
+                    embedded HEEx in LiveViews/Hologram/Surface.
+
+                    For classic controllers, :R will jump to the corresponding
+                    html be it in a dedicated file or component within the
+                    HTML module.  If your cursor is outside of an action, it
+                    will simply jump to the HTML module.
+
+                    In a LiveView, if your heex is in a dedicated file it will
+                    jump to it.  Otherwise, it will jump back and forth
+                    between HEEx and non-HEEx.  It's a bit tough to explain so
+                    it's best to experiment.
 
 
   vim:tw=78:et:ft=help:norl:
