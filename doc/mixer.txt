@@ -441,7 +441,8 @@ aa                  A function argument.
 
 NAVIGATION COMMANDS                         *mixer-navigation-commands*
 
-:R                  Edit the "related" file.
+                                            *mixer-:R*
+:R                  |:edit| the "related" file.
 
                     If you are familiar with |rails|.vim then it works much in
                     the same way, although it works a bit differently with
@@ -452,10 +453,18 @@ NAVIGATION COMMANDS                         *mixer-navigation-commands*
                     HTML module.  If your cursor is outside of an action, it
                     will simply jump to the HTML module.
 
-                    In a LiveView, if your heex is in a dedicated file it will
-                    jump to it.  Otherwise, it will jump back and forth
-                    between HEEx and non-HEEx.  It's a bit tough to explain so
-                    it's best to experiment.
+                    In a LiveView/LiveComponent/Surface module, if your heex
+                    is in a dedicated file it will jump to it.  Otherwise, it
+                    will jump back and forth between HEEx and non-HEEx.  It's
+                    a bit tough to explain so it's best to experiment.
 
+                                            *mixer-:RS*
+:RS                 |:split| the related file.
+                                            *mixer-:RV*
+:RV                 |:vsplit| the related file.
+                                            *mixer-:RT*
+:RT                 |:tabedit| the related file.
+                                            *mixer-:RO*
+:RO                 |:drop| the related file.
 
   vim:tw=78:et:ft=help:norl:
