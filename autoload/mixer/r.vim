@@ -18,7 +18,7 @@ enddef
 
 def R(command: string, mods: string, arg: string = '')
   if IsController()
-    const action = GetFunctionName()
+    const action = cursor.FunctionName()
     Inspect "[action]"
     echom action
     const path = expand('%')
@@ -75,7 +75,7 @@ def R(command: string, mods: string, arg: string = '')
       endif
     endif
   elseif IsHTML()
-    const action = GetFunctionName()
+    const action = cursor.FunctionName()
     const path = expand('%')
     const controller = util.Sub(path, '_html', '_controller')
 
@@ -147,36 +147,4 @@ def EditEmbedded(command: string, lnum: number)
   else
     util.Error("Couldn't find anything")
   endif
-enddef
-
-def GetFunctionName(): string
-  const view = winsaveview()
-
-  var name = ''
-
-  if getline('.') =~ '^\s*\<def\>'
-    name = getline('.')->matchstr('\s*def\s\+\zs\k\+')
-  else
-    var cur_pos = [line('.'), 0]
-    var def_lnum = search('\<def\>', 'Wbc', 0, 0, cursor.OnStringOrComment)
-    searchpos('\<do\>', 'W', 0, 0, cursor.OnStringOrComment)
-    var end_pos = searchpairpos('\<do\>\|\<fn\>', '', '\<end\>', 'W', cursor.OnStringOrComment)
-
-    if util.InRange(cur_pos, [def_lnum, 1], end_pos)
-      name = getline(def_lnum)->matchstr('\s*def\s\+\zs\k\+')
-    else
-      def_lnum = search('\<def\>', 'Wc', 0, 0, cursor.OnStringOrComment)
-      searchpos('\<do\>', 'W', 0, 0, cursor.OnStringOrComment)
-      end_pos = searchpairpos('\<do\>\|\<fn\>', '', '\<end\>', 'W', cursor.OnStringOrComment)
-
-      if util.InRange(cur_pos, [def_lnum, 1], end_pos)
-        name = getline(def_lnum)->matchstr('\s*def\s\+\zs\k\+')
-      endif
-    endif
-
-  endif
-
-  winrestview(view)
-
-  return name
 enddef
