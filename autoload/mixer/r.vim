@@ -61,8 +61,7 @@ def R(command: string, mods: string, arg: string = '')
       winrestview(view)
 
       if lnum != 0
-        normal! m'
-        exec ':' .. lnum
+        EditEmbedded(command, lnum)
       else
         if started_in_heex
           lnum = search('^\s*def mount\|^defmodule', 'n', 0, 0, cursor.OnStringOrComment)
@@ -70,12 +69,7 @@ def R(command: string, mods: string, arg: string = '')
           lnum = search('^\s*\~H', 'n', 0, 0, cursor.OnStringOrComment)
         endif
 
-        if lnum != 0
-          normal! m'
-          exec ':' .. lnum
-        else
-          util.Error("Couldn't find anything")
-        endif
+        EditEmbedded(command, lnum)
       endif
     endif
   elseif IsHTML()
@@ -128,28 +122,41 @@ enddef
 def Is(regex: string): bool
   const view = winsaveview()
   normal! $
-  const is = search(regex, 'Wbn') > 0
+  const result = search(regex, 'Wbn') > 0
   winrestview(view)
 
-  return is
-    enddef
+  return result
+enddef
 
-  def JumpToAction(action: string)
-    if GetFunctionName() != action
-      search('^\s*def\s\+\<' .. action .. '\>', '', 0, 0, cursor.OnStringOrComment)
+def JumpToAction(action: string)
+  if GetFunctionName() != action
+    search('^\s*def\s\+\<' .. action .. '\>', '', 0, 0, cursor.OnStringOrComment)
+  endif
+enddef
+
+def EditEmbedded(command: string, lnum: number)
+  if lnum != 0
+    normal! m'
+    if command == 'edit'
+      exec ':' .. lnum
+    else
+      exec command '+' .. lnum expand('%')
     endif
-  enddef
+  else
+    util.Error("Couldn't find anything")
+  endif
+enddef
 
-  def GetFunctionName(): string
-    const view = winsaveview()
+def GetFunctionName(): string
+  const view = winsaveview()
 
-    # This is unfortunate, need to fix this
-    code.GetDef('def')
-    normal! j
+  # This is unfortunate, need to fix this
+  code.GetDef('def')
+  normal! j
 
-    const name = getline('.')->matchstr('\s*def\s\+\zs\k\+')
+  const name = getline('.')->matchstr('\s*def\s\+\zs\k\+')
 
-    winrestview(view)
+  winrestview(view)
 
-    return name
-  enddef
+  return name
+enddef
