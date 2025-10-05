@@ -21,6 +21,7 @@ import autoload 'mixer/phx.vim'
 import autoload 'mixer/textobj.vim'
 import autoload 'mixer/integrations.vim'
 import autoload 'mixer/projections.vim'
+import autoload 'mixer/r.vim'
 
 def g:MixerDetect(): list<any>
   var mix_file = findfile('mix.exs', '.;', 2)
@@ -71,6 +72,7 @@ augroup mixer
     | endif
   autocmd User ProjectionistDetect | call SetupBuf() | call projections.Detect()
   autocmd BufReadPost * if !exists('*ProjectionistHas') | SetupBuf() | endif
+  autocmd BufReadPost * r.DefineCommand()
 augroup END
 
 def SetupBuf()

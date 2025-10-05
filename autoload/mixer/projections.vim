@@ -31,11 +31,10 @@ export def Detect()
   const contents = join(readfile(ROOT .. '/mix.exs'), '\n')
   const project_name = matchstr(contents, 'def project\_.*app:\s\+:\zs\k\+\ze')
 
-  var files = util.Glob(ROOT .. '/lib/*.ex')->map((_, f) => fnamemodify(f, ':t'))
-  var dirs = util.Glob(ROOT .. '/lib/*/')->map((_, f) => split(f, '/')[-1])
+  var roots = util.Glob($'{ROOT}/lib/*')->map((_, f) => fnamemodify(f, ':t:r'))->uniq()
 
   var web_dir =
-    dirs
+    roots
     ->copy()
     ->filter((_, d) => d =~ 'web$')
 
@@ -106,17 +105,17 @@ export def Detect()
     var web_glob: string
 
     if match(web_globs, '\/live\/.*_live\.ex') >= 0
-      live_defmodule = 'defmodule ' .. web_alias .. '.{camelcase|capitalize|dot}Live do'
-      web_glob = 'lib/' .. web_dir .. '/live/*_live.ex'
+      live_defmodule = $'defmodule {web_alias}.{{camelcase|capitalize|dot}}Live do'
+      web_glob = $'lib/{web_dir}/live/*_live.ex'
     elseif match(web_globs, '\/live\/') >= 0
-      live_defmodule = 'defmodule ' .. web_alias .. '.{dirname|camelcase|capitalize}Live{dot}{basename|camelcase|capitalize|dot} do'
-      web_glob = 'lib/' .. web_dir .. '/live/*_live.ex'
+      live_defmodule = $'defmodule {web_alias}.{{dirname|camelcase|capitalize}}Live{{dot}}{{basename|camelcase|capitalize|dot}} do'
+      web_glob = $'lib/{web_dir}/live/*_live.ex'
     elseif match(web_globs, '_live\.ex$') >= 0
-      live_defmodule = 'defmodule ' .. web_alias .. '.{camelcase|capitalize|dot}Live do'
-      web_glob = 'lib/' .. web_dir .. '/*_live.ex'
+      live_defmodule = $'defmodule {web_alias}.{{camelcase|capitalize|dot}}Live do'
+      web_glob = $'lib/{web_dir}/*_live.ex'
     else
-      live_defmodule = 'defmodule ' .. web_alias .. '.{dirname|camelcase|capitalize}Live{dot}{basename|camelcase|capitalize|dot} do'
-      web_glob = 'lib/' .. web_dir .. '/*_live.ex'
+      live_defmodule = $'defmodule {web_alias}.{{dirname|camelcase|capitalize}}Live{{dot}}{{basename|camelcase|capitalize|dot}} do'
+      web_glob = $'lib/{web_dir}/*_live.ex'
     endif
 
     const test_glob = web_glob->util.Sub('^lib', 'test')->util.Sub('\.ex$', '_test.exs')
@@ -125,7 +124,7 @@ export def Detect()
       type: 'live',
       template: [
         live_defmodule,
-        '  use ' .. web_alias  .. ', :live_view',
+        $'  use {web_alias}, :live_view',
         '',
         '  @impl true',
         '  def render(assigns) do',
@@ -143,72 +142,54 @@ export def Detect()
       dispatch: 'mix test',
       template: [
         util.Sub(live_defmodule, ' do', 'Test do'),
-        '  use ' .. web_alias .. '.ConnCase, async: true',
+        $'  use {web_alias}.ConnCase, async: true',
         'end'
       ]
     }
 
-    projections['lib/' .. web_dir .. '/controllers/*_controller.ex'] = {
+    projections[$'lib/{web_dir}/controllers/*_controller.ex'] = {
       type: 'controller',
-      alternate: 'test/' .. web_dir .. '/controllers/{}_controller_test.exs'
+      alternate: $'test/{web_dir}/controllers/{{}}_controller_test.exs'
     }
 
-    projections['lib/' .. web_dir .. '/*_plug.ex'] = {
+    projections[$'lib/{web_dir}/*_plug.ex'] = {
       type: 'plug'
     }
   endif
 
-  for file in files
-    var name = file->substitute('\.ex$', '', '')
-    var ftype: string
-    const alias = util.ToElixirAlias(name)
+  for root in roots
+    var rtype = util.Sub(root, '^' .. project_name .. '_', '')
+    const alias = util.ToElixirAlias(root)
 
-    ftype = util.Sub(name, '^' .. project_name .. '_', '')
-
-    if ftype == project_name
-      ftype = 'domain'
+    if rtype == project_name
+      rtype = 'domain'
     endif
 
-    projections['lib/' .. file] = {
-      type: ftype,
-      alternate: 'test/' .. name .. '_test.exs',
+    projections[$'lib/{root}/*.ex'] = {
+      type: rtype,
+      alternate: $'test/{root}/{{}}_test.exs',
+      related: [
+        $'lib/{root}.ex'
+      ],
       template: [
-        'defmodule ' .. alias .. ' do',
-        'end'
-      ]
-    }
-  endfor
-
-  for dir in dirs
-    var dtype = util.Sub(dir, '^' .. project_name .. '_', '')
-    const alias = util.ToElixirAlias(dir)
-
-    if dtype == project_name
-      dtype = 'domain'
-    endif
-
-    projections['lib/' .. dir .. '/*.ex'] = {
-      type: dtype,
-      alternate: 'test/' .. dir .. '/{}_test.exs',
-      template: [
-        'defmodule ' .. alias .. '.{camelcase|capitalize} do',
+        $'defmodule {alias}.{{camelcase|capitalize}} do',
         'end'
       ]
     }
 
     var use_line: string
 
-    if dtype == 'domain'
+    if rtype == 'domain'
       use_line = '  use ' .. alias .. '.DataCase, async: true'
     else
       use_line = '  use ExUnit.Case, async: true'
     endif
 
-    projections['test/' .. dir .. '/*_test.exs'] = {
+    projections[$'test/{root}/*_test.exs'] = {
       type: 'test',
-      alternate: 'lib/' .. dir .. '/{}.ex',
+      alternate: $'lib/{root}/{{}}.ex',
       template: [
-        'defmodule ' .. alias .. '.{camelcase|capitalize}Test do',
+        $'defmodule {alias}.{{camelcase|capitalize}}Test do',
         use_line,
         'end'
       ]
@@ -218,7 +199,7 @@ export def Detect()
   # Migrations
 
   for [type, command] in PREFIXES
-    exec 'command! -complete=customlist,mixer#projections#MigrationComplete -nargs=?' type .. 'migration' 'EditMigrationFile(<f-mods>, "' .. command .. '", <f-args>)'
+    exec 'command! -complete=customlist,mixer#projections#MigrationComplete -nargs=?' $'{type}migration' $'EditMigrationFile(<f-mods>, "{command}", <f-args>)'
   endfor
 
   projections['priv/repo/migrations/*.exs'] = {

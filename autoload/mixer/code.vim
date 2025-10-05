@@ -546,3 +546,23 @@ def CheckForMeta(known_annotations: string): bool
     word =~ known_annotations ||
     WORD =~ known_annotations
 enddef
+
+# TODO: Handle keyword syntax
+export def InFunction(name: string): bool
+  const cursor_origin = Pos()
+  const view = winsaveview()
+  var def_pos = [0, 0]
+  var end_pos = [0, 0]
+
+  def_pos = searchpos('^\s*\<def\>\s\+' .. name .. '(', 'Wbc', 0, 0, OnStringOrComment)
+
+  if def_pos == [0, 0]
+    return false
+  endif
+
+  end_pos = searchpairpos('\<def\>\|\<fn\>', '', '\<end\>', 'W', OnStringOrComment)
+
+  winrestview(view)
+
+  return util.InRange(cursor_origin, def_pos, end_pos)
+enddef
