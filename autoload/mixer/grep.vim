@@ -218,7 +218,14 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
   var locations: list<string> = []
 
   if !empty(target.alias)
-    var module: string = target.alias
+    var module: string
+
+    if target.alias != ""
+      module = directives[target.alias].module
+    else
+      module = target.alias
+    endif
+
     modules = [module]
 
     if project.IsProjectModule(module)
