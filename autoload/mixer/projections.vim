@@ -159,7 +159,7 @@ export def Detect()
   endif
 
   for file in files
-    var name = file->substitute('\.ex$', '', '')
+    var name = util.Sub(file, '\.ex$', '')
     var ftype: string
     const alias = util.ToElixirAlias(name)
 
