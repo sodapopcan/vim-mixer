@@ -217,11 +217,12 @@ def EditMigrationFile(mods: string, command: string, file: string = ""): void
   endif
 
   const migrations_path = 'priv/repo/migrations'
+
   if file == ""
     const migrations = util.Glob(migrations_path .. '/*.exs')
     exec mods command migrations[-1]
   else
-    exec mods command file
+    exec mods command $'{migrations_path}/{file}.exs'
   endif
 enddef
 
