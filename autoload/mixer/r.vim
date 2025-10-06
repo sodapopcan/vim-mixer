@@ -6,7 +6,7 @@ import autoload './cursor.vim'
 
 const CONTROLLER_REGEX = '\s*use\s\+.*:controller\>'
 const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.*Live.*do$\|^\s*use Phoenix.\%(LiveView\|LiveComponent\|Component\)'
-const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$'
+const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$\|^\s*use .* :html\>'
 
 export def DefineCommand()
   command! -nargs=? R R('edit', <q-mods>, <f-args>)
