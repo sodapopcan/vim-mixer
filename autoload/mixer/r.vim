@@ -129,7 +129,7 @@ def Is(regex: string): bool
 enddef
 
 def JumpToAction(action: string)
-  if GetFunctionName() != action
+  if cursor.FunctionName() != action
     search('^\s*def\s\+\<' .. action .. '\>', '', 0, 0, cursor.OnStringOrComment)
   endif
 enddef
