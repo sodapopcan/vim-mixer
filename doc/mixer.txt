@@ -323,6 +323,9 @@ NAVIGATION COMMANDS                         *mixer-navigation-commands*
                     will jump back and forth between HEEx and non-HEEx.  It's
                     a bit tough to explain so it's best to experiment.
 
+                    Currently this does not work with Phoenix's pre-1.17
+                    views.
+
                                             *mixer-:RS*
 :RS                 |:split| the related file.
                                             *mixer-:RV*
