@@ -9,14 +9,32 @@ const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.
 const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$\|^\s*use .* :html\>'
 
 export def DefineCommand()
-  command! -nargs=? R R('edit', <q-mods>, <f-args>)
-  command! -nargs=? RS R('split', <q-mods>, <f-args>)
-  command! -nargs=? RV R('vsplit', <q-mods>, <f-args>)
-  command! -nargs=? RT R('tabedit', <q-mods>, <f-args>)
-  command! -nargs=? RO R('drop', <q-mods>, <f-args>)
+  command! -count -nargs=? R R('edit', <range>, <count>, <q-mods>, <f-args>)
+  command! -count -nargs=? RS R('split', <range>, <count>, <q-mods>, <f-args>)
+  command! -count -nargs=? RV R('vsplit', <range>, <count>, <q-mods>, <f-args>)
+  command! -count -nargs=? RT R('tabedit', <range>, <count>, <q-mods>, <f-args>)
+  command! -count -nargs=? RO R('drop', <range>, <count>, <q-mods>, <f-args>)
 enddef
 
-def R(command: string, mods: string, arg: string = '')
+def R(command: string, range: number, count: number, mods: string, arg: string = '')
+  const original_line = line('.')
+  var context_line = original_line
+
+  if range == 1
+    context_line = count
+  endif
+
+  const original_view = winsaveview()
+
+  const Edit = (file: string) => {
+    exec $':{original_line}'
+    exec mods command file
+  }
+
+  const Reset = () => winrestview(original_view)
+
+  exec $':{context_line}'
+
   if IsController()
     const action = cursor.FunctionName()
     const path = expand('%')
@@ -25,28 +43,32 @@ def R(command: string, mods: string, arg: string = '')
     const action_file = $'{html_dir}/{action}.html.heex'
 
     if util.FileExists(action_file)
-      exec mods command action_file
+      Edit(action_file)
     elseif util.FileExists(html_file)
-      exec mods command html_file
+      Edit(html_file)
       JumpToAction(action)
     else
+      Reset()
       util.Error("No file or component exists")
     endif
   elseif IsLive()
     const heex_file = $'{expand('%:r')}.html.heex'
 
     if util.FileExists(heex_file)
-      exec mods command heex_file
+      Edit(heex_file)
     else
       var lnum = 0
-      const jumps = getjumplist()[0]->reverse()->filter((_, i) => i.bufnr == bufnr())
+
+      const jumps = getjumplist()[0]
+        ->reverse()
+        ->filter((_, i) => i.bufnr == bufnr())
 
       const view = winsaveview()
       normal! ^
       const started_in_heex = cursor.SynstackStr() =~ 'Heex'
 
       for jump in jumps
-        exec ':' .. jump.lnum
+        exec $':{jump.lnum}'
 
         const in_heex = cursor.SynstackStr() =~ 'Heex'
 
@@ -54,6 +76,7 @@ def R(command: string, mods: string, arg: string = '')
           continue
         else
           lnum = jump.lnum
+
           break
         endif
       endfor
@@ -78,9 +101,10 @@ def R(command: string, mods: string, arg: string = '')
     const controller = util.Sub(path, '_html', '_controller')
 
     if util.FileExists(controller)
-      exec mods command controller
+      Edit(controller)
       JumpToAction(action)
     else
+      Reset()
       util.Error("No file or component exists")
     endif
   elseif IsHEEX()
@@ -89,11 +113,12 @@ def R(command: string, mods: string, arg: string = '')
     const live = $'{expand('%:r:r')}.ex'
 
     if util.FileExists(controller)
-      exec mods command controller
+      Edit(controller)
       JumpToAction(action)
     elseif util.FileExists(live)
-      exec mods command live
+      Edit(live)
     else
+      Reset()
       util.Error("No file or component exists")
     endif
   endif
@@ -116,10 +141,7 @@ def IsHEEX(): bool
 enddef
 
 def Is(regex: string): bool
-  const view = winsaveview()
-  normal! $
-  const result = search(regex, 'Wbn') > 0
-  winrestview(view)
+  const result = search(regex, 'bnc') > 0
 
   return result
 enddef
@@ -134,9 +156,9 @@ def EditEmbedded(command: string, lnum: number)
   if lnum != 0
     normal! m'
     if command == 'edit'
-      exec ':' .. lnum
+      exec $':{lnum}'
     else
-      exec command '+' .. lnum expand('%')
+      exec command $'+{lnum}' expand('%')
     endif
   else
     util.Error("Couldn't find anything")

@@ -307,7 +307,7 @@ COMMANDS                                    *mixer-commands*
 NAVIGATION COMMANDS                         *mixer-navigation-commands*
 
                                             *mixer-:R*
-:R                  |:edit| the "related" file.
+:[count]R           |:edit| the "related" file.
 
                     If you are familiar with |rails|.vim then it works much in
                     the same way, although it works a bit differently with
@@ -322,6 +322,12 @@ NAVIGATION COMMANDS                         *mixer-navigation-commands*
                     is in a dedicated file it will jump to it.  Otherwise, it
                     will jump back and forth between HEEx and non-HEEx.  It's
                     a bit tough to explain so it's best to experiment.
+
+                    [count] represents a line number (default is the current
+                    line).  This is mildly useful if, for example, your
+                    cursor in the `index` action but you want to jump to the
+                    HTML module.  To do this without moving your cursor you
+                    can issue `:1R`.
 
                     Currently this does not work with Phoenix's pre-1.17
                     views.
