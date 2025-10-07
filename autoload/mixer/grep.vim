@@ -29,11 +29,11 @@ export def GotoDefinition()
   FindDefinition((_: dict<any>, file: string, lnum: number) => {
     var cmd: string
 
-    if file =~# '^' .. b:mix_project.root .. '/lib' ||
-        file =~# '^' .. b:mix_project.root .. '/test'
-      cmd = 'edit +' .. lnum
+    if file =~# $'^{b:mix_project.root}/lib' ||
+        file =~# $'^{b:mix_project.root}/test'
+      cmd = $'edit +{lnum}'
     else
-      cmd = 'view +' .. lnum .. '|set\ bufhidden=delete'
+      cmd = $'view +{lnum}|set\ bufhidden=delete'
     endif
 
     exec cmd file
@@ -45,7 +45,7 @@ export def Hover()
   FindDefinition((target: dict<any>, file: string, lnum: number) => {
     const contents = readfile(file)->join("\n")
 
-    const SPEC_REGEX = '\(\s*\)@spec\s\+\<' .. target.fn .. '\>\_.\{-}\ze\s*def\%(\k\+\)\=\s\+\<' .. target.fn .. '\>'
+    const SPEC_REGEX = $'\(\s*\)@spec\s\+\<{target.fn}\>\_.\{{-}}\ze\s*def\%(\k\+\)\=\s\+\<{target.fn}\>'
     const specmatch = matchlist(contents, SPEC_REGEX)
 
     if len(specmatch) > 1
@@ -61,7 +61,7 @@ export def Hover()
 
       win_execute(winid, 'syntax enable|set ft=elixir')
     else
-      util.Warn("No @spec found for " .. target.fn)
+      util.Warn($"No @spec found for {target.fn}")
     endif
   })
 enddef
@@ -168,7 +168,7 @@ def JumpToLocal(target: dict<any>, vim_regex: string): bool
   winrestview(view)
 
   if line != 0
-    exec 'normal!' line .. 'gg^'
+    exec 'normal!' $'{line}gg^'
 
     return true
   endif
@@ -191,8 +191,8 @@ def BuildRegex(target: dict<any>, options: dict<any> = {}): list<string>
     bare = target.fn[: -2]
   endif
 
-  grep_regex = "'\\s*def(macro|delegate)*?" .. gp .. " \\<" .. bare .. "\\>" .. flair .. "'"
-  vim_regex = '^\s*def\%(macro\|delegate\)\=' .. vp .. ' \<' .. bare .. flair .. '\>'
+  grep_regex = $"'\\s*def(macro|delegate)*?{gp} \\<{bare}\\>{flair}'"
+  vim_regex = $'^\s*def\%(macro\|delegate\)\={vp} \<{bare}{flair}\>'
 
   return [grep_regex, vim_regex]
 enddef
@@ -200,10 +200,10 @@ enddef
 def Grep(cmd: string, paths: list<string> = []): list<string>
   const search_paths = paths
     -> copy()
-    -> map((_, path) => path =~# '^\/' ? path : b:mix_project.root .. '/' .. path)
+    -> map((_, path) => path =~# '^\/' ? path : $'{b:mix_project.root}/{path}')
     -> join(' ')
 
-  const command = "rg -uuu -l --type elixir " .. cmd ..  " " .. search_paths
+  const command = $"rg -uuu -l --type elixir {cmd} {search_paths}"
 
   const results = systemlist(command)
 
@@ -240,7 +240,7 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
     # Function is unqualified
     # TODO: Handle any `Kernel, except:`s
     if util.InList(KERNEL_FNS, target.fn)
-      locations = [ELIXIR_PATH .. '/kernel.ex']
+      locations = [$'{ELIXIR_PATH }/kernel.ex']
     else
       modules = directives
         -> copy()
@@ -263,7 +263,7 @@ def DepsRegex(directives: dict<any>): string
     -> uniq()
     -> join('*|')
 
-  return "deps/(" .. deps_regex .. "*)/lib/*"
+  return $"deps/({deps_regex}*)/lib/*"
 enddef
 
 def BuildModuleRegex(modules: list<string>): string
@@ -273,10 +273,10 @@ def BuildModuleRegex(modules: list<string>): string
     const m = module->split('\.')
 
     const submodules_regex = m[1 : ]
-      -> map((_, a) => '\%(\.\|\_.*defmodule\s\+\)' .. a)
+      -> map((_, a) => $'\%(\.\|\_.*defmodule\s\+\){a}')
       -> join('')
 
-    module_regex_list->add('\%(^\s*defmodule\s\+' .. m[0] .. submodules_regex .. '\s\+do\)')
+    module_regex_list->add($'\%(^\s*defmodule\s\+{m[0]}{submodules_regex}\s\+do\)')
   endfor
 
   return module_regex_list->join('\|')
@@ -303,7 +303,7 @@ class Context
 
     if len(heredoc) > 0
       this.heredoc_delim = heredoc[2]
-      this.heredoc_end = '^' .. heredoc[1] .. this.heredoc_delim .. '$'
+      this.heredoc_end = $'^{heredoc[1]}{this.heredoc_delim}$'
       this.in_heredoc = true
     endif
 
@@ -318,12 +318,12 @@ class Context
     endif
 
     if module !=# '' && !this.in_heredoc
-      const module_match = matchlist(line, '^\(\s*\)defmodule\s\+' .. module .. '\s\+do')
+      const module_match = matchlist(line, $'^\(\s*\)defmodule\s\+{module}\s\+do')
 
       if !this.in_module && module_match != []
         this.skip = false
         this.in_module = true
-        this.module_end = '^' .. module_match[1] .. 'end$'
+        this.module_end = $'^{module_match[1]}end$'
       elseif this.in_module && line =~# this.module_end
         this.in_module = false
         this.skip = true
@@ -458,7 +458,7 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
-        const files = Grep("'defmodule " .. module .. " do'",  ["lib", "test", "deps/**/lib/*"])
+        const files = Grep($"'defmodule {module} do'",  ["lib", "test", "deps/**/lib/*"])
 
         if len(files) > 0
           final results = FindDirectives(target, files[0], recursion_count + 1)
@@ -474,7 +474,7 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
         directives->add(trim(line))
       endif
     elseif !empty(multi_close)
-      if line =~# multi_close .. '$'
+      if line =~# $'{multi_close}$'
         multi_close = ''
       endif
 
