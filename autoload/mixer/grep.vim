@@ -95,7 +95,7 @@ export def FindUsages()
 
   const list_contents = results
     -> copy()
-    -> map((_, f) => {
+    -> map((_, f): dict<any> => {
       const [_, filename, lnum, col, text, _, _, _, _, _] = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
 
       return {
@@ -178,14 +178,14 @@ def FindDefinition(Callback: func): void
 
   const list_contents = final_results
     -> copy()
-    -> map((_, f) => {
+    -> map((_, f): dict<any> => {
       return {
         filename: f[0],
         lnum: f[1],
         text: readfile(f[0])[f[1] - 1]}
       })
 
-    ShowResults(final_results)
+    ShowResults(list_contents)
   endif
 enddef
 
