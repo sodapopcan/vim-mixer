@@ -2,7 +2,7 @@ vim9script
 
 import autoload './code.vim'
 import autoload './util.vim'
-import autoload './cursor.vim'
+import autoload './cursor.vim' as cur
 
 const CONTROLLER_REGEX = '\s*use\s\+.*:controller\>'
 const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.*Live.*do$\|^\s*use Phoenix.\%(LiveView\|LiveComponent\|Component\)'
@@ -36,7 +36,7 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
   exec $':{context_line}'
 
   if IsController()
-    const action = cursor.FunctionName()
+    const action = cur.FunctionName()
     const path = expand('%')
     const html_dir = util.Sub(path, '_controller.ex', '_html')
     const html_file = $'{html_dir}.ex'
@@ -58,6 +58,7 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
       Edit(heex_file)
     else
       var lnum = 0
+      var col = 0
 
       const jumps = getjumplist()[0]
         ->reverse()
@@ -65,17 +66,18 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
 
       const view = winsaveview()
       normal! ^
-      const started_in_heex = cursor.SynstackStr() =~ 'Heex'
+      const started_in_heex = cur.SynstackStr() =~ 'Heex'
 
       for jump in jumps
-        exec $':{jump.lnum}'
+        cursor(jump.lnum, jump.col + 1)
 
-        const in_heex = cursor.SynstackStr() =~ 'Heex'
+        const in_heex = cur.SynstackStr() =~ 'Heex'
 
         if (started_in_heex && in_heex) || (!started_in_heex && !in_heex)
           continue
         else
           lnum = jump.lnum
+          col = jump.col + 1
 
           break
         endif
@@ -84,19 +86,19 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
       winrestview(view)
 
       if lnum != 0
-        EditEmbedded(command, lnum)
+        EditEmbedded(command, lnum, col)
       else
         if started_in_heex
-          lnum = search('^\s*def mount\|^defmodule', 'n', 0, 0, cursor.OnStringOrComment)
+          lnum = search('^\s*def mount\|^defmodule', 'n', 0, 0, cur.OnStringOrComment)
         else
-          lnum = search('^\s*\~H', 'n', 0, 0, cursor.OnStringOrComment)
+          lnum = search('^\s*\~H', 'n', 0, 0, cur.OnStringOrComment)
         endif
 
-        EditEmbedded(command, lnum)
+        EditEmbedded(command, lnum, 1)
       endif
     endif
   elseif IsHTML()
-    const action = cursor.FunctionName()
+    const action = cur.FunctionName()
     const path = expand('%')
     const controller = util.Sub(path, '_html', '_controller')
 
@@ -147,16 +149,16 @@ def Is(regex: string): bool
 enddef
 
 def JumpToAction(action: string)
-  if cursor.FunctionName() != action
-    search('^\s*def\s\+\<' .. action .. '\>', '', 0, 0, cursor.OnStringOrComment)
+  if cur.FunctionName() != action
+    search('^\s*def\s\+\<' .. action .. '\>', '', 0, 0, cur.OnStringOrComment)
   endif
 enddef
 
-def EditEmbedded(command: string, lnum: number)
+def EditEmbedded(command: string, lnum: number, col: number)
   if lnum != 0
-    normal! m'
     if command == 'edit'
-      exec $':{lnum}'
+      normal! m'
+      cursor(lnum, col)
     else
       exec command $'+{lnum}' expand('%')
     endif
