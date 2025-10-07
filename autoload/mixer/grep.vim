@@ -26,6 +26,16 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> uniq()
 
 export def GotoDefinition()
+  system('command -v rg')
+
+  if v:shell_error > 0
+    normal! gd
+
+    util.Warn("Ripgrep required, falling back to builtin")
+
+    return
+  endif
+
   FindDefinition((_: dict<any>, file: string, lnum: number) => {
     var cmd: string
 

@@ -3,7 +3,7 @@ vim9script
 export def Error(msg: string)
   redraw
   echohl ErrorMsg
-  echomsg msg
+  echomsg $'[mixer.vim] {msg}'
   echohl None
   v:errmsg = msg
 enddef
@@ -11,7 +11,7 @@ enddef
 export def Warn(msg: string)
   redraw
   echohl WarningMsg
-  echomsg 'Nothing found'
+  echomsg $'[mixer.vim] {msg}'
   echohl None
 enddef
 
