@@ -98,9 +98,11 @@ def SetupBuf()
 
     nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition) :call <sid>grep.GotoDefinition()<cr>
     nnoremap <silent> <buffer> <Plug>(mixer-hover) :call <sid>grep.Hover()<cr>
+    nnoremap <silent> <buffer> <Plug>(mixer-find-usages) :call <sid>grep.FindUsages()<cr>
 
     util.SetLocalMap('gd', 'mixer-jump-to-definition')
     util.SetLocalMap('K', 'mixer-hover')
+    util.SetLocalMap('gY', 'mixer-find-usages')
 
     if b:mix_project.has_phoenix
       phx.DefineFindEvent()

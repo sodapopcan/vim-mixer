@@ -63,8 +63,8 @@ export def Hover()
 
       const spec = ['']->extend(
         specmatch[0]
-          ->split("\n")
-          ->map((_,  line) => line .. padding)
+        ->split("\n")
+        ->map((_,  line) => line .. padding)
       )->extend([''])
 
       const winid = popup_atcursor(spec, {line: 'cursor-2', col: 'cursor-2', moved: 'any'})
@@ -74,6 +74,37 @@ export def Hover()
       util.Warn($"No @spec found for {target.fn}")
     endif
   })
+enddef
+
+export def FindUsages()
+  const target = cursor.Target()
+  var usage_regex = ''
+  const [def_regex, _] = BuildRegex(target, {include_private: true})
+
+  if empty(target.fn)
+    usage_regex = escape(target.alias, '.')
+  else
+    if empty(target.alias)
+      usage_regex = escape(target.fn, '!?')
+    else
+      usage_regex = join([target.alias, target.fn], '.')->escape('.!?')
+    endif
+  endif
+
+  const results = systemlist($"rg --vimgrep -P '(?<!(def|iex>) )\\b{usage_regex}\\b' {b:mix_project.root}/lib")
+
+  const list_contents = results
+    -> copy()
+    -> map((_, f) => {
+      const [_, filename, lnum, _, text, _, _, _, _, _] = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
+
+      return {
+        filename: filename,
+        lnum: str2nr(lnum),
+        text: text}
+      })
+
+  ShowResults(list_contents)
 enddef
 
 def FindDefinition(Callback: func): void
@@ -144,25 +175,16 @@ def FindDefinition(Callback: func): void
       final_results->add(results)
     endif
 
-    const list_contents = final_results
-      -> copy()
-      -> map((_, f) => {
-        return {
-          filename: f[0],
-          lnum: f[1],
-          text: readfile(f[0])[f[1] - 1]}
-        }
-      )
+  const list_contents = final_results
+    -> copy()
+    -> map((_, f) => {
+      return {
+        filename: f[0],
+        lnum: f[1],
+        text: readfile(f[0])[f[1] - 1]}
+      })
 
-    const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
-
-    if list_type == 'qflist'
-      setqflist(list_contents)
-      copen
-    elseif list_type == 'loclist'
-      setloclist(0, list_contents)
-      lopen
-    endif
+    ShowResults(final_results)
   endif
 enddef
 
@@ -493,4 +515,16 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
   endfor
 
   return directives
+enddef
+
+def ShowResults(contents: list<dict<any>>)
+  const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
+
+  if list_type == 'qflist'
+    setqflist(contents)
+    copen
+  elseif list_type == 'loclist'
+    setloclist(0, contents)
+    lopen
+  endif
 enddef
