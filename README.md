@@ -7,14 +7,15 @@ Some functionality, like text objects, depend on [elixir.vim](https://github.com
 ## Features
 
 ### Text objects
-- `ad`/`id` - Any macro with a `do` block.  Works on user-defined macros as
-  well as keyword syntax.
-- `aD` - Like `ad` but include any assignment and/or attached comments (`iD`
-  exists for convenience but is identical to `id`).
+
 - `af`/`if` - A function/macro definition
 - `aF` - Like `af` but include all heads, docs, annotations, `attr` and
   `slot` declarations, and even matching `do_`-prefixed heads (`iF` exists
   for convenience but is identical to `if`).
+- `ad`/`id` - Any macro with a `do` block, like `if`, `cond`, etc.  It even
+  works on `fn` blocks, user-defined macros, and even keyword syntax.
+- `aD` - Like `ad` but include any assignment and/or attached comments (`iD`
+  exists for convenience but is identical to `id`).
 - `iS`/`aS`- A sigil
 - `im`/`am`- A map or struct
 - `iM`/`aM`- A module
