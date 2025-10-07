@@ -28,6 +28,7 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
 export def GotoDefinition()
   FindDefinition((_: dict<any>, file: string, lnum: number) => {
     var cmd: string
+
     if file =~# '^' .. b:mix_project.root .. '/lib' ||
         file =~# '^' .. b:mix_project.root .. '/test'
       cmd = 'edit +' .. lnum
