@@ -96,11 +96,12 @@ export def FindUsages()
   const list_contents = results
     -> copy()
     -> map((_, f) => {
-      const [_, filename, lnum, _, text, _, _, _, _, _] = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
+      const [_, filename, lnum, col, text, _, _, _, _, _] = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
 
       return {
         filename: filename,
         lnum: str2nr(lnum),
+        col: str2nr(col),
         text: text}
       })
 
