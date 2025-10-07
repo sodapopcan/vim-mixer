@@ -58,21 +58,21 @@ var mix_project_root: string
 
 augroup mixer
   autocmd!
-  autocmd FileType elixir,eelixir call textobj.Define()
-  autocmd FileType elixir,eelixir call integrations.Define()
-  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetMatchWords()
-  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetCommentString()
-  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs call elixir.SetIsKeyword()
+  autocmd FileType elixir,eelixir textobj.Define()
+  autocmd FileType elixir,eelixir integrations.Define()
+  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs elixir.SetMatchWords()
+  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs elixir.SetCommentString()
+  autocmd CursorHold,BufEnter,VimEnter *.ex,*.exs elixir.SetIsKeyword()
   autocmd FileType eelixir b:match_words = elixir.HTML_MATCH_WORDS
     | exec "set commentstring=" .. elixir.HEEX_COMMENTSTRING
     | exec "set iskeyword+=-"
   autocmd DirChanged * [mix_project_root, _, _] = g:MixerDetect()
     | if !empty(mix_project_root)
-    |   call project.Setup()
+    |   project.Setup()
     | endif
-  autocmd User ProjectionistDetect | call SetupBuf() | call projections.Detect()
+  autocmd User ProjectionistDetect | SetupBuf() | projections.Detect()
   autocmd BufReadPost * if !exists('*ProjectionistHas') | SetupBuf() | endif
-  autocmd BufReadPost * r.DefineCommand()
+  autocmd BufReadPost * if exists('b:mix_project') | r.DefineCommand() | endif
 augroup END
 
 def SetupBuf()

@@ -9,11 +9,11 @@ const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.
 const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$\|^\s*use .* :html\>'
 
 export def DefineCommand()
-  command! -count -nargs=? R R('edit', <range>, <count>, <q-mods>, <f-args>)
-  command! -count -nargs=? RS R('split', <range>, <count>, <q-mods>, <f-args>)
-  command! -count -nargs=? RV R('vsplit', <range>, <count>, <q-mods>, <f-args>)
-  command! -count -nargs=? RT R('tabedit', <range>, <count>, <q-mods>, <f-args>)
-  command! -count -nargs=? RO R('drop', <range>, <count>, <q-mods>, <f-args>)
+  command! -buffer -count -nargs=? R R('edit', <range>, <count>, <q-mods>, <f-args>)
+  command! -buffer -count -nargs=? RS R('split', <range>, <count>, <q-mods>, <f-args>)
+  command! -buffer -count -nargs=? RV R('vsplit', <range>, <count>, <q-mods>, <f-args>)
+  command! -buffer -count -nargs=? RT R('tabedit', <range>, <count>, <q-mods>, <f-args>)
+  command! -buffer -count -nargs=? RO R('drop', <range>, <count>, <q-mods>, <f-args>)
 enddef
 
 def R(command: string, range: number, count: number, mods: string, arg: string = '')
