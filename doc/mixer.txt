@@ -323,6 +323,19 @@ NAVIGATION COMMANDS                         *mixer-navigation-commands*
                     will jump back and forth between HEEx and non-HEEx.  It's
                     a bit tough to explain so it's best to experiment.
 
+                    If your project is organized in the "standard" way, :R in
+                    a schema will jump to its context.  Otherwise, when in
+                    a context (or another random file) it will use some
+                    heuristics based on the current function name to try and
+                    figure out the correct schema.  YMMV.  Currently this only
+                    works if you use the "standard" Mix practice of
+                    `root_module.ex` and `root_module/` as siblings.
+
+                    Additionally:
+
+                    - Toggle between `router.ex` and `endpoint.ex` 
+                    - In a migration, hop to the previous one
+
                     [count] represents a line number (default is the current
                     line).  This is mildly useful if, for example, your
                     cursor in the `index` action but you want to jump to the

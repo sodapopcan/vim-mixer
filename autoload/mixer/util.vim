@@ -67,7 +67,7 @@ export def ToElixirAlias(word: string): string
   return Sub(Camelcase(word), '^.', '\u&')
 enddef
 
-# Taken from @tpope's abolish.vim <http//github.com/tpope/vim-abolish>
+# Taken from @tpope's abolish.vim <https://github.com/tpope/vim-abolish>
 export def Camelcase(w: string): string
   var word = Gsub(w, '-', '_')
 
@@ -76,6 +76,25 @@ export def Camelcase(w: string): string
   else
     return Gsub(word, '\C\(_\)\=\(.\)', '\=submatch(1) == "" ? tolower(submatch(2)) : toupper(submatch(2))')
   endif
+enddef
+
+# Taken from @tpope's rails.vim <https://github.com/tpope/vim-rails>
+export def Singularize(word: string): string
+  # Probably not worth it to be as comprehensive as Rails but we can
+  # still hit the common cases.
+  if word =~? '\.js$\|redis$' || empty(word)
+    return word
+  endif
+
+  return word
+    -> Sub('eople$', 'ersons')
+    -> Sub('%([Mm]ov|[aeio])@<!ies$', 'ys')
+    -> Sub('xe[ns]$', 'xs')
+    -> Sub('ves$', 'fs')
+    -> Sub('ss%(es)=$', 'sss')
+    -> Sub('s$', '')
+    -> Sub('%([nrt]ch|tatus|lias)\zse$', '')
+    -> Sub('%(nd|rt)\zsice$', 'ex')
 enddef
 
 export def InRange(pos: list<number>, start: list<number>, end: list<number>): bool

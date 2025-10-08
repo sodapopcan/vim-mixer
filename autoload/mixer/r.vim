@@ -7,6 +7,7 @@ import autoload './cursor.vim' as cur
 const CONTROLLER_REGEX = '\s*use\s\+.*:controller\>'
 const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.*Live.*do$\|^\s*use Phoenix.\%(LiveView\|LiveComponent\|Component\)'
 const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$\|^\s*use .* :html\>'
+const SCHEMA_REGEX = '^\s*use.\{-}Schema'
 
 export def DefineCommand()
   command! -buffer -count -nargs=? R R('edit', <range>, <count>, <q-mods>, <f-args>)
@@ -123,6 +124,64 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
       Reset()
       util.Error("No file or component exists")
     endif
+  elseif IsSchema()
+    const view = winsaveview()
+    :0
+    search('^\s*defmodule')
+    const schema_module = matchlist(getline('.'), '^\s*defmodule\s\+\([[:keyword:].]\+\)')[1]
+    const context_file = util.Camelcase(schema_module->split('\.')[ : -2 ][-1]) .. '.ex'
+    winrestview(view)
+
+    const standard_location = expand('%:h:h') .. '/' .. context_file
+
+    if util.FileExists(standard_location)
+      Edit(standard_location)
+    else
+      const colocation = expand('%:h') .. '/' .. context_file
+
+      Edit(colocation)
+    endif
+  elseif IsMigration()
+    const migration = expand('%')
+    const migrations = util.Glob('priv/repo/migrations/*.exs')
+    const index = index(migrations, migration)
+    const prev_migration = migrations[index - 1]
+
+    Edit(prev_migration)
+  elseif IsEndpointOrRouter()
+    var path = expand('%')
+
+    if path =~ 'endpoint\.ex$'
+      Edit(expand('%:h') .. '/router.ex')
+    else
+      Edit(expand('%:h') .. '/endpoint.ex')
+    endif
+  else
+    # We're just gonna wing it and try and find a related file based on the
+    # function name and modules in it.  We're going to assume it's a Phoenix Context.
+    const function_name = cur.FunctionName()->split('_')->map((_, n) => util.Singularize(n))->join(' ')
+    final basenames: list<string> = []
+    final candidates: list<list<any>> = []
+
+    for file in util.Glob(expand('%:r') .. '/**/*.ex')
+      const name = fnamemodify(file, ':t:r')->split('_')->map((_, n) => util.Singularize(n))->join(' ')
+      basenames->add(name)
+    endfor
+
+    for basename in basenames
+      const results = matchfuzzypos([function_name], basename)
+      const score = results[2]
+
+      if len(score) > 0
+        candidates->add([basename, score[0]])
+      endif
+    endfor
+
+    if len(candidates) > 0
+      const result = candidates[0][0]
+
+      Edit(expand('%:r') .. '/' .. result .. '.ex')
+    endif
   endif
 enddef
 
@@ -142,6 +201,17 @@ def IsHEEX(): bool
   return expand('%:e') == 'heex'
 enddef
 
+def IsSchema(): bool
+  return Is(SCHEMA_REGEX)
+enddef
+
+def IsMigration(): bool
+  return expand('%') =~ 'repo/migrations'
+enddef
+
+def IsEndpointOrRouter(): bool
+  return expand('%') =~ 'endpoint\.ex$\|router\.ex'
+enddef
 def Is(regex: string): bool
   const result = search(regex, 'bnc') > 0
 
