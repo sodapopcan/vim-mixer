@@ -190,7 +190,7 @@ def FindDefinition(Callback: func): void
 enddef
 
 def JumpToLocal(target: dict<any>, vim_regex: string): bool
-  if target.is_delegate
+  if target.is_delegate || !target.might_be_local
     return false
   endif
 

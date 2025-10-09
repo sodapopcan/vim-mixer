@@ -70,7 +70,8 @@ export def Target(): dict<any>
       alias: alias,
       alias_prefix: matchstr(alias, '\k\+'),
       context_alias: context_alias,
-      is_delegate: is_delegate
+      is_delegate: is_delegate,
+      might_be_local: empty(alias)
     }
   endtry
 enddef
