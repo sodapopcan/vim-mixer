@@ -356,8 +356,8 @@ Here is an overview:
 
     Elixir construct    | Text Object  (mneumonic/notes)
     --------------------+------------------------------------------------
-    blocks              | d  (do, but also fb)
-    blocks              | D  (includes assignment comments)
+    block               | d  (do, but also fn)
+    block               | D  (includes assignment comments)
     def[p]/defmarco[p]  | f
     def[p]/defmacro[p]  | F  (includes annotations and all function heads)
     defmodule           | M
