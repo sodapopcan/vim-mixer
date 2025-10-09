@@ -96,8 +96,8 @@ export def FunctionName(): string
 
   var name = ''
 
-  if getline('.') =~ '^\s*\<def\>'
-    name = getline('.')->matchstr('\s*def\s\+\zs\k\+')
+  if getline('.') =~ '^\s*\<def\%(p\|macro\|macrop\)\>'
+    name = getline('.')->matchstr('^\s*\<def\%(p\|delegate\|macro\|macrop\)\>\s\+\zs\k\+')
   else
     var cur_pos = [line('.'), 0]
     var def_lnum = search('\<def\>', 'Wbc', 0, 0, OnStringOrComment)

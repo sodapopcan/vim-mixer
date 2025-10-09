@@ -26,10 +26,14 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
   endif
 
   const original_view = winsaveview()
+  const function_name = cur.FunctionName()->util.Sub('[^[:alnum:]_]', '')
 
   const Edit = (file: string) => {
     exec $':{original_line}'
-    exec mods command file
+
+    if util.FileExists(file)
+      exec mods command file
+    endif
   }
 
   const Reset = () => winrestview(original_view)
@@ -37,7 +41,7 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
   exec $':{context_line}'
 
   if IsController()
-    const action = cur.FunctionName()
+    const action = function_name
     const path = expand('%')
     const html_dir = util.Sub(path, '_controller.ex', '_html')
     const html_file = $'{html_dir}.ex'
@@ -99,7 +103,7 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
       endif
     endif
   elseif IsHTML()
-    const action = cur.FunctionName()
+    const action = function_name
     const path = expand('%')
     const controller = util.Sub(path, '_html', '_controller')
 
@@ -126,10 +130,10 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
     endif
   elseif IsSchema()
     const view = winsaveview()
-    :0
+    :1
     search('^\s*defmodule')
     const schema_module = matchlist(getline('.'), '^\s*defmodule\s\+\([[:keyword:].]\+\)')[1]
-    const context_file = util.Camelcase(schema_module->split('\.')[ : -2 ][-1]) .. '.ex'
+    const context_file = util.Underscore(schema_module->split('\.')[ : -2 ][-1])->util.Underscore() .. '.ex'
     winrestview(view)
 
     const standard_location = expand('%:h:h') .. '/' .. context_file
@@ -159,17 +163,19 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
   else
     # We're just gonna wing it and try and find a related file based on the
     # function name and modules in it.  We're going to assume it's a Phoenix Context.
-    const function_name = cur.FunctionName()->split('_')->map((_, n) => util.Singularize(n))->join(' ')
+    const view = winsaveview()
+
+    var function_words = function_name->ToWords()
     final basenames: list<string> = []
     final candidates: list<list<any>> = []
 
     for file in util.Glob(expand('%:r') .. '/**/*.ex')
-      const name = fnamemodify(file, ':t:r')->split('_')->map((_, n) => util.Singularize(n))->join(' ')
+      const name = fnamemodify(file, ':t:r')->ToWords()
       basenames->add(name)
     endfor
 
     for basename in basenames
-      const results = matchfuzzypos([function_name], basename)
+      const results = matchfuzzypos([function_words], basename)
       const score = results[2]
 
       if len(score) > 0
@@ -177,10 +183,54 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
       endif
     endfor
 
-    if len(candidates) > 0
-      const result = candidates[0][0]
+    # Maybe handle sorting by score when I get a result that has more than one
+    # match.  If not, delete this logic.
 
-      Edit(expand('%:r') .. '/' .. result .. '.ex')
+    if len(candidates) > 0
+      const result = candidates[0][0]->split(' ')->join('_')
+      const result_file = FindFile(expand('%:r') .. '/' .. result .. '.ex')
+
+      Edit(result_file)
+    else
+      final word_score: dict<number> = {}
+
+      const def_regex = '^\s*\<def\%(\p\|macro\|macrop\)\=\>\s\+\(\i\+\)'
+
+      :1
+
+      while search(def_regex, 'W') > 0
+        if line('.') == line('$')
+          break
+        endif
+
+        const words = matchlist(getline('.'), def_regex)[1]->split('_')
+
+        for word in words
+          if !word_score->has_key(word)
+            word_score[word] = 0
+          endif
+
+          word_score[word] += 1
+        endfor
+      endwhile
+
+      if len(word_score) > 0
+        const file = items(word_score)->sort((a, b) => b[1] - a[1])[0]
+
+        if len(file) > 0
+          const path = FindFile(expand('%:r') .. '/' .. file[0] .. '.ex')
+
+          if util.FileExists(path)
+            Edit(path)
+          else
+            winrestview(view)
+          endif
+        else
+          winrestview(view)
+        endif
+      else
+        winrestview(view)
+      endif
     endif
   endif
 enddef
@@ -212,6 +262,7 @@ enddef
 def IsEndpointOrRouter(): bool
   return expand('%') =~ 'endpoint\.ex$\|router\.ex'
 enddef
+
 def Is(regex: string): bool
   const result = search(regex, 'bnc') > 0
 
@@ -234,5 +285,23 @@ def EditEmbedded(command: string, lnum: number, col: number)
     endif
   else
     util.Error("Couldn't find anything")
+  endif
+enddef
+
+def ToWords(string: string): string
+  return string
+    ->split('_')
+    ->map((_, n) => util.Singularize(n))
+    ->join(' ')
+enddef
+
+# Finds a file trying its singular and plural versions
+def FindFile(file: string): string
+  if util.FileExists(file)
+    return file
+  else
+    const ext = fnamemodify(file, ':e')
+
+    return fnamemodify(file, ':r')->util.Singularize() .. '.' .. ext
   endif
 enddef

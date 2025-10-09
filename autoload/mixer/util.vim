@@ -78,6 +78,15 @@ export def Camelcase(w: string): string
   endif
 enddef
 
+# Taken from @tpope's abolish.vim <https://github.com/tpope/vim-abolish>
+export def Underscore(word: string): string
+  return word
+    -> Gsub('\.', '/')
+    -> Gsub('\(\u\+\)\(\u\l\)', '\1_\2')
+    -> Gsub('\(\l\|\d\)\(\u\)', '\1_\2')
+    -> tolower()
+enddef
+
 # Taken from @tpope's rails.vim <https://github.com/tpope/vim-rails>
 export def Singularize(word: string): string
   # Probably not worth it to be as comprehensive as Rails but we can
