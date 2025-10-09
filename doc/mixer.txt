@@ -103,7 +103,19 @@ gd                  Jump to the definition of the word under the cursor.
                     used instead for Elixir files.  If you already have `gd`
                     mapped, you will have to define a new one yourself:
 >
-                      nmap <leader>k <Plug>(mixer-hover)
+                      nmap <leader>gdd <Plug>(mixer-jump-to-definition)
+<
+                    See |mixer-code-search| for more information.
+
+CTRL-W d            Jump to definition |:split|ting the window.
+>
+                      nmap <leader>gdd <Plug>(mixer-jump-to-definition-split)
+<
+                    See |mixer-code-search| for more information.
+
+CTRL-W gd           Jump to definition in a new tab.
+>
+                      nmap <leader>gdt <Plug>(mixer-jump-to-definition-tab)
 <
                     See |mixer-code-search| for more information.
 

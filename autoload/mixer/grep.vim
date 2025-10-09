@@ -25,7 +25,7 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> map((_, match) => match.text)
   -> uniq()
 
-export def GotoDefinition()
+export def GotoDefinition(command: string)
   system('command -v rg')
 
   if v:shell_error > 0
@@ -41,9 +41,9 @@ export def GotoDefinition()
 
     if file =~# $'^{b:mix_project.root}/lib' ||
         file =~# $'^{b:mix_project.root}/test'
-      cmd = $'edit +{lnum}'
+      cmd = $'{command} +{lnum}'
     else
-      cmd = $'view +{lnum}|set\ bufhidden=delete'
+      cmd = $'{command} +{lnum}|set\ bufhidden=delete'
     endif
 
     exec cmd file

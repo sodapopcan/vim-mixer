@@ -96,11 +96,15 @@ def SetupBuf()
   if exists('b:mix_project')
     command! -buffer -complete=customlist,mix.DepsComplete -range -bang -nargs=* Deps call mix.DepsCommand(<bang>false, <q-mods>, <range>, <line1>, <line2>, <f-args>)
 
-    nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition) :call <sid>grep.GotoDefinition()<cr>
+    nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition) :call <sid>grep.GotoDefinition('edit')<cr>
+    nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition-split) :call <sid>grep.GotoDefinition('split')<cr>
+    nnoremap <silent> <buffer> <Plug>(mixer-jump-to-definition-tab) :call <sid>grep.GotoDefinition('tabedit')<cr>
     nnoremap <silent> <buffer> <Plug>(mixer-hover) :call <sid>grep.Hover()<cr>
     nnoremap <silent> <buffer> <Plug>(mixer-find-usages) :call <sid>grep.FindUsages()<cr>
 
     util.SetLocalMap('gd', 'mixer-jump-to-definition')
+    util.SetLocalMap('<c-w>d', 'mixer-jump-to-definition-split')
+    util.SetLocalMap('<c-w>gd', 'mixer-jump-to-definition-tab')
     util.SetLocalMap('K', 'mixer-hover')
     util.SetLocalMap('gY', 'mixer-find-usages')
 
