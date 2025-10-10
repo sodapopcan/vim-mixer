@@ -193,6 +193,60 @@ export def FunctionName(): string
   return name
 enddef
 
+export def GetFunction(): dict<any>
+  const view = winsaveview()
+
+  normal! ^
+
+  var cur_pos = [line('.'), 0]
+  var def_pos = searchpos('\<def', 'Wbc', 0, 0, OnStringOrComment)
+
+  var do_pos = searchpos('\<do\>', 'W', 0, 0, OnStringOrComment)
+  var end_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', OnStringOrComment)
+
+  if !util.InRange(cur_pos, def_pos, end_pos)
+    def_pos = searchpos('\<def', 'Wc', 0, 0, OnStringOrComment)
+    do_pos = searchpos('\<do\>', 'W', 0, 0, OnStringOrComment)
+    end_pos = searchpairpos('\<do\>\:\@!|\<fn\>', '', '\<end\>', 'W', OnStringOrComment)
+  endif
+
+  var is_component = false
+
+  if def_pos != [0, 0]
+    exec $':{def_pos[0]}'
+    normal ^f(
+    const start_lnum = line('.')
+    searchpair('(', '', ')', 'W', OnStringOrComment)
+    const end_lnum = line('.')
+
+    final lines = []
+
+    for lnum in range(start_lnum, end_lnum)
+      lines->add(getline(lnum))
+    endfor
+
+    if join(lines, ' ') =~ 'assigns'
+      is_component = true
+    endif
+  endif
+
+  var ret = {}
+
+  if def_pos != [0, 0]
+    ret = {
+      def_pos: def_pos,
+      do_pos: do_pos,
+      end_pos: end_pos,
+      name: getline(def_pos[0])->matchstr('\s*def\%(\k\+\)\=\s\+\zs\k\+'),
+      is_component: is_component,
+    }
+  endif
+
+  winrestview(view)
+
+  return ret
+enddef
+
 export def GetDefdelegate(): dict<string>
   if getline('.') =~# '^\s*defdelegate' && !OnStringOrComment()
     final defdelegate: dict<string> = {}
