@@ -6,8 +6,7 @@ vim9script
 import autoload './util.vim'
 import autoload './code.vim'
 
-# const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(,\_.\{-}\(to:\|as:\)\s\+\([[:alnum:]:.]\+\)\%(,\_.\{-}\(to:\|as:\)\s\+\([[:alnum:]:.]\+\)\=\)\=\)'
-const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:\|as:\)\s\+\([[:alnum:]:.]\+\)\)\)\{1,2}\)'
+const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:\|as:\)\s\+\([[:keyword:]:]\+\)\)\)\{1,2}\)'
 
 # Target is the word under the cursor, which may be a function or an alias.
 # It returns a dictionary of the alias and optionally the function name.
