@@ -7,7 +7,7 @@ import autoload './cursor.vim' as cur
 const CONTROLLER_REGEX = '\s*use\s\+.*:controller\>'
 const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.*Live.*do$\|^\s*use Phoenix.\%(LiveView\|LiveComponent\|Component\)'
 const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$\|^\s*use .* :html\>'
-const SCHEMA_REGEX = '^\s*use.\{-}Schema'
+const SCHEMA_REGEX = '^\s*use.\{-}Schema\|^\s*use\s\+Ash.Resource'
 
 export def DefineCommand()
   command! -buffer -count -nargs=? R R('edit', <range>, <count>, <q-mods>, <f-args>)
@@ -211,7 +211,13 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
     else
       final word_score: dict<number> = {}
 
-      const def_regex = '^\s*\<def\%(\p\|macro\|macrop\)\=\>\s\+\(\i\+\)'
+      var def_regex: string
+
+      if b:mix_project.has_ash
+        def_regex = '^\s*define\s\+:\(\i\+\)'
+      else
+        def_regex = '^\s*\<def\%(\p\|macro\|macrop\)\=\>\s\+\(\i\+\)'
+      endif
 
       :1
 
