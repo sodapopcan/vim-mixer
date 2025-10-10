@@ -25,7 +25,7 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> map((_, match) => match.text)
   -> uniq()
 
-export def GotoDefinition(command: string)
+export def GotoDefinition(command: string, follow_delegates: bool = false)
   system('command -v rg')
 
   if v:shell_error > 0
@@ -48,7 +48,7 @@ export def GotoDefinition(command: string)
 
     exec cmd file
     normal! zz^
-  })
+  }, follow_delegates)
 enddef
 
 export def Hover()
@@ -108,7 +108,7 @@ export def FindUsages()
   ShowResults(list_contents)
 enddef
 
-def FindDefinition(Callback: func): void
+def FindDefinition(Callback: func, follow_delegates = false): void
   const target = cursor.Target()
 
   const [grep_regex, vim_regex] = BuildRegex(target, {include_private: true})
@@ -163,8 +163,13 @@ def FindDefinition(Callback: func): void
 
   if len(filtered_results) == 1
     const [file, lnum] = filtered_results[0]
-
-    Callback(target, file, lnum)
+    if follow_delegates && readfile(file)[lnum - 1] =~ '^\s*defdelegate'
+      # TODO: Don't wipe buffer
+      exec $'edit +{lnum}|set\ bufhidden=wipe|normal!\ ^ww {file}'
+      FindDefinition(Callback, follow_delegates)
+    else
+      Callback(target, file, lnum)
+    endif
   elseif len(filtered_results) == 0
     util.Warn("No results")
   else

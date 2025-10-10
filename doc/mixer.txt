@@ -107,17 +107,28 @@ gd                  Jump to the definition of the word under the cursor.
 <
                     See |mixer-code-search| for more information.
 
+                                            *mixer_gD*
+gD                  Same as gd but follow delegates.
+
+                                            *mixer_<c-w>d*
 CTRL-W d            Jump to definition |:split|ting the window.
 >
                       nmap <leader>gdd <Plug>(mixer-jump-to-definition-split)
 <
                     See |mixer-code-search| for more information.
 
+                                            *mixer_<c-w>D*
+CTRL-W D            Same as CTRL-W d but follow delegates.
+
+                                            *mixer_<c-w>gd*
 CTRL-W gd           Jump to definition in a new tab.
 >
                       nmap <leader>gdt <Plug>(mixer-jump-to-definition-tab)
 <
                     See |mixer-code-search| for more information.
+
+                                            *mixer_<c-w>gD*
+CTRL-W gD           Same as CTRL-W gd but follow delegates.
 
                                             *mixer_K*
                                             *mixer-hover*
