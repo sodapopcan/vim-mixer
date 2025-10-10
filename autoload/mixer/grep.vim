@@ -36,23 +36,23 @@ export def GotoDefinition(command: string, follow_delegates: bool = false)
     return
   endif
 
-  FindDefinition((_: dict<any>, file: string, lnum: number) => {
+  FindDefinition((_: dict<any>, file: string, lnum: number, current_follow_count: number) => {
     var cmd: string
+    const kj = current_follow_count == 1 ? '' : 'keepjumps'
 
-    if file =~# $'^{b:mix_project.root}/lib' ||
-        file =~# $'^{b:mix_project.root}/test'
+    if file =~# $'^{b:mix_project.root}/lib' || file =~# $'^{b:mix_project.root}/test'
       cmd = $'{command} +{lnum}'
     else
       cmd = $'{command} +{lnum}|set\ bufhidden=delete'
     endif
 
-    exec cmd file
+    exec kj cmd file
     normal! zz^
   }, follow_delegates)
 enddef
 
 export def Hover()
-  FindDefinition((target: dict<any>, file: string, lnum: number) => {
+  FindDefinition((target: dict<any>, file: string, lnum: number, _: number) => {
     const contents = readfile(file)->join("\n")
 
     const SPEC_REGEX = $'\(\s*\)@spec\s\+\<{target.fn}\>\_.\{{-}}\ze\s*def\%(\k\+\)\=\s\+\<{target.fn}\>'
@@ -108,7 +108,7 @@ export def FindUsages()
   ShowResults(list_contents)
 enddef
 
-def FindDefinition(Callback: func, follow_delegates = false): void
+def FindDefinition(Callback: func, follow_delegates = false, current_follow_count = 1, max_follow_count = 5): void
   const target = cursor.Target()
 
   const [grep_regex, vim_regex] = BuildRegex(target, {include_private: true})
@@ -163,12 +163,12 @@ def FindDefinition(Callback: func, follow_delegates = false): void
 
   if len(filtered_results) == 1
     const [file, lnum] = filtered_results[0]
-    if follow_delegates && readfile(file)[lnum - 1] =~ '^\s*defdelegate'
+    if follow_delegates && current_follow_count < max_follow_count && readfile(file)[lnum - 1] =~ '^\s*defdelegate'
       # TODO: Don't wipe buffer
-      exec $'edit +{lnum}|set\ bufhidden=wipe|normal!\ ^ww {file}'
-      FindDefinition(Callback, follow_delegates)
+      exec $'edit +{lnum}|normal!\ ^ {file}'
+      FindDefinition(Callback, follow_delegates, current_follow_count + 1, max_follow_count)
     else
-      Callback(target, file, lnum)
+      Callback(target, file, lnum, current_follow_count)
     endif
   elseif len(filtered_results) == 0
     util.Warn("No results")
