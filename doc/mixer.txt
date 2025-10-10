@@ -335,6 +335,10 @@ NAVIGATION COMMANDS                         *mixer-navigation-commands*
 
                     - Toggle between `router.ex` and `endpoint.ex` 
                     - In a migration, hop to the previous one
+                    - In application.ex, edit mix.exs
+                    - In mix.exs, if your cursor is on a line that looks like
+                      a dep, jump to the coresponding line in mix.lock,
+                      otherwise edit application.ex.
 
                     [count] represents a line number (default is the current
                     line).  This is mildly useful if, for example, your

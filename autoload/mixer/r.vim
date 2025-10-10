@@ -160,6 +160,23 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
     else
       Edit(expand('%:h') .. '/endpoint.ex')
     endif
+  elseif IsMixFile()
+    if getline('.') =~ '^\s*{:\k\+,\s\+"\%(\~\|=\|d\)'
+      const dep = matchstr(getline('.'), '\s*{:\zs\k\+\ze,')
+      Edit('mix.lock')
+      search($'\s*"{dep}')
+    else
+      const file = execute('find application.ex')
+      Edit(file)
+    endif
+  elseif IsMixLock()
+    const dep = matchstr(getline('.'), '^\s*"\zs\k\+\ze"')
+    if dep != ''
+      Edit('mix.exs')
+      search($'^\s*{{:{dep}')
+    endif
+  elseif IsApplication()
+    Edit('mix.exs')
   else
     # We're just gonna wing it and try and find a related file based on the
     # function name and modules in it.  We're going to assume it's a Phoenix Context.
@@ -261,6 +278,18 @@ enddef
 
 def IsEndpointOrRouter(): bool
   return expand('%') =~ 'endpoint\.ex$\|router\.ex'
+enddef
+
+def IsMixFile(): bool
+  return expand('%:t') ==# 'mix.exs'
+enddef
+
+def IsMixLock(): bool
+  return expand('%:t') ==# 'mix.lock'
+enddef
+
+def IsApplication(): bool
+  return expand('%:t') ==# 'application.ex'
 enddef
 
 def Is(regex: string): bool
