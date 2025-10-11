@@ -43,7 +43,7 @@ export def GotoDefinition(command: string, follow_delegates: bool = false)
     if file =~# $'^{b:mix_project.root}/lib' || file =~# $'^{b:mix_project.root}/test'
       cmd = $'{command} +{lnum}'
     else
-      cmd = $'{command} +{lnum}|set\ bufhidden=delete'
+      cmd = $'{command} +{lnum}|set\ bufhidden=wipe'
     endif
 
     exec kj cmd file
