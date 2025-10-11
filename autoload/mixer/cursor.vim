@@ -17,7 +17,8 @@ export def Target(): dict<any>
   # This is the module name the target is defined in which is necessary to
   # account for nested defmodules.
   var context_alias: string = ''
-  var is_delegate: bool = v:false
+  var is_delegate: bool = false
+  var is_factory: bool = false
 
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so we have to do this manually.
@@ -29,11 +30,15 @@ export def Target(): dict<any>
     normal! wb
 
     const defdelegate = GetDefdelegate()
+    const factory = GetFactory()
 
     if !empty(defdelegate)
       is_delegate = true
       fn = defdelegate['fn']
       alias = defdelegate['alias']
+    elseif !empty(factory)
+      is_factory = true
+      fn = factory.fn
     else
       if Char(col('.') - 2) !~# '<\|\/'
         final aliases: list<string> = []
@@ -70,6 +75,7 @@ export def Target(): dict<any>
       alias_prefix: matchstr(alias, '\k\+'),
       context_alias: context_alias,
       is_delegate: is_delegate,
+      is_factory: is_factory,
       might_be_local: empty(alias)
     }
   endtry
@@ -275,6 +281,20 @@ export def GetDefdelegate(): dict<string>
 
     return defdelegate
   else
+    return {}
+  endif
+enddef
+
+export def GetFactory(): dict<string>
+  const pos = Pos()
+  normal! B
+  const regex = '\<\%(insert\|insert_list\|build\|build_list\|params_for\)\>(:\zs\k\+\ze'
+
+  if search($'\%#{regex}', 'Wc', line('.')) > 0
+    cursor(pos)
+    return {fn: expand('<cword>') .. '_factory'}
+  else
+    cursor(pos)
     return {}
   endif
 enddef

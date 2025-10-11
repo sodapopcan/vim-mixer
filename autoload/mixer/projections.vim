@@ -155,6 +155,10 @@ export def Detect()
     projections[$'lib/{web_dir}/*_plug.ex'] = {
       type: 'plug'
     }
+
+    projections[$'lib/{web_dir}/router.ex'] = {
+      type: 'init'
+    }
   endif
 
   for root in roots
