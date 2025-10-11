@@ -341,13 +341,11 @@ class Context
   var in_heredoc: bool
   var heredoc_end: string
   var heredoc_delim: string
-  var _keep: bool
 
   def new()
     this.skip = true
     this.in_module = false
     this.in_heredoc = false
-    this._keep = false
   enddef
 
   def Track(line: string, module: string = '')
