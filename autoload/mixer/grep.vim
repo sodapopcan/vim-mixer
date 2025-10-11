@@ -38,6 +38,11 @@ export def GotoDefinition(command: string, follow_delegates: bool = false)
 
   FindDefinition((_: dict<any>, file: string, lnum: number, current_follow_count: number) => {
     var cmd: string
+    # keepjumps here makes it so that if we're following defdelegates, <c-o>
+    # will take us back to where we were without interupting the jumplist.
+    # The reason this is necessary is because FindDefinition initially uses the
+    # current buffer depending on syntax highlighting, so when used recusively
+    # it needs to actually load and display the buffer of each state.
     const kj = current_follow_count == 1 ? '' : 'keepjumps'
 
     if file =~# $'^{b:mix_project.root}/lib' || file =~# $'^{b:mix_project.root}/test'
