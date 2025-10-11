@@ -173,24 +173,15 @@ CTRL-]              Remapped to be context aware in Phoenix files. Will
 
 CODE SEARCH                                 *mixer-code-search*
 
-Mixer provides mappings for decently accurate "jump to definition" and "find
-usages" functionality without requiring an LSP server.  They are not, however,
-defined by default.  You must define your own as detailed below.
+  Mixer provides typical LSP-like code searching abilities like jumping to
+  definition/documenation but implemented in ripgrep and vim9script.
 
-NOTE: This requires `ripgrep` to be installed.  I'm happy to
-      add support for other tools if you have a preference.
-      Please open an issue on github.
+    - function
+    - local function/variable
+    - module
+    - factory (aware of ex_machina)
+    - phx-hook
 
-
-Jump to definition                          *mixer-jump-to-definition*
->
-  nmap gd <Plug>(mixer-jump-to-definition)
-<
-Find usages                                 *mixer-find-usages*
->
-  nmap gD <Plug>(mixer-find-usages)
-<
-NOTE: You must use `nmap`, `nnoremap` will not work.
 
 
 COMMANDS                                    *mixer-commands*
