@@ -130,6 +130,16 @@ CTRL-W gd           Jump to definition in a new tab.
                                             *mixer_<c-w>gD*
 CTRL-W gD           Same as CTRL-W gd but follow delegates.
 
+                                            *mixer_gR*
+gR                  Find usages.
+
+                    This is not perfect as it would be incredibly slow to
+                    implement with just grep.  It still does use some
+                    heuristic to sort by best matches.
+>
+                      nmap <leader>gdt <Plug>(mixer-find-usages)
+<
+                    See |mixer-code-search| for more information.
                                             *mixer_K*
                                             *mixer-hover*
 K                   Show the spec for the word under the cursor.  If there is
