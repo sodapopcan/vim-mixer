@@ -19,6 +19,8 @@ export def Target(): dict<any>
   var context_alias: string = ''
   var is_delegate: bool = false
   var is_factory: bool = false
+  var is_ash_resource_action: bool = false
+  var ash_action: string
 
   # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
   # files, so we have to do this manually.
@@ -39,6 +41,13 @@ export def Target(): dict<any>
     elseif !empty(factory)
       is_factory = true
       fn = factory.fn
+    elseif b:mix_project.has_ash && getline('.') =~ $'\s*\<define\>\s.*action: :'
+      # TODO: handle multi-liners, I just don't use 'em
+      const defmatches = matchlist(getline('.'), $'\s*\<define\>\s.*action:\s\+:\(\k\+\)')
+      is_ash_resource_action = true
+      fn = defmatches[1]
+      search('^\s*resource', 'Wb')
+      alias = matchlist(getline('.'), '^\s*resource \([[:keyword:].]\+\)')[1]
     else
       if Char(col('.') - 2) !~# '<\|\/'
         final aliases: list<string> = []
@@ -76,6 +85,8 @@ export def Target(): dict<any>
       context_alias: context_alias,
       is_delegate: is_delegate,
       is_factory: is_factory,
+      is_ash_resource_action: is_ash_resource_action,
+      ash_action: ash_action,
       might_be_local: empty(alias)
     }
   endtry
