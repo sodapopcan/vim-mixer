@@ -122,7 +122,7 @@ def FindDefinition(Callback: func, follow_delegates = false, current_follow_coun
     return
   endif
 
-  const directives = GetDirectives(target, expand('%'))
+  const directives = ResolveDirectives(target, expand('%'))
 
   var [module_candidates, locations] = GetModulesAndLocations(target, directives)
 
@@ -403,7 +403,7 @@ enddef
 # const IMPORT_REGEX = 's*\zs\(import\)\s*\([[:alnum:]\.]\+\){\=\%(,\s*\(only\|except\):\s*\(\[\_.\{-}\]\)\)\='
 const DIRECTIVE_REGEX = '^\s*\zs\(\<import\>\|\<require\>\|\<alias\>\|\<use\>\)\s\+\(\u[[:alnum:]\|\.]\+\)'
 
-def GetDirectives(target: dict<any>, filename: string): dict<any>
+def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   # This function parses all of the `import`, `require`, `alias` directives.
   # It does it in two passes, mainly to deal with multi-liners.
   # First it accumulates any matching line into a list.  In the case of
