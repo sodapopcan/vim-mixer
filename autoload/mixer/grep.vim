@@ -116,7 +116,7 @@ export def FindUsages()
       endif
     })
 
-  ShowResults(list_contents)
+  ShowResults(list_contents, "No usages found")
 enddef
 
 def FindDefinition(Callback: func, follow_delegates = false, current_follow_count = 1, max_follow_count = 5): void
@@ -201,13 +201,7 @@ def FindDefinition(Callback: func, follow_delegates = false, current_follow_coun
           text: readfile(f[0])[f[1] - 1]}
       })
 
-    if empty(list_contents)
-      util.Warn("No results")
-
-      return
-    endif
-
-    ShowResults(list_contents)
+    ShowResults(list_contents, "No definitions found")
   endif
 enddef
 
@@ -558,7 +552,13 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
   return directives
 enddef
 
-def ShowResults(contents: list<dict<any>>)
+def ShowResults(contents: list<dict<any>>, empty_message = "")
+  if empty(contents) || empty(contents[0])
+    util.Warn(empty_message)
+
+    return
+  endif
+
   const list_type = get(g:, 'mixer_jump_to_definition_multi_result_list', 'qflist')
 
   if list_type == 'qflist'
