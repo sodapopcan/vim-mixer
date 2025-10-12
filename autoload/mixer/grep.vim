@@ -474,11 +474,21 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   endfor
 
   if !has_key(directives, target.alias)
-    # The function was called fully qualified
-    directives[target.alias] = {
-      directive: '',
-      module: target.alias
-    }
+    const parent_alias = target.alias->split('\.')[0]
+
+    if has_key(directives, parent_alias)
+      # The function was called qualified by an alias
+      directives[target.alias] = {
+        directive: '',
+        module: directives[parent_alias].module->util.Sub('\.' .. parent_alias, '') .. '.' .. target.alias
+      }
+    else
+      # The function was called fully qualified
+      directives[target.alias] = {
+        directive: '',
+        module: target.alias
+      }
+    endif
   endif
 
   return directives->filter((k, _) => !empty(k))
