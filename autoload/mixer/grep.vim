@@ -239,10 +239,10 @@ def BuildRegex(target: dict<any>, options: dict<any> = {}): list<string>
     vim_regex = $'^\s*def {bare}'
   elseif b:mix_project.has_ash
     # In Ash, the 'flair' is optional since `define` never uses it.
-    grep_regex = $"'\\s*def(macro|delegate|ine)*?{gp} :*?\\<{bare}\\>{flair}\='"
+    grep_regex = $"'\\s*def(macro|delegate|ine)*?{gp} :*?\\<{bare}\\>{flair}{flair == '' ? '' : '*?'}'"
     vim_regex = $'^\s*def\%(macro\|delegate\|ine\)\={vp} :\=\<{bare}{flair}\=\>'
   else
-    grep_regex = $"'\\s*def(macro|delegate)*?{gp} \\<{bare}\\>{flair}'"
+    grep_regex = $"'\\s*def(macro|delegate)*?{gp} \\<{bare}\\>{flair}{flair == '' ? '' : '*?'}'"
     vim_regex = $'^\s*def\%(macro\|delegate\)\={vp} \<{bare}{flair}\>'
   endif
 
