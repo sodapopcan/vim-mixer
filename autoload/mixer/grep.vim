@@ -474,7 +474,12 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   endfor
 
   if !has_key(directives, target.alias)
-    const parent_alias = target.alias->split('\.')[0]
+    var parent_alias = ''
+
+    if target.alias != ''
+      parent_alias = target.alias->split('\.')[0]
+    endif
+
 
     if has_key(directives, parent_alias)
       # The function was called qualified by an alias
