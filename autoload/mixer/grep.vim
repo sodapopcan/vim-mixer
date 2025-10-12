@@ -101,13 +101,19 @@ export def FindUsages()
   const list_contents = results
     -> copy()
     -> map((_, f): dict<any> => {
-      const [_, filename, lnum, col, text, _, _, _, _, _] = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
+      const matches = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
 
-      return {
-        filename: filename,
-        lnum: str2nr(lnum),
-        col: str2nr(col),
-        text: text}
+      if len(matches) > 0
+        const [_, filename, lnum, col, text, _, _, _, _, _] = matches
+
+        return {
+          filename: filename,
+          lnum: str2nr(lnum),
+          col: str2nr(col),
+          text: text}
+      else
+        return {}
+      endif
     })
 
   ShowResults(list_contents)
@@ -194,6 +200,12 @@ def FindDefinition(Callback: func, follow_delegates = false, current_follow_coun
           lnum: f[1],
           text: readfile(f[0])[f[1] - 1]}
       })
+
+    if empty(list_contents)
+      util.Warn("No results")
+
+      return
+    endif
 
     ShowResults(list_contents)
   endif
