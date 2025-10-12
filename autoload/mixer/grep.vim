@@ -96,7 +96,7 @@ export def FindUsages()
     endif
   endif
 
-  const results = systemlist($"rg --vimgrep -P '(?<!(def|iex>) )\\b{usage_regex}\\b' {b:mix_project.root}/lib")
+  const results = systemlist($"rg --vimgrep -P '(?<!(def|iex>) )\\b{usage_regex}\\b'(?!:) {b:mix_project.root}/lib")
 
   const list_contents = results
     -> copy()
