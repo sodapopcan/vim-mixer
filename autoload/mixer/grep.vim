@@ -343,7 +343,7 @@ class Context
   var heredoc_delim: string
 
   def new()
-    this.skip = true
+    this.skip = false
     this.in_module = false
     this.in_heredoc = false
   enddef
@@ -351,13 +351,9 @@ class Context
   def Track(line: string, module: string = '')
     const heredoc = matchlist(line, '\(\s*\).*\("""\|''''''\)$')
 
-    if len(heredoc) > 0
+    if !this.skip && len(heredoc) > 0
       this.heredoc_delim = heredoc[2]
       this.heredoc_end = $'^{heredoc[1]}{this.heredoc_delim}$'
-      this.in_heredoc = true
-    endif
-
-    if !this.skip && len(heredoc) > 0
       this.skip = true
       this.in_heredoc = true
     elseif this.skip && (line =~ this.heredoc_end)
