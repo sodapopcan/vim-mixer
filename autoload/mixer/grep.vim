@@ -108,7 +108,7 @@ export def FindUsages()
         lnum: str2nr(lnum),
         col: str2nr(col),
         text: text}
-      })
+    })
 
   ShowResults(list_contents)
 enddef
@@ -186,13 +186,13 @@ def FindDefinition(Callback: func, follow_delegates = false, current_follow_coun
       final_results->add(results)
     endif
 
-  const list_contents = final_results
-    -> copy()
-    -> map((_, f): dict<any> => {
-      return {
-        filename: f[0],
-        lnum: f[1],
-        text: readfile(f[0])[f[1] - 1]}
+    const list_contents = final_results
+      -> copy()
+      -> map((_, f): dict<any> => {
+        return {
+          filename: f[0],
+          lnum: f[1],
+          text: readfile(f[0])[f[1] - 1]}
       })
 
     ShowResults(list_contents)
