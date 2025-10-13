@@ -78,7 +78,7 @@ export def Hover()
     else
       util.Warn($"No @spec found for {target.fn}")
     endif
-  })
+  }, true)
 enddef
 
 export def FindUsages()
