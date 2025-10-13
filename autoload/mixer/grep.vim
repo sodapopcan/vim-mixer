@@ -45,7 +45,7 @@ export def JumpToDefinition(command: string, follow_delegates: bool = false)
     # it needs to actually load and display the buffer of each state.
     const kj = current_follow_count == 1 ? '' : 'keepjumps silent'
 
-    if file =~# $'^{b:mix_project.root}/lib' || file =~# $'^{b:mix_project.root}/test'
+    if file =~# $'{b:mix_project.root}/lib' || file =~# $'{b:mix_project.root}/test'
       cmd = $'{command} +{lnum}'
     else
       cmd = $'{command} +{lnum}|set\ bufhidden=wipe'
