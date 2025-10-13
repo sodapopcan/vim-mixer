@@ -13,6 +13,10 @@ const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:
 export def Target(): dict<any>
   var fn: string = ''
   var syntax = SynName()
+  const view = winsaveview()
+
+  # Move to the beginning of the word.
+  normal! wb
 
   var heex_attr: string
 
@@ -31,15 +35,7 @@ export def Target(): dict<any>
   var is_ash_resource_action: bool = false
   var ash_action: string
 
-  # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
-  # files, so we have to do this manually.
-
-  const view = winsaveview()
-
   try
-    # Move to the beginning of the word.
-    normal! wb
-
     const defdelegate = GetDefdelegate()
     const factory = GetFactory()
 
@@ -67,6 +63,9 @@ export def Target(): dict<any>
         fn = token
       endif
 
+      # Get the qualified module name.
+      # While <cexpr> works beautifully in Elixir files, it does not work in HEEx
+      # files, so we have to do this manually.
       const curr_line_num = line('.')
 
       while Char(col('.') - 1) == '.' && line('.') == curr_line_num
