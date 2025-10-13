@@ -12,6 +12,15 @@ const DEFDELEGATE_REGEX = '^\s*defdelegate\s\+\k\+(\=.*)\=\%(\%(,\_.\{-}\%(\(to:
 # It returns a dictionary of the alias and optionally the function name.
 export def Target(): dict<any>
   var fn: string = ''
+  var syntax = SynName()
+
+  var heex_attr: string
+
+  if syntax =~ 'heexArg'
+    heex_attr = expand('<cword>')
+    search('<\%(\u[[:keyword:].]\+\)\.\zs\k\+', 'Wb')
+  endif
+
   var token = expand('<cword>')->substitute('^[!?]\+', '', '')
   var alias: string
   # This is the module name the target is defined in which is necessary to
@@ -48,34 +57,33 @@ export def Target(): dict<any>
       fn = defmatches[1]
       search('^\s*resource', 'Wb')
       alias = matchlist(getline('.'), '^\s*resource \([[:keyword:].]\+\)')[1]
-    else
-      if Char(col('.') - 2) !~# '<\|\/'
-        final aliases: list<string> = []
+    elseif Char(col('.') - 2) !~# '<\|\/'
+      final aliases: list<string> = []
 
-        if token =~# '^\u'
-          fn = ''
-          aliases->add(token)
-        else
-          fn = token
-        endif
-
-        const curr_line_num = line('.')
-
-        while Char(col('.') - 1) == '.' && line('.') == curr_line_num
-          normal! bb
-          aliases->add(expand('<cword>'))
-        endwhile
-
-        alias = aliases->reverse()->join('.')
+      if token =~# '^\u'
+        fn = ''
+        aliases->add(token)
       else
         fn = token
       endif
+
+      const curr_line_num = line('.')
+
+      while Char(col('.') - 1) == '.' && line('.') == curr_line_num
+        normal! bb
+        aliases->add(expand('<cword>'))
+      endwhile
+
+      alias = aliases->reverse()->join('.')
+    else
+      fn = token
     endif
 
     context_alias = GetContainingModule()
   catch
     return {}
   finally
+    # TODO: This catch/finally ain't right.
     winrestview(view)
 
     return {
@@ -87,6 +95,7 @@ export def Target(): dict<any>
       is_factory: is_factory,
       is_ash_resource_action: is_ash_resource_action,
       ash_action: ash_action,
+      heex_attr: heex_attr,
       might_be_local: empty(alias)
     }
   endtry
