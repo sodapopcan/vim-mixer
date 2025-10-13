@@ -86,13 +86,13 @@ const IS_WIN = exists('+shellslash')
 const SLASH = IS_WIN ? '\' : '/'
 
 export def PathJoin(paths: list<string>): string
-  const path = join(paths, Slash())
+  const path = join(paths, SLASH)
 
   return IS_WIN ? tr(path, '/', '\') : path
 enddef
 
 export def IsAbs(path: string): bool
-  return tr(path, Slash(), '/') =~ '^/\|^\a\+:'
+  return tr(path, SLASH, '/') =~ '^/\|^\a\+:'
 enddef
 
 export def RegexEscape(regex: string): string

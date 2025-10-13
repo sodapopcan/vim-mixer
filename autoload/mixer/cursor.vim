@@ -22,6 +22,7 @@ export def Target(): dict<any>
   endif
 
   var is_heex: bool = false
+  var is_component: bool = false
   var heex_attr: string
   var def_type: string
 
@@ -30,6 +31,15 @@ export def Target(): dict<any>
     is_heex = true
     heex_attr = expand('<cword>')
     search('<\%(\u[[:keyword:].]\+\)\=\.\zs\k\+', 'Wb')
+  endif
+
+  if syntax =~ 'heexComponentName'
+    is_component = true
+  elseif getline('.') =~ '^\s*defp\='
+    const func = GetFunction()
+    if !empty(func)
+      is_component = func.is_component
+    endif
   endif
 
   if syntax !~ 'String\|Comment' && getline('.') =~ '^\s*def'
@@ -112,6 +122,7 @@ export def Target(): dict<any>
       is_ash_resource_action: is_ash_resource_action,
       ash_action: ash_action,
       is_heex: is_heex,
+      is_component: is_component,
       heex_attr: heex_attr,
       def_type: def_type,
       might_be_local: empty(alias)
@@ -248,6 +259,8 @@ export def GetFunction(): dict<any>
   var end_pos = searchpairpos('\<do\>:\@!\|\<fn\>', '', '\<end\>', 'W', OnStringOrComment)
 
   if !util.InRange(cur_pos, def_pos, end_pos)
+    winrestview(view)
+    normal! ^
     def_pos = searchpos('\<def', 'Wc', 0, 0, OnStringOrComment)
     do_pos = searchpos('\<do\>', 'W', 0, 0, OnStringOrComment)
     end_pos = searchpairpos('\<do\>\:\@!|\<fn\>', '', '\<end\>', 'W', OnStringOrComment)

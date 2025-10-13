@@ -100,14 +100,15 @@ export def FindUsages()
   if empty(target.fn)
     usage_regex = escape(target.alias, '.')
   else
-    if empty(target.alias)
-      usage_regex = escape(target.fn, '!?')
-    else
-      usage_regex = join([target.alias, target.fn], '.')->escape('.!?')
-    endif
+    # Note, this is a PERL regex
+    usage_regex = target.is_component
+      ? $'(?<!(def |iex> ))<([A-Z][A-Za-z0-9_.]+)?\.\b{target.fn}\b'
+      : $'(?<!(def |iex> |<\.|</\.))\b{target.fn}\b'
   endif
 
-  const results = systemlist($"rg --vimgrep -P '(?<!(def|iex>) )\\b{usage_regex}\\b(?!:)' {util.PathJoin([b:mix_project.root, 'lib'])}")
+  const grep_command =  $"rg --vimgrep -P '{usage_regex}(?!:)' {util.PathJoin([b:mix_project.root, 'lib'])}"
+
+  const results = systemlist(grep_command)
 
   const list_contents = results
     -> copy()
@@ -124,6 +125,15 @@ export def FindUsages()
           text: text}
       else
         return {}
+      endif
+    })
+    -> filter((_, m) => {
+      if !target.is_component
+        # This filters out any fully qualified component matches.
+        # This is because we can't do multi-width negative lookbehind.
+        return m.text !~ '^\s*<'
+      else
+        return true
       endif
     })
 
