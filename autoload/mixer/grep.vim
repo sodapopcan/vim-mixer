@@ -372,7 +372,7 @@ def BuildModuleRegex(modules: list<string>): string
   return module_regex_list->join('\|')
 enddef
 
-class Context
+class LineTracker
   var skip: bool
   var in_module: bool
   var module_end: string
@@ -418,15 +418,15 @@ endclass
 
 def FindDefLnum(lines: list<string>, regex: string, target: dict<any>): number
   var line_num = 0
-  var context = Context.new()
+  var line_tracker = LineTracker.new()
   var attr_lnum = 0
 
   for line in lines
     line_num += 1
 
-    context.Track(line)
+    line_tracker.Track(line)
 
-    if context.skip || line =~ '^\s*#'
+    if line_tracker.skip || line =~ '^\s*#'
       continue
     endif
 
@@ -551,15 +551,15 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
 enddef
 
 def FindDirectives(target: dict<any>, filename: string, recursion_count: number): list<string>
-  const context = Context.new()
+  const line_tracker = LineTracker.new()
   final directives: list<string> = []
   var multi_close = '' # '}' or ']'
   const lines = readfile(filename)
 
   for line in lines
-    context.Track(line, target.context_alias)
+    line_tracker.Track(line, target.context_alias)
 
-    if context.skip || line =~# '^\s*#'
+    if line_tracker.skip || line =~# '^\s*#'
       continue
     endif
 
