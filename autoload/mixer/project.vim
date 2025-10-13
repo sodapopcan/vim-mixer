@@ -93,13 +93,20 @@ export def IsProjectModule(module: string): bool
 enddef
 
 export def GetElixirPath(): string
-  system("command -v asdf")
+  const GetPath = (cmd: string) => system(cmd)->trim() .. '/lib/elixir/lib/'
+
+  var elixir_path: string
+
+  elixir_path = GetPath("asdf where elixir")
 
   if v:shell_error == 0
-    var elixir_path = system('asdf where elixir')->trim()
-    elixir_path = elixir_path .. '/lib/elixir/lib/'
-
     return elixir_path
+  else
+    elixir_path = GetPath("mise home elixir")
+
+    if v:shell_error == 0
+      return elixir_path
+    endif
   endif
 
   return ''
