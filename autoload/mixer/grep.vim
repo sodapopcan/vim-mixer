@@ -526,8 +526,7 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
       parent_alias = target.alias->split('\.')[0]
     endif
 
-
-    if has_key(directives, parent_alias)
+    if has_key(directives, parent_alias) && directives[parent_alias].directive == 'alias'
       # The function was called qualified by an alias, eg:
       #
       #   alias Bar.Foo
