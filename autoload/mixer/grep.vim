@@ -500,7 +500,7 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
       #
       directives[target.alias] = {
         directive: '',
-        module: directives[parent_alias].module->util.Sub('\.' .. parent_alias, '') .. '.' .. target.alias
+        module: directives[parent_alias].module->util.Sub($'\.{parent_alias}', '') .. $'.{target.alias}'
       }
     else
       # The function was called fully qualified
