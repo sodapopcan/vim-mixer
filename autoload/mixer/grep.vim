@@ -601,3 +601,5 @@ def ShowResults(contents: list<dict<any>>, empty_message = "")
     lopen
   endif
 enddef
+
+silent defcompile

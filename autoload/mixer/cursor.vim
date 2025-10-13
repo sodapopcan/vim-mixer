@@ -340,3 +340,5 @@ def GetContainingModule(): string
 
   return ''
 enddef
+
+silent defcompile
