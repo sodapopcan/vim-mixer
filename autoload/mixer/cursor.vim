@@ -17,6 +17,9 @@ export def Target(): dict<any>
 
   # Move to the beginning of the word.
   normal! wb
+  if Char() == '.'
+    normal! l
+  endif
 
   var is_heex: bool = false
   var heex_attr: string
