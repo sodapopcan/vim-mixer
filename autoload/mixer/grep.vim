@@ -71,8 +71,8 @@ export def Hover()
 
       const spec = ['']->extend(
         specmatch[0]
-        ->split("\n")
-        ->map((_,  line) => line .. padding)
+        -> split("\n")
+        -> map((_,  line) => line .. padding)
       )->extend([''])
 
       const winid = popup_atcursor(spec, {line: 'cursor-2', col: 'cursor-2', moved: 'any'})
