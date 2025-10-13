@@ -161,7 +161,7 @@ export def Detect()
     var rtype = util.Sub(root, '^' .. project_name .. '_', '')
     const alias = util.ToElixirAlias(root)
 
-    if rtype == project_name
+    if rtype == project_name || rtype == 'core'
       rtype = 'domain'
     endif
 
