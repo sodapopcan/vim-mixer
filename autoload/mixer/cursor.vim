@@ -20,12 +20,20 @@ export def Target(): dict<any>
 
   var is_heex: bool = false
   var heex_attr: string
+  var def_type: string
 
   # ATTN: This check is a bit iffy.
   if syntax =~? 'heex' && syntax =~ 'htmlTag' && syntax !~ 'heexComponentName'
     is_heex = true
     heex_attr = expand('<cword>')
     search('<\%(\u[[:keyword:].]\+\)\=\.\zs\k\+', 'Wb')
+  endif
+
+  if syntax !~ 'String\|Comment' && getline('.') =~ '^\s*def'
+    const def_rest = matchstr(getline('.'), '^\s*def\zs\k\+')
+    # TODO: Some libraries may define `def*` functions may define `def` macros
+    # that end in `p` so we may need to deal with that.
+    def_type = def_rest =~ 'p$' ? 'private' : 'public'
   endif
 
   var token = expand('<cword>')->substitute('^[!?]\+', '', '')
@@ -102,6 +110,7 @@ export def Target(): dict<any>
       ash_action: ash_action,
       is_heex: is_heex,
       heex_attr: heex_attr,
+      def_type: def_type,
       might_be_local: empty(alias)
     }
   endtry
