@@ -62,6 +62,8 @@ export def Target(): dict<any>
         # We're on a module name
         fn = ''
         aliases->add(token)
+      elseif Char(col('.') - 1) =~ '\~'
+        fn = $'sigil_{token}'
       else
         fn = token
       endif
