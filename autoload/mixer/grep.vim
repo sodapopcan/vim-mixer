@@ -78,7 +78,6 @@ export def Hover()
       const winid = popup_atcursor(spec, {line: 'cursor-2', col: 'cursor-2', moved: 'any'})
 
       win_execute(winid, 'syntax enable|set ft=elixir')
-
     else
       util.Warn($'No @spec found for {target.fn}')
     endif
