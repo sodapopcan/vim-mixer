@@ -43,7 +43,7 @@ export def GotoDefinition(command: string, follow_delegates: bool = false)
     # The reason this is necessary is because FindDefinition initially uses the
     # current buffer depending on syntax highlighting, so when used recusively
     # it needs to actually load and display the buffer of each state.
-    const kj = current_follow_count == 1 ? '' : 'keepjumps'
+    const kj = current_follow_count == 1 ? '' : 'keepjumps silent'
 
     if file =~# $'^{b:mix_project.root}/lib' || file =~# $'^{b:mix_project.root}/test'
       cmd = $'{command} +{lnum}'
@@ -417,7 +417,7 @@ def FindDefLnum(lines: list<string>, regex: string, target: dict<any>): number
       continue
     endif
 
-    if target.is_heex && line =~ $'^\s*\<attr\>\s*:\<{target.heex_attr}\>'
+    if target.is_heex && line =~ $'^\s*\<attr\>\s*:\<{target.heex_attr}\>,'
       attr_lnum = line_num
     endif
 
