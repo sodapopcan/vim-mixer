@@ -25,7 +25,7 @@ const KERNEL_FNS = readfile(ELIXIR_PATH .. '/kernel.ex')
   -> map((_, match) => match.text)
   -> uniq()
 
-export def GotoDefinition(command: string, follow_delegates: bool = false)
+export def JumpToDefinition(command: string, follow_delegates: bool = false)
   system('command -v rg')
 
   if v:shell_error > 0
