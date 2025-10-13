@@ -21,7 +21,7 @@ export def Target(): dict<any>
   var is_heex: bool = false
   var heex_attr: string
 
-  # This check is a bit iffy.
+  # ATTN: This check is a bit iffy.
   if syntax =~? 'heex' && syntax =~ 'htmlTag' && syntax !~ 'heexComponentName'
     is_heex = true
     heex_attr = expand('<cword>')
