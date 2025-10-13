@@ -18,11 +18,13 @@ export def Target(): dict<any>
   # Move to the beginning of the word.
   normal! wb
 
+  var is_heex: bool = false
   var heex_attr: string
 
   if syntax =~ 'heexArg'
+    is_heex = true
     heex_attr = expand('<cword>')
-    search('<\%(\u[[:keyword:].]\+\)\.\zs\k\+', 'Wb')
+    search('<\%(\u[[:keyword:].]\+\)\=\.\zs\k\+', 'Wb')
   endif
 
   var token = expand('<cword>')->substitute('^[!?]\+', '', '')
@@ -95,6 +97,7 @@ export def Target(): dict<any>
       is_factory: is_factory,
       is_ash_resource_action: is_ash_resource_action,
       ash_action: ash_action,
+      is_heex: is_heex,
       heex_attr: heex_attr,
       might_be_local: empty(alias)
     }
