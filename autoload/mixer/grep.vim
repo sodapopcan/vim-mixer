@@ -343,6 +343,19 @@ def DepsRegex(directives: dict<any>): string
   return $"deps/({deps_regex}*)/lib/*"
 enddef
 
+# This builds a regex that will look for modules that are defined both normally
+# and nested, ie, it will find:
+#
+#   defmodule Foo.Bar.Baz do
+#
+# and:
+#
+#   defmodule Foo do
+#     # ...
+#     defmodule Bar do
+#       # ...
+#       defmodule Baz do
+#
 def BuildModuleRegex(modules: list<string>): string
   var module_regex_list: list<string> = []
 
