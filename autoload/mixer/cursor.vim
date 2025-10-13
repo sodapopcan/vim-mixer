@@ -57,6 +57,7 @@ export def Target(): dict<any>
       final aliases: list<string> = []
 
       if token =~# '^\u'
+        # We're on a module name
         fn = ''
         aliases->add(token)
       else

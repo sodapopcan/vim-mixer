@@ -186,6 +186,7 @@ def FindDefinition(Callback: func, follow_delegates = false, current_follow_coun
 
   if len(filtered_results) == 1
     const [file, lnum] = filtered_results[0]
+
     if follow_delegates && current_follow_count < max_follow_count && readfile(file)[lnum - 1] =~ '^\s*defdelegate'
       # TODO: Don't wipe buffer
       exec $'edit +{lnum}|normal!\ ^ {file}'
@@ -226,6 +227,7 @@ def JumpToLocal(target: dict<any>, vim_regex: string): bool
 
   search('defmodule', 'bW', 0, 0, cursor.OnStringOrComment)
   const line = search(vim_regex, 'Wn', 0, 0, cursor.OnStringOrComment)
+
   winrestview(view)
 
   if line != 0
