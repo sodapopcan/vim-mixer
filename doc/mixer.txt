@@ -140,32 +140,32 @@ gR                  Find usages.
                       nmap <leader>gdt <Plug>(mixer-find-usages)
 <
                     See |mixer-code-search| for more information.
+
                                             *mixer_K*
                                             *mixer-hover*
-K                   Show the spec for the word under the cursor.  If there is
-                    no spec, it will try an generate one based on the function
-                    head.
+[d                  Show the spec for the word under the cursor.  If there is
+                    no spec, it will show the function head.
 
                     This is local to Elixir buffers.
 
-                    If you have a custom global mapping to `K`, that will be
-                    used instead for Elixir files.  If you already have `K`
+                    If you have a custom global mapping TO `[d`, that will be
+                    used instead for Elixir files.  If you already have it
                     mapped, you will have to define a new one yourself:
 >
-                      nmap <leader>k <Plug>(mixer-hover)
+                      nmap <leader>[d <Plug>(mixer-hover)
 <
                     See |mixer-code-search| for more information.
 
                                             *mixer_gK*
                                             *mixer-docs*
                                             *mixer-documentation*
-gK                  Show the docstring for the word under the cursor, if available.
+K                   Like jump to definition only jump to the docstring.
 
                     This is local to Elixir buffers.
 
-                    If you have a custom global mapping to `K`, that will be
-                    used instead for Elixir files.  If you already have `K`
-                    mapped, you will have to define a new one yourself:
+                    If you have a custom global mapping TO `K`, that will be
+                    used instead.  If you have `K` mapped to something else,
+                    you will have to define a new one yourself:
 >
                       nmap <leader>k <Plug>(mixer-hover)
 <

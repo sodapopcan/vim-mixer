@@ -57,6 +57,9 @@ export def GotoDefinition(command: string, follow_delegates: bool = false)
 enddef
 
 export def Hover()
+  const view = winsaveview()
+  const curr_file = @%
+
   FindDefinition((target: dict<any>, file: string, lnum: number, _: number) => {
     const contents = readfile(file)->join("\n")
 
@@ -75,8 +78,17 @@ export def Hover()
       const winid = popup_atcursor(spec, {line: 'cursor-2', col: 'cursor-2', moved: 'any'})
 
       win_execute(winid, 'syntax enable|set ft=elixir')
+
     else
-      util.Warn($"No @spec found for {target.fn}")
+      util.Warn($'No @spec found for {target.fn}')
+    endif
+
+    # Hover always uses "follow delegates" to find the spec which will actually
+    # switch buffers.  If this happens we want to redraw the screen at the same
+    # place.
+    if curr_file != @%
+      exec $'keepjumps silent edit {curr_file}'
+      winrestview(view)
     endif
   }, true)
 enddef

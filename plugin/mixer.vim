@@ -111,7 +111,7 @@ def SetupBuf()
     util.SetLocalMap('<c-w>D', 'mixer-jump-to-definition-split-follow')
     util.SetLocalMap('<c-w>gd', 'mixer-jump-to-definition-tab')
     util.SetLocalMap('<c-w>gD', 'mixer-jump-to-definition-tab-follow')
-    util.SetLocalMap('K', 'mixer-hover')
+    util.SetLocalMap('[d', 'mixer-hover')
     util.SetLocalMap('gR', 'mixer-find-usages')
 
     if b:mix_project.has_phoenix
