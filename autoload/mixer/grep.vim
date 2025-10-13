@@ -247,7 +247,7 @@ def BuildRegex(target: dict<any>, options: dict<any> = {}): list<string>
     # In Ash, the 'flair' is optional since `define` never uses it.
     if target.is_ash_resource_action
       grep_regex = $"'^\\s*(((read|create|update|destory|action) :\\<{bare}\\>)'"
-      vim_regex = $'^\s*\%(\%(read\|create\|update\|destory\|action\) :\<{bare}\>\)\|:{bare}'
+      vim_regex = $'^\s*\%(\%(read\|create\|update\|destory\|action\) :\<{bare}\>\)\|:\<{bare}\>'
     else
       grep_regex = $"'\\s*def(macro|delegate|ine)*?{gp} :*?\\<{bare}\\>{flair}{flair == '' ? '' : '*?'}'"
       vim_regex = $'^\s*def\%(macro\|delegate\|ine\)\={vp} :\=\<{bare}{flair}\=\>'
@@ -493,7 +493,11 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
 
 
     if has_key(directives, parent_alias)
-      # The function was called qualified by an alias
+      # The function was called qualified by an alias, eg:
+      #
+      #   alias Bar.Foo
+      #   Foo.Baz.qux()
+      #
       directives[target.alias] = {
         directive: '',
         module: directives[parent_alias].module->util.Sub('\.' .. parent_alias, '') .. '.' .. target.alias
