@@ -417,7 +417,7 @@ def FindDefLnum(lines: list<string>, regex: string, target: dict<any>): number
       continue
     endif
 
-    if target.is_heex && line =~ $'^\s*\<attr\>\s*:\<{target.heex_attr}\>,'
+    if target.is_heex && line =~ $'^\s*\<attr\>\s*:\<{target.heex_attr}\>'
       attr_lnum = line_num
     endif
 
