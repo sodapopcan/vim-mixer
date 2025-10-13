@@ -322,7 +322,7 @@ enddef
 
 export def GetFactory(): dict<string>
   const pos = Pos()
-  normal! B
+  normal! bb
   const regex = '\<\%(insert\|insert_list\|build\|build_list\|params_for\)\>(:\zs\k\+\ze'
 
   if search($'\%#{regex}', 'Wc', line('.')) > 0
