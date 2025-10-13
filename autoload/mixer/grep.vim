@@ -347,13 +347,13 @@ def BuildModuleRegex(modules: list<string>): string
   var module_regex_list: list<string> = []
 
   for module in modules
-    const m = module->split('\.')
+    const aliases = module->split('\.')
 
-    const submodules_regex = m[1 : ]
+    const submodules_regex = aliases[1 : ]
       -> map((_, a) => $'\%(\.\|\_.*defmodule\s\+\){a}')
       -> join('')
 
-    module_regex_list->add($'\%(^\s*defmodule\s\+{m[0]}{submodules_regex}\s\+do\)')
+    module_regex_list->add($'\%(^\s*defmodule\s\+{aliases[0]}{submodules_regex}\s\+do\)')
   endfor
 
   return module_regex_list->join('\|')
