@@ -20,10 +20,14 @@ const MAX_USE_RECURSION = 2
 
 const ELIXIR_PATH = project.GetElixirPath()
 
-const KERNEL_FNS = readfile(util.PathJoin([ELIXIR_PATH,  'kernel.ex']))
-  -> matchstrlist('^\s*def\%(macro\|delegate\)\= \zs\k\+\ze')
-  -> map((_, match) => match.text)
-  -> uniq()
+if empty(ELIXIR_PATH)
+  const KERNEL_FNS = []
+else
+  const KERNEL_FNS = readfile(util.PathJoin(ELIXIR_PATH, 'kernel.ex'))
+    -> matchstrlist('^\s*def\%(macro\|delegate\)\= \zs\k\+\ze')
+    -> map((_, match) => match.text)
+    -> uniq()
+endif
 
 export def JumpToDefinition(command: string, follow_delegates: bool = false)
   system('command -v rg')
@@ -45,7 +49,7 @@ export def JumpToDefinition(command: string, follow_delegates: bool = false)
     # it needs to actually load and display the buffer of each state.
     const kj = current_follow_count == 1 ? '' : 'keepjumps silent'
 
-    if file =~# util.PathJoin([b:mix_project.root, 'lib']) || file =~# util.PathJoin([b:mix_project.root, 'test'])
+    if file =~# util.PathJoin(b:mix_project.root, 'lib') || file =~# util.PathJoin(b:mix_project.root, 'test')
       cmd = $'{command} +{lnum}'
     else
       cmd = $'{command} +{lnum}|set\ bufhidden=wipe'
@@ -106,7 +110,7 @@ export def FindUsages()
       : $'(?<!(def |iex> |<\.|</\.))\b{target.fn}\b'
   endif
 
-  const grep_command =  $"rg --vimgrep -P '{usage_regex}(?!:)' {util.PathJoin([b:mix_project.root, 'lib'])}"
+  const grep_command =  $"rg --vimgrep -P '{usage_regex}(?!:)' {util.PathJoin(b:mix_project.root, 'lib')}"
 
   const results = systemlist(grep_command)
 
@@ -286,7 +290,7 @@ enddef
 def Grep(cmd: string, paths: list<string> = []): list<string>
   const search_paths = paths
     -> copy()
-    -> map((_, path) => util.IsAbs(path) ? path : util.PathJoin([b:mix_project.root, path]))
+    -> map((_, path) => util.IsAbs(path) ? path : util.PathJoin(b:mix_project.root, path))
     -> join(' ')
 
   const command = $"rg -uuu -l --type elixir {cmd} {search_paths}"
@@ -326,7 +330,7 @@ def GetModulesAndLocations(target: dict<any>, directives: dict<any>): list<any>
     # Function is unqualified
     # TODO: Handle any `Kernel, except:`s
     if util.InList(KERNEL_FNS, target.fn)
-      locations = [util.PathJoin([ELIXIR_PATH, 'kernel.ex'])]
+      locations = [util.PathJoin(ELIXIR_PATH, 'kernel.ex')]
     else
       modules = directives
         -> copy()
@@ -349,7 +353,7 @@ def DepsRegex(directives: dict<any>): string
     -> uniq()
     -> join('*|')
 
-  return util.PathJoin(['deps', $'({deps_regex}*)', 'lib'])
+  return util.PathJoin('deps', $'({deps_regex}*)', 'lib')
 enddef
 
 # This builds a regex that will look for modules that are defined both normally
@@ -578,7 +582,7 @@ def FindDirectives(target: dict<any>, filename: string, recursion_count: number)
     if !empty(type)
       if type == 'use' && recursion_count != MAX_USE_RECURSION
         const module = matchstr(line, '^\s*use\s\+\zs[[:alnum:]\.]\+')
-        const files = Grep($"'defmodule {module} do'",  ["lib", "test", util.PathJoin(['deps', '**', 'lib', '*'])])
+        const files = Grep($"'defmodule {module} do'",  ["lib", "test", util.PathJoin('deps', '**', 'lib', '*')])
 
         if len(files) > 0
           final results = FindDirectives(target, files[0], recursion_count + 1)
