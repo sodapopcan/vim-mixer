@@ -27,7 +27,7 @@ export def Target(): dict<any>
   var def_type: string
 
   # ATTN: This check is a bit iffy.
-  if syntax =~? 'heex' && syntax =~ 'htmlTag' && syntax !~ 'heexComponentName'
+  if syntax =~? 'heex' && syntax =~ 'htmlTag' && syntax !~ 'heexComponentName\|heexExpression'
     is_heex = true
     heex_attr = expand('<cword>')
     search('<\%(\u[[:keyword:].]\+\)\=\.\zs\k\+', 'Wb')
