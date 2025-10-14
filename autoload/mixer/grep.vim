@@ -20,10 +20,12 @@ const MAX_USE_RECURSION = 2
 
 const ELIXIR_PATH = project.GetElixirPath()
 
+var KERNEL_FNS = []
+
 if empty(ELIXIR_PATH)
-  const KERNEL_FNS = []
+  KERNEL_FNS = []
 else
-  const KERNEL_FNS = readfile(util.PathJoin(ELIXIR_PATH, 'kernel.ex'))
+  KERNEL_FNS = readfile(util.PathJoin(ELIXIR_PATH, 'kernel.ex'))
     -> matchstrlist('^\s*def\%(macro\|delegate\)\= \zs\k\+\ze')
     -> map((_, match) => match.text)
     -> uniq()
