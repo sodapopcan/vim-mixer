@@ -20,24 +20,27 @@ const MAX_USE_RECURSION = 2
 
 const ELIXIR_PATH = project.GetElixirPath()
 
-var KERNEL_FNS = []
+final KERNEL_FNS = []
 
-if empty(ELIXIR_PATH)
-  KERNEL_FNS = []
-else
-  KERNEL_FNS = readfile(util.PathJoin(ELIXIR_PATH, 'kernel.ex'))
+if !empty(ELIXIR_PATH)
+  readfile(util.PathJoin(ELIXIR_PATH, 'kernel.ex'))
     -> matchstrlist('^\s*def\%(macro\|delegate\)\= \zs\k\+\ze')
     -> map((_, match) => match.text)
     -> uniq()
+    -> add(KERNEL_FNS)
+endif
+
+g:mixer_has_grep_deps = false
+system('command -v rg && command -v ast-grep')
+if v:shell_error == 0
+  g:mixer_has_grep_deps = true
 endif
 
 export def JumpToDefinition(command: string, follow_delegates: bool = false)
-  system('command -v rg')
-
-  if v:shell_error > 0
-    normal! gd
-
-    util.Warn("Ripgrep required, falling back to builtin")
+  if !g:mixer_has_grep_deps && !g:mixer_suppress_grep_deps_warning
+    normal gd
+    util.Warn("Ripgrep and AstGrep are required, falling back to builtin")
+    g:mixer_suppress_grep_deps_warning = true
 
     return
   endif
