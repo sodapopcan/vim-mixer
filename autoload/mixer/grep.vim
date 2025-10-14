@@ -106,7 +106,7 @@ export def FindUsages()
   else
     # Note, this is a PERL regex
     usage_regex = target.is_component
-      ? $'(?<!(def |iex> ))<([A-Z][A-Za-z0-9_.]+)?\.\b{target.fn}\b'
+      ? $'(?<!(def |iex> ))<([A-Z][A-Za-z0-9_.]+)?\.?\b{target.fn}\b'
       : $'(?<!(def |iex> |<\.|</\.))\b{target.fn}\b'
   endif
 
