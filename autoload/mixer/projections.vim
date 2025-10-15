@@ -56,7 +56,7 @@ export def Detect()
     'lib/mix/*.ex': {
       type: 'mix'
     },
-    'config/config.exs': {
+    'lib/*/router.ex': {
       type: 'init'
     },
     'config/*.exs': {
@@ -229,7 +229,7 @@ enddef
 export def MigrationComplete(A: string, L: string, P: number): list<string>
   const migrations =
     util.Glob('priv/repo/migrations/*')
-    ->map((_, f) => matchstr(f, 'priv/repo/migrations/\zs\d\+_.*\ze\.exs$'))
+      ->map((_, f) => matchstr(f, 'priv/repo/migrations/\zs\d\+_.*\ze\.exs$'))
 
   if A != ""
     return matchfuzzy(migrations, A)
