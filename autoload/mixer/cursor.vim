@@ -16,7 +16,12 @@ export def Target(): dict<any>
   const view = winsaveview()
 
   # Move to the beginning of the word.
-  normal! wb
+  if Char() == '~'
+    normal! w
+  else
+    normal! wb
+  endif
+
   if Char() == '.'
     normal! l
   endif
