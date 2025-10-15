@@ -90,6 +90,11 @@ To turn off this behaviour, set:
 MAPPINGS                                    *mixer-mappings*
 
                                             *mixer_gd*
+                                            *mixer_gD*
+                                            *mixer_<c-w>d*
+                                            *mixer_<c-w>D*
+                                            *mixer_<c-w>gd*
+                                            *mixer_<c-w>gD*
                                             *mixer-jump-to-defintion*
 gd                  Jump to the definition of the word under the cursor.
 
@@ -97,38 +102,31 @@ gd                  Jump to the definition of the word under the cursor.
                     and Surface components, and event LiveView events like
                     `phx-click="some-event"`.
 
-                    This is local to Elixir buffers.
+                    Use gD to follow delegates.
 
-                    If you have a custom global mapping to `gd`, that will be
-                    used instead for Elixir files.  If you already have `gd`
-                    mapped, you will have to define a new one yourself:
+                    There are also two variants for both gd and dG similar to
+                    the |gf| command.  CTRL-W d will |:split| the found file
+                    and CTRL-W gd will |:tabedit| the found file.
+
+                    These are all mapped local to Elixir buffers.
+
+                    If you have a custom global mapping TO `gd`, that will be
+                    used instead.  If you already have `gd` mapped, you will
+                    have to define a new one yourself:
 >
                       nmap <leader>gdd <Plug>(mixer-jump-to-definition)
+                      nmap <leader>gdD <Plug>(mixer-jump-to-definition-follow)
 <
-                    See |mixer-code-search| for more information.
-
-                                            *mixer_gD*
-gD                  Same as gd but follow delegates.
-
-                                            *mixer_<c-w>d*
-CTRL-W d            Jump to definition |:split|ting the window.
+                    Helpfully, remapping these two will also remap the window
+                    variants as well, though if you would like those to be
+                    something else, they are:
 >
-                      nmap <leader>gdd <Plug>(mixer-jump-to-definition-split)
+                      <Plug>(mixer-jump-to-definition-split)
+                      <Plug>(mixer-jump-to-definition-split-follow)
+                      <Plug>(mixer-jump-to-definition-tab)
+                      <Plug>(mixer-jump-to-definition-tab-follow)
 <
                     See |mixer-code-search| for more information.
-
-                                            *mixer_<c-w>D*
-CTRL-W D            Same as CTRL-W d but follow delegates.
-
-                                            *mixer_<c-w>gd*
-CTRL-W gd           Jump to definition in a new tab.
->
-                      nmap <leader>gdt <Plug>(mixer-jump-to-definition-tab)
-<
-                    See |mixer-code-search| for more information.
-
-                                            *mixer_<c-w>gD*
-CTRL-W gD           Same as CTRL-W gd but follow delegates.
 
                                             *mixer_gR*
 gR                  Find usages.
