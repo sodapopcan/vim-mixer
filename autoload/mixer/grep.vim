@@ -36,8 +36,18 @@ if v:shell_error == 0
   g:mixer_has_grep_deps = true
 endif
 
-export def G(): any
-  const grep =<< END
+# - If an unqualified function call:
+#   - Check if there is a defp
+#   - Parse directives for current file only
+#   - Check if function is imported via `only`
+#   - If not, recursively parse directives and look for definition
+# - If qualified
+#   - Parse directives for current file only
+#   - Check if it's aliases
+#   - If not, recursively parse directives and look for definition
+
+export def G(file = @%, recursion_count = 0): any
+  const ast_grep =<< END
   ast-grep scan --inline-rules '
   id: elixir-find-def
   language: Elixir
@@ -49,7 +59,7 @@ export def G(): any
       - pattern: use $$$
   ' --json=compact
 END
-  final directive_list = system(join(grep, "\n") .. ' -- ' .. @%)->json_decode()
+  final directive_list = system(join(ast_grep, "\n") .. ' -- ' .. file)->json_decode()
     -> map((_, r): dict<any> => {
       return r.lines
         -> util.Gsub("\n", '')
@@ -63,6 +73,14 @@ END
     const alias = directive->remove('alias')
 
     directives[alias] = directive
+
+    if directive.type == 'use' && recursion_count < MAX_USE_RECURSION
+      const f =
+        system($"ast-grep -p 'defmodule {directive.module} do $$$ end' -l Elixir --json=compact -- lib test deps")->json_decode()[0].file
+
+      echom G(f, recursion_count + 1)
+      echom '----------------'
+    endif
   endfor
 
   return directives
