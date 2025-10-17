@@ -45,7 +45,7 @@ def ParseDirective(line: string): dict<any>
       module: matches[2],
       alias: empty(matches[3]) ? matches[2]->split('\.')[-1] : matches[3]}
   elseif line =~ '^import'
-    const [_, module, only_or_except, args, _, _, _, _, _, _] = matchlist(line, 'import\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(only\|except\):\s\+\(.*\)\)\=')
+    const [_, module, only_or_except, args; _] = matchlist(line, 'import\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(only\|except\):\s\+\(.*\)\)\=')
 
     const other = only_or_except == 'only' ? 'except' : 'only'
     final funs = []
@@ -70,7 +70,7 @@ def ParseDirective(line: string): dict<any>
       [other]: [],
       [only_or_except]: funs}
   else
-    const [_, module, arg, _, _, _, _, _, _, _] = matchlist(line, 'use\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(.*\)\)\=')
+    const [_, module, arg; _] = matchlist(line, 'use\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(.*\)\)\=')
 
     # We aren't going to try and parse the arg here, just figure out its
     # (outer) type.
@@ -189,7 +189,7 @@ export def FindUsages()
       const matches = matchlist(f, '\(.\{-}\):\(\d\+\):\(\d\+\):\(.*\)')
 
       if len(matches) > 0
-        const [_, filename, lnum, col, text, _, _, _, _, _] = matches
+        const [_, filename, lnum, col, text; _] = matches
 
         return {
           filename: filename,
@@ -558,7 +558,7 @@ def ResolveDirectives(target: dict<any>, filename: string): dict<any>
   final directives = {}
 
   for line in FindDirectives(target, filename, 1)
-    const [full, directive, module, _, _, _, _, _, _, _] = matchlist(line, DIRECTIVE_REGEX)
+    const [full, directive, module; _] = matchlist(line, DIRECTIVE_REGEX)
 
     const expandables = matchstr(line, '{\zs.*\ze}')
 
