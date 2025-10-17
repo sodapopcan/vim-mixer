@@ -36,56 +36,6 @@ if v:shell_error == 0
   g:mixer_has_grep_deps = true
 endif
 
-# - If an unqualified function call:
-#   - Check if there is a defp
-#   - Parse directives for current file only
-#   - Check if function is imported via `only`
-#   - If not, recursively parse directives and look for definition
-# - If qualified
-#   - Parse directives for current file only
-#   - Check if it's aliases
-#   - If not, recursively parse directives and look for definition
-
-export def G(file = @%, recursion_count = 0): any
-  const ast_grep =<< END
-  ast-grep scan --inline-rules '
-  id: elixir-find-def
-  language: Elixir
-  rule:
-    any:
-      - pattern: alias $$$
-      - pattern: import $$$
-      - pattern: require $$$
-      - pattern: use $$$
-  ' --json=compact
-END
-  final directive_list = system(join(ast_grep, "\n") .. ' -- ' .. file)->json_decode()
-    -> map((_, r): dict<any> => {
-      return r.lines
-        -> util.Gsub("\n", '')
-        -> trim()
-        -> ParseDirective()
-    })
-
-  final directives = {}
-
-  for directive in directive_list
-    const alias = directive->remove('alias')
-
-    directives[alias] = directive
-
-    if directive.type == 'use' && recursion_count < MAX_USE_RECURSION
-      const f =
-        system($"ast-grep -p 'defmodule {directive.module} do $$$ end' -l Elixir --json=compact -- lib test deps")->json_decode()[0].file
-
-      echom G(f, recursion_count + 1)
-      echom '----------------'
-    endif
-  endfor
-
-  return directives
-enddef
-
 def ParseDirective(line: string): dict<any>
   if line =~ '^alias\|require'
     const matches = matchlist(line, '\(\k\+\)\s\+\(\u[[:keyword:].]\+\)\%(,\s\+as:\s\+\(\u\k\+\)\)\=')
@@ -744,4 +694,63 @@ def ShowResults(contents: list<dict<any>>, empty_message = "")
     setloclist(0, contents)
     lopen
   endif
+enddef
+
+# AST-GREP Version!
+#
+# This is a work in progress.
+#
+# On BufEnter, parse directives in the background.  Cache for last 10 files.
+#
+# # - If an unqualified function call:
+#   - Check if there is a defp
+#   - Parse directives for current file only
+#   - Check if function is imported via `only`
+#   - Check if function is excluded from Kernel
+#     - If not, look in Kernel
+#   - If not, recursively parse directives and look for definition
+# - If qualified
+#   - Parse directives for current file only
+#   - Check if it's aliases
+#   - If not, recursively parse directives and look for definition
+
+export def G(file = @%, recursion_count = 0): any
+  const ast_grep =<< END
+  ast-grep scan --inline-rules '
+  id: elixir-find-def
+  language: Elixir
+  rule:
+    any:
+      - pattern: alias $$$
+      - pattern: import $$$
+      - pattern: require $$$
+      - pattern: use $$$
+  ' --json=compact
+END
+  final directive_list = system(join(ast_grep, "\n") .. ' -- ' .. file)->json_decode()
+    -> map((_, r): dict<any> => {
+      return r.lines
+        -> util.Gsub("\n", '')
+        -> trim()
+        -> ParseDirective()
+    })
+
+  # final directives = {}
+
+  # for directive in directive_list
+  #   const alias = directive->remove('alias')
+
+  #   directives[alias] = directive
+
+  #   if directive.type == 'use' && recursion_count < MAX_USE_RECURSION
+  #     const f =
+  #       system($"ast-grep -p 'defmodule {directive.module} do $$$ end' -l Elixir --json=compact -- lib test deps")->json_decode()[0].file
+
+  #     echom G(f, recursion_count + 1)
+  #     echom '----------------'
+  #   endif
+  # endfor
+
+  return directive_list
+  # return directives
 enddef
