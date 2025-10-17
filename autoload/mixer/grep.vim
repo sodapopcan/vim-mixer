@@ -235,10 +235,10 @@ def FindDefinition(Callback: func, follow_delegates = false, current_follow_coun
       const m = module->split('\.')
 
       const grep_submodule_regex = m[1 : ]
-        -> map((_, a) => '(\.|.*defmodule\s)' .. a)
+        -> map((_, a) => '(\.|.*def(module|protocol)\s)' .. a)
         -> join('')
 
-      grep_regex_list->add('(^\s*defmodule\s' .. m[0] .. grep_submodule_regex .. '\sdo)')
+      grep_regex_list->add('(^\s*def(module|protocol)\s' .. m[0] .. grep_submodule_regex .. '\sdo)')
     endfor
 
     const grep_module_regex = grep_regex_list->join('|')

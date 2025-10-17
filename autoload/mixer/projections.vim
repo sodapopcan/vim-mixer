@@ -56,9 +56,6 @@ export def Detect()
     'lib/mix/*.ex': {
       type: 'mix'
     },
-    'lib/*/router.ex': {
-      type: 'init'
-    },
     'config/*.exs': {
       type: 'init',
       relative: 'config/config.exs',
