@@ -8,6 +8,7 @@ const CONTROLLER_REGEX = '\s*use\s\+.*:controller\>'
 const LIVEVIEW_REGEX = '\s*use\s\+.*:\%(live_view\|live_component\)\|^defmodule.*Live.*do$\|^\s*use Phoenix.\%(LiveView\|LiveComponent\|Component\)'
 const HTML_REGEX = '^\s*defmodule\s\+[[:keyword:].]\+HTML do$\|^\s*use .* :html\>'
 const SCHEMA_REGEX = '^\s*use.\{-}Schema\|^\s*use\s\+Ash.Resource'
+const DOMAIN_REGEX = '^\s*use.\{-}Ash.Domain'
 
 export def DefineCommand()
   command! -buffer -count -nargs=? R R('edit', <range>, <count>, <q-mods>, <f-args>)
@@ -40,7 +41,21 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
 
   exec $':{context_line}'
 
-  if IsController()
+  if IsDomain()
+    const resource_lnum = search('^\s*resource', 'Wbn')
+    const alias_match = matchlist(getline(resource_lnum), '^\s*resource \([[:keyword:].]\+\)')
+
+    if empty(alias_match)
+      return
+    endif
+
+    const alias = alias_match[1]
+    const module_lnum = search('defmodule', 'Wbn')
+    const module = getline(module_lnum)->matchstr('\u[[:keyword:].]\+')
+    const resource_alias = util.Sub(alias, $'^{module}\.', '')
+    const resource_path = util.PathJoin('lib', util.Underscore(module), $'{util.Underscore(resource_alias)}.ex') 
+    Edit(resource_path)
+  elseif IsController()
     const action = function_name
     const path = expand('%')
     const html_dir = util.Sub(path, '_controller.ex', '_html')
@@ -256,6 +271,10 @@ def R(command: string, range: number, count: number, mods: string, arg: string =
       endif
     endif
   endif
+enddef
+
+def IsDomain(): bool
+  return b:mix_project.has_ash && Is(DOMAIN_REGEX)
 enddef
 
 def IsController(): bool

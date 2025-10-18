@@ -59,6 +59,15 @@ export def IsBlank(string: string): bool
   return string =~ '^\s*$'
 enddef
 
+const IS_WIN = exists('+shellslash')
+const SLASH = IS_WIN ? '\' : '/'
+
+export def PathJoin(...paths: list<string>): string
+  const path = join(paths, SLASH)
+
+  return IS_WIN ? tr(path, '/', '\') : path
+enddef
+
 export def Unmapped(map: string, type: string): bool
   return empty(maparg(map, type))
 enddef
