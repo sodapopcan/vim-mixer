@@ -36,70 +36,6 @@ if v:shell_error == 0
   g:mixer_has_grep_deps = true
 endif
 
-def ParseDirective(line: string): dict<any>
-  if line =~ '^alias\|require'
-    const matches = matchlist(line, '\(\k\+\)\s\+\(\u[[:keyword:].]\+\)\%(,\s\+as:\s\+\(\u\k\+\)\)\=')
-
-    return {
-      type: matches[1],
-      module: matches[2],
-      alias: empty(matches[3]) ? matches[2]->split('\.')[-1] : matches[3]}
-  elseif line =~ '^import'
-    const [_, module, only_or_except, args; _] = matchlist(line, 'import\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(only\|except\):\s\+\(.*\)\)\=')
-
-    const other = only_or_except == 'only' ? 'except' : 'only'
-    final funs = []
-
-    if !empty(args)
-      const json =
-        args
-        -> substitute(
-          '\[\(.*\)\]',
-          '\=substitute(submatch(1), ''\(\k\+\): \(\d\+\)'', ''["\1", \2]'', ''g'')',
-          'g'
-        )
-        -> substitute('\s', '', 'g')
-
-      funs->extend(json_decode('[' .. json .. ']'))
-    endif
-
-    return {
-      type: 'import',
-      module: module,
-      alias: module,
-      [other]: [],
-      [only_or_except]: funs}
-  else
-    const [_, module, arg; _] = matchlist(line, 'use\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(.*\)\)\=')
-
-    # We aren't going to try and parse the arg here, just figure out its
-    # (outer) type.
-
-    var arg_type: string
-
-    if arg =~ '^"'
-      arg_type = 'string'
-    elseif arg =~ '^\['
-      arg_type = 'list'
-    elseif arg =~ '^%\u'
-      arg_type = 'struct'
-    elseif arg =~ '^%'
-      arg_type = 'map'
-    elseif arg =~ '^{'
-      arg_type = 'tuple'
-    elseif arg =~ '^:'
-      arg_type = 'atom'
-    endif
-
-    return {
-      type: 'use',
-      module: module,
-      alias: module,
-      arg_type: arg_type,
-      arg: arg}
-  endif
-enddef
-
 export def JumpToDefinition(command: string, follow_delegates: bool = false)
   if !g:mixer_has_grep_deps && !g:mixer_suppress_grep_deps_warning
     normal gd
@@ -754,3 +690,68 @@ END
   return directive_list
   # return directives
 enddef
+
+def ParseDirective(line: string): dict<any>
+  if line =~ '^alias\|require'
+    const matches = matchlist(line, '\(\k\+\)\s\+\(\u[[:keyword:].]\+\)\%(,\s\+as:\s\+\(\u\k\+\)\)\=')
+
+    return {
+      type: matches[1],
+      module: matches[2],
+      alias: empty(matches[3]) ? matches[2]->split('\.')[-1] : matches[3]}
+  elseif line =~ '^import'
+    const [_, module, only_or_except, args; _] = matchlist(line, 'import\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(only\|except\):\s\+\(.*\)\)\=')
+
+    const other = only_or_except == 'only' ? 'except' : 'only'
+    final funs = []
+
+    if !empty(args)
+      const json =
+        args
+        -> substitute(
+          '\[\(.*\)\]',
+          '\=substitute(submatch(1), ''\(\k\+\): \(\d\+\)'', ''["\1", \2]'', ''g'')',
+          'g'
+        )
+        -> substitute('\s', '', 'g')
+
+      funs->extend(json_decode('[' .. json .. ']'))
+    endif
+
+    return {
+      type: 'import',
+      module: module,
+      alias: module,
+      [other]: [],
+      [only_or_except]: funs}
+  else
+    const [_, module, arg; _] = matchlist(line, 'use\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(.*\)\)\=')
+
+    # We aren't going to try and parse the arg here, just figure out its
+    # (outer) type.
+
+    var arg_type: string
+
+    if arg =~ '^"'
+      arg_type = 'string'
+    elseif arg =~ '^\['
+      arg_type = 'list'
+    elseif arg =~ '^%\u'
+      arg_type = 'struct'
+    elseif arg =~ '^%'
+      arg_type = 'map'
+    elseif arg =~ '^{'
+      arg_type = 'tuple'
+    elseif arg =~ '^:'
+      arg_type = 'atom'
+    endif
+
+    return {
+      type: 'use',
+      module: module,
+      alias: module,
+      arg_type: arg_type,
+      arg: arg}
+  endif
+enddef
+
