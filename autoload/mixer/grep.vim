@@ -650,20 +650,21 @@ enddef
 #   - Check if it's aliases
 #   - If not, recursively parse directives and look for definition
 
-export def G(file = @%, recursion_count = 0): any
-  const ast_grep =<< END
-  ast-grep scan --inline-rules '
-  id: elixir-find-def
-  language: Elixir
-  rule:
-    any:
-      - pattern: alias $$$
-      - pattern: import $$$
-      - pattern: require $$$
-      - pattern: use $$$
-  ' --json=compact
+const DIRECTIVE_GREP =<< END
+ast-grep scan --inline-rules '
+id: elixir-find-def
+language: Elixir
+rule:
+  any:
+    - pattern: alias $$$
+    - pattern: import $$$
+    - pattern: require $$$
+    - pattern: use $$$
+' --json=compact
 END
-  final directive_list = system(join(ast_grep, "\n") .. ' -- ' .. file)->json_decode()
+
+export def G(file = @%, recursion_count = 0): any
+  final directive_list = system(join(DIRECTIVE_GREP, "\n") .. ' -- ' .. file)->json_decode()
     -> map((_, r): dict<any> => {
       return r.lines
         -> util.Gsub("\n", '')
