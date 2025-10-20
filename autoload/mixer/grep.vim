@@ -693,12 +693,16 @@ enddef
 
 def ParseDirective(line: string): dict<any>
   if line =~ '^alias\|require'
-    const matches = matchlist(line, '\(\k\+\)\s\+\(\u[[:keyword:].]\+\)\%(,\s\+as:\s\+\(\u\k\+\)\)\=')
+    const [_, type, module, as; _] = matchlist(line, '\(\k\+\)\s\+\(\u[[:keyword:].]\+\)\%(,\s\+as:\s\+\(\u\k\+\)\)\=')
+
+    const alias = empty(as)
+      ? module->split('\.')[-1]
+      : as
 
     return {
-      type: matches[1],
-      module: matches[2],
-      alias: empty(matches[3]) ? matches[2]->split('\.')[-1] : matches[3]}
+      type: type,
+      module: module,
+      alias: alias}
   elseif line =~ '^import'
     const [_, module, only_or_except, args; _] = matchlist(line, 'import\s\+\(\u[[:keyword:]\.]\+\)\%(,\s\+\(only\|except\):\s\+\(.*\)\)\=')
 
