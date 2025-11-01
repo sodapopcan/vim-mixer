@@ -78,9 +78,14 @@ augroup END
 def SetupBuf()
   command! -buffer -bang -complete=customlist,mix.MixComplete -nargs=* Mix mix.MixCommand(<bang>false, <f-args>)
   command! -buffer -range -nargs=* -complete=file IEx mix.IExCommand(<q-mods>, <range>, <line1>, <line2>, <f-args>)
-  command! -buffer -bang -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<bang>false, <f-args>)
 
   var [project_root, mix_file, nested] = g:MixerDetect()
+
+  if mix_file == ''
+    return
+  endif
+
+  command! -buffer -bang -complete=customlist,mix.GenComplete -nargs=* Gen call mix.GenCommand(<bang>false, <f-args>)
 
   SetCompiler(project_root)
 
