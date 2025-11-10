@@ -196,6 +196,16 @@ export def Detect()
     }
   endfor
 
+  projections[$'lib/{b:mix_project.name}.ex'] = {
+    type: 'domain',
+    alternate: $'test/{b:mix_project.name}_test.exs'
+  }
+
+  projections[$'test/{b:mix_project.name}_test.exs'] = {
+    type: 'domain',
+    alternate: $'lib/{b:mix_project.name}.ex'
+  }
+
   # Migrations
 
   for [type, command] in PREFIXES
