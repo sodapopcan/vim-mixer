@@ -165,6 +165,18 @@ export def Detect()
       rtype = 'domain'
     endif
 
+    projections[$'lib/{root}.ex'] = {
+      type: rtype,
+      alternate: $'test/{root}_test.exs',
+      related: [
+        $'lib/{root}.ex'
+      ],
+      template: [
+        $'defmodule {alias}.{{camelcase|capitalize|dot}} do',
+        'end'
+      ]
+    }
+
     projections[$'lib/{root}/*.ex'] = {
       type: rtype,
       alternate: $'test/{root}/{{}}_test.exs',
@@ -172,7 +184,7 @@ export def Detect()
         $'lib/{root}.ex'
       ],
       template: [
-        $'defmodule {alias}.{{camelcase|capitalize}} do',
+        $'defmodule {alias}.{{camelcase|capitalize|dot}} do',
         'end'
       ]
     }
@@ -184,6 +196,16 @@ export def Detect()
     else
       use_line = '  use ExUnit.Case, async: true'
     endif
+
+    projections[$'test/{root}_test.exs'] = {
+      type: 'test',
+      alternate: $'lib/{root}.ex',
+      template: [
+        $'defmodule {alias}.{{camelcase|capitalize|dot}}Test do',
+        use_line,
+        'end'
+      ]
+    }
 
     projections[$'test/{root}/*_test.exs'] = {
       type: 'test',
